@@ -1,0 +1,63 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[english]{lsspub} % default is babel's ngerman
+
+% SETUP OF LSSPUB
+\lsstitle{How I won Quake III Arena using a tiny sim}%
+\lssauthor{Erwin Schmidt}%
+\lsstype{Diplomarbeit}%
+
+% CONDITIONALLY SET UP PDF-SPECIFIC STUFF (OPTIONAL)
+\usepackage{ifpdf}
+
+\ifpdf
+% look at documentation for non-pdflatex setup of hyperref
+\usepackage[pdftex]{hyperref} 
+\hypersetup{colorlinks=true}
+\hypersetup{linkcolor=black}
+\hypersetup{citecolor=black}
+\hypersetup{pdfauthor=\lsstheauthor}
+\hypersetup{pdftitle=\lssthetitle}
+\hypersetup{pdfsubject={\lssthetype, Informatik 10, Universität Erlangen-Nürnberg}}
+\hypersetup{pdfkeywords={Virtual Reality, Quake III, Ego Shooter}}
+
+% if you want thumbnails for your pdf, you need an additional
+% call of thumbpdf and pdflatex after pdflatex converged 
+% (i.e. all references were resolved etc.)
+%
+%\usepackage{thumbpdf}
+%\hypersetup{pdfpagemode=UseThumbs}
+\fi
+
+% START LATEX DOCUMENT BODY
+
+\begin{document}
+
+% The following command creates the title page(s) and the text required 
+% by the Pruefungsamt, stays German even if english option enabled
+% You can optionally provide a date for the signature line),
+% otherwise \today is used.
+\makelssthesis{Prof.~Dr.~U.~Rüde}{Dipl.-Inf.~M.~Kowarschik}{1.2.1999 -- 31.12.2000}
+
+% Now the acutal thesis can start
+\section{Introduction and Conclusions}
+
+The use of a tiny sim in \emph{Quake III Arena} offers many advantages.
+The most important being, that one is harder to ``frag'', as can be seen in
+Tab.~\ref{FRAGS}.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|*{4}{c}|}
+    \hline
+    \textbf{Sim Name:} & War Dog & Neanderthaler & Prime Evil & Erwin Schmidt \\
+    \hline
+    \textbf{Size:} & 2'' & 5'' & 7'' & 1.5'' \\
+    \hline
+    \textbf{Frag Rate:} & 35\%  & 45\% & 95\% & 2\% \\ 
+    \hline
+  \end{tabular}
+  \caption{Frag rate depending on sim size}
+  \label{FRAGS}
+\end{table}
+
+\end{document}

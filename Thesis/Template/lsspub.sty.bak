@@ -1,0 +1,190 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                              LSSPUB.STY (1.2)                               %
+%                         (Nov 2011/Markus Stürmer)                          %
+%                        (Jan 2013/Matthias Hofmann)                          %
+%                         (Aug 2013/Markus Stürmer)                           %
+%                                                                             %
+%                      LaTeX style for LSS publications                       %
+%                                                                             %
+%                                  based on                                   %
+%                      LaTeX-Style for Thesis-Titelblatt                      %
+%                           (Marcus Mohr: Oct 2000)                           %
+%                        (Changed: Jul 2001/Marcus Mohr)                      %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% lsspub always activates english and ngerman for babel, but choses
+% ngerman as default unless \usepackage[english]{lsspub}
+%
+% The title pages remain German.
+%
+% This style defines the following commands to set values:
+%
+% \lssauthor{...}    sets the author(s)
+% \lsstitle{...}     sets the title
+% \lsstype{...}      describes the type (e.g. Technical Report or Master's Thesis
+% \lssinstitute{...} allows to change the insitute description, defaults to
+%                  % Lehrstuhl für Systemsimulation
+%                  % Friedrich-Alexander-Universität Erlangen-Nürnberg
+%                  % Erlangen, Germany
+%
+% This style defines the following commands to retrieve values:
+%
+% \lsstheauthor      what has been set using \lssauthor
+% \lssthetitle       what has been set using \lsstitle
+% \lssthetype        what has been set using \lsstype
+% \lsstheinstitute   what has been set using \lssinstitute
+
+% This style defines the following macros:
+%
+% \makelsstitlepage  create a title page (using lssauthor, lsstitle and lsstype)
+%
+% \makelssthesis[date]{supervisor}{advisor}{period}   
+%                    create the first three pages of a thesis, date is \today by default
+% \makelsstitle      creates a header (e.g. for first page of a technical report)
+%                    optional parameter: the date to be added (no date by default)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% -------------------------- Copyright Message --------------------------------
+%
+\typeout{**************************************************}
+\typeout{ LaTeX style for LSS-Publications}
+\typeout{**************************************************}
+%       
+% ------------------------- Load Graphics-Package -----------------------------
+%
+\RequirePackage{fix-cm}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{graphicx}
+\RequirePackage{scalefnt}
+%
+% --------------------------- Adjust Paper Size -------------------------------
+%
+%
+\addtolength{\topmargin}{-2cm}
+\addtolength{\oddsidemargin}{-1.5cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\textheight}{3cm}
+%       
+% --------------------------- Define Some Fonts -------------------------------
+%
+%\newfont{\fonta}{cmssdc10 scaled 1628}
+%\newfont{\fontb}{cmss10 scaled 1080}
+%\newfont{\fontc}{cmssdc10 scaled 1600}
+%\newfont{\fontd}{cmss10 scaled 1500}
+\newcommand{\fonta}{\fontsize{15.5pt}{18.6pt}\fontfamily{cmss}\fontseries{sbc}\fontshape{n}\selectfont}
+\newcommand{\fontb}{\fontsize{10.8pt}{12.96pt}\fontfamily{cmss}\fontseries{m}\fontshape{n}\selectfont}
+\newcommand{\fontc}{\fontsize{16pt}{19.2pt}\fontfamily{cmss}\fontseries{sbc}\fontshape{n}\selectfont}
+\newcommand{\fontd}{\fontsize{15pt}{18pt}\fontfamily{cmss}\fontseries{m}\fontshape{n}\selectfont}
+\newcommand{\fonte}{\fontsize{10.8pt}{12.96pt}\fontfamily{cmr}\fontseries{m}\fontshape{n}\selectfont}
+\newcommand{\fontf}{\fontsize{16.28pt}{19.4pt}\fontfamily{cmss}\fontseries{sbc}\fontshape{n}\selectfont}
+% ----------------------------- Define Command --------------------------------
+%
+
+\makeatletter
+
+\newcommand{\lssauthor}[1]{\def\@lssauthor{#1}}
+\newcommand{\lsstitle}[1]{\def\@lsstitle{#1}}
+\newcommand{\lsstype}[1]{\def\@lsstype{#1}}
+\newcommand{\lssinstitute}[1]{\def\@lssinstitute{#1}}
+
+\DeclareOption{english}{\def\@lsseng{}}
+\ProcessOptions\relax
+
+\ifdefined\@lsseng%
+	\RequirePackage[ngerman,english]{babel}%
+\else%
+	\RequirePackage[english,ngerman]{babel}%
+\fi
+
+\lssinstitute{Lehrstuhl für Informatik 10 (Systemsimulation)\\Friedrich-Alexander-Universität Erlangen-Nürnberg}%
+
+\lssauthor{}
+\lsstitle{}
+\lsstype{}
+\newcommand{\makelsstitlepage}{\lsstitlepage{\@lsstitle}{\@lssauthor}{\@lsstype}}
+\newcommand{\makelssthesis}[4][\today]{\lssthesis{#1}{\@lsstitle}{\@lssauthor}{\@lsstype}{#2}{#3}{#4}}
+\newcommand{\makelsstitle}[1][]{\title{\@lsstitle}\date{#1}\author{\@lssauthor\ifx\@lssinstitute\@empty\relax\else\\\\\@lssinstitute}\maketitle}
+
+\newcommand{\lsstheauthor}{\@lssauthor}
+\newcommand{\lssthetitle}{\@lsstitle}
+\newcommand{\lssthetype}{\@lsstype}
+\newcommand{\lsstheinstitute}{\@lssinstitute}
+%       
+% ----------------------------- Define Command --------------------------------
+%
+\newcommand{\lsstitlepage}[3]{%
+\thispagestyle{empty}%
+\vspace*{0.0cm}%
+\begin{center}%
+{\fonta FRIEDRICH-ALEXANDER-UNIVERSITÄT ERLANGEN-NÜRNBERG}\\%
+{\fontb TECHNISCHE FAKULTÄT} {\fonte •} {\fontb DEPARTMENT INFORMATIK}\\[2cm]%
+{\fontf Lehrstuhl für Informatik 10 (Systemsimulation)}\\[2.5ex]%
+\includegraphics[scale=0.4]{lsspublogo}\\[3.5cm]
+\parbox{\textwidth}{\centering \fontc #1}\\[0.8cm]%\\[0.8cm]%
+{\fontd #2}\\%
+\vspace*{\fill}%
+{\fontd #3}
+\end{center}
+\newpage}
+%       
+% ----------------------------- Define Command --------------------------------
+%
+\newcommand{\lssthesis}[7]{%
+%
+%
+\lsstitlepage{#2}{#3}{#4}
+%
+%
+\vspace*{-0.5cm}
+\begin{center}
+%
+%
+\thispagestyle{empty}
+%
+%
+%
+\vspace*{5cm}
+\parbox{\textwidth}{\centering \fontc #2}\\[0.8cm]
+%
+%
+{\fontd #3}\\[1ex]
+{\fontb #4}\\[2cm]
+%
+%
+\begin{tabular}{lp{0.5\textwidth}}
+\fontd Aufgabensteller:      & \fontd #5\\[1ex]
+\fontd Betreuer:             & \fontd #6\\[1ex]
+\fontd Bearbeitungszeitraum: & \fontd #7
+\end{tabular}\\
+%
+%
+\vspace*{\fill}
+%
+%
+\end{center}
+\newpage
+\thispagestyle{empty}
+\begin{otherlanguage}{ngerman}
+\noindent\textbf{Erklärung:}\\[2ex]
+Ich versichere, dass ich die Arbeit ohne fremde Hilfe und ohne Benutzung
+anderer als der angegebenen Quellen angefertigt habe und dass die Arbeit
+in gleicher oder ähnlicher Form noch keiner anderen Prüfungsbehörde
+vorgelegen hat und von dieser als Teil einer Prüfungsleistung angenommen
+wurde. Alle Ausführungen, die wörtlich oder sinngemäß
+übernommen wurden, sind als solche gekennzeichnet.\\[\lineskip]
+
+\noindent{}Der Universität Erlangen-Nürnberg, vertreten durch den Lehrstuhl für 
+Systemsimulation (Informatik 10), wird für Zwecke der Forschung und
+Lehre ein einfaches, kostenloses, zeitlich und örtlich unbeschränktes 
+Nutzungsrecht an den Arbeitsergebnissen der \lssthetype{} einschließlich etwaiger Schutzrechte und Urheberrechte eingeräumt.\\[1.5cm]
+%
+Erlangen, den #1 \hfill \makebox[6cm]{\dotfill}
+\newpage
+\end{otherlanguage}
+}
+
+\makeatother
