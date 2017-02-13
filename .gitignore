@@ -1,0 +1,9 @@
+auto/*
+*/auto/*
+*/*/auto/*
+*.dvi
+*.fdb_latexmk
+*.fls
+*.pdfpc
+*.gz
+*.vrb

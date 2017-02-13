@@ -1,0 +1,151 @@
+\ProvidesPackage{beamerouterthemefau}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newdimen\fau@outer@standx
+\newdimen\fau@outer@standy
+\newdimen\fau@outer@logoraum
+\newdimen\fau@outer@logobreite
+\newdimen\fau@outer@logohoehe
+\newdimen\fau@outer@urlraum
+\newdimen\fau@outer@absenderraum
+\newdimen\fau@outer@absenderhoehe
+\newdimen\fau@outer@absenderskip
+\newdimen\fau@outer@linienstaerke
+\newdimen\fau@outer@outlinestaerke
+\newdimen\fau@outer@userlogobreite
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareOptionBeamer{standx}{\fau@outer@standx=#1}
+\DeclareOptionBeamer{standy}{\fau@outer@standy=#1}
+\DeclareOptionBeamer{logoraum}{\fau@outer@logoraum=#1}
+\DeclareOptionBeamer{logobreite}{\fau@outer@logobreite=#1}
+\DeclareOptionBeamer{logohoehe}{\fau@outer@logohoehe=#1}
+\DeclareOptionBeamer{urlraum}{\fau@outer@urlraum=#1}
+\DeclareOptionBeamer{absenderraum}{\fau@outer@absenderraum=#1}
+\DeclareOptionBeamer{absenderhoehe}{\fau@outer@absenderhoehe=#1}
+\DeclareOptionBeamer{absenderskip}{\fau@outer@absenderskip=#1}
+\DeclareOptionBeamer{linienstaerke}{\fau@outer@linienstaerke=#1}
+\DeclareOptionBeamer{outlinestaerke}{\fau@outer@outlinestaerke=#1}
+\DeclareOptionBeamer{logo}{\def\fau@outer@logo{#1}}
+\DeclareOptionBeamer{userlogo}{%
+  \fau@isuserlogotrue
+  \def\fau@outer@userlogo{#1}
+}
+\DeclareOptionBeamer{userlogobreite}{\fau@outer@userlogobreite=#1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ProcessOptionsBeamer
+\mode<presentation>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{tikz}
+\RequirePackage{graphicx}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Headline %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamertemplate{headline}
+{%
+  \begin{beamercolorbox}[wd=\paperwidth,
+                         ht=\dimexpr\fau@outer@logoraum+\fau@outer@linienstaerke,
+                         dp=0ex]{headline}
+    \vbox to\fau@outer@logoraum{%
+      \iffau@isuserlogo
+        \vskip\fau@outer@standy
+        \hskip\dimexpr\fau@outer@urlraum+\fau@outer@linienstaerke
+        \begin{beamercolorbox}[wd=\fau@outer@userlogobreite,ht=\fau@outer@logohoehe,dp=0ex]{headline userlogo}%
+          \vbox to\fau@outer@logohoehe{\vfil
+            \includegraphics[width=\fau@outer@userlogobreite,height=\fau@outer@logohoehe,
+                             keepaspectratio]{\fau@outer@userlogo}%
+          }%
+        \end{beamercolorbox}%
+        \hskip\dimexpr\fau@outer@standx-\fau@outer@userlogobreite-\fau@outer@urlraum-\fau@outer@linienstaerke%
+      \else
+        \vskip\fau@outer@standy
+        \hskip\fau@outer@standx
+      \fi
+      \includegraphics[width=\fau@outer@logobreite,height=\fau@outer@logohoehe]{\fau@outer@logo}%
+      \vfil
+    }
+
+    \hskip\dimexpr\fau@outer@absenderraum+\fau@outer@linienstaerke-\fau@outer@outlinestaerke%
+    \begin{beamercolorbox}[wd=\dimexpr\paperwidth-\fau@outer@absenderraum-\fau@outer@linienstaerke+\fau@outer@outlinestaerke,
+                           ht=\fau@outer@outlinestaerke]{outline}
+    \end{beamercolorbox}%
+  \end{beamercolorbox}%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Sidebar %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamersize{sidebar width left=\dimexpr\fau@outer@absenderraum+\fau@outer@linienstaerke}
+\defbeamertemplate*{sidebar left}{sidebar theme}
+{%
+  \begin{beamercolorbox}[wd=\dimexpr\fau@outer@absenderraum+\fau@outer@linienstaerke,
+                         ht=\dimexpr\paperheight-\fau@outer@logoraum-\fau@outer@urlraum,
+                         dp=0pt]{sidebar outer}%
+    \begin{beamercolorbox}[wd=\dimexpr\fau@outer@absenderraum+\fau@outer@linienstaerke-\fau@outer@outlinestaerke]{sidebar}
+      \vskip\fau@outer@absenderskip
+      \vbox to\dimexpr2\fau@outer@absenderhoehe+\fau@outer@linienstaerke{%
+        \begin{beamercolorbox}[wd=\fau@outer@absenderraum,ht=\fau@outer@absenderhoehe]{sidebar top}
+        \end{beamercolorbox}%
+        \vskip\fau@outer@linienstaerke
+        \iffau@isfau
+          \begin{tikzpicture}
+            \fill[fauphil] (0,0.8\fau@outer@absenderhoehe) rectangle (\fau@outer@absenderraum, 1.0\fau@outer@absenderhoehe);
+            \fill[faurewi] (0,0.6\fau@outer@absenderhoehe) rectangle (\fau@outer@absenderraum, 0.8\fau@outer@absenderhoehe);
+            \fill[faumed] (0,0.4\fau@outer@absenderhoehe) rectangle (\fau@outer@absenderraum, 0.6\fau@outer@absenderhoehe);
+            \fill[faunat] (0,0.2\fau@outer@absenderhoehe) rectangle (\fau@outer@absenderraum, 0.4\fau@outer@absenderhoehe);
+            \fill[fautech] (0,0.0\fau@outer@absenderhoehe) rectangle (\fau@outer@absenderraum, 0.2\fau@outer@absenderhoehe);
+          \end{tikzpicture}
+        \else
+          \begin{beamercolorbox}[wd=\fau@outer@absenderraum,ht=\fau@outer@absenderhoehe]{sidebar bot}
+          \end{beamercolorbox}
+        \fi
+      }%
+      \vskip\dimexpr\paperheight-\fau@outer@logoraum-\fau@outer@absenderskip-\fau@outer@urlraum-2\fau@outer@absenderhoehe
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=\fau@outer@outlinestaerke,
+                           ht=\dimexpr\paperheight-\fau@outer@logoraum-\fau@outer@urlraum]{outline}
+    \end{beamercolorbox}%
+  \end{beamercolorbox}%
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Footline %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamertemplate{footline}
+{%
+  \hskip\dimexpr\fau@outer@absenderraum+\fau@outer@linienstaerke-\fau@outer@outlinestaerke%
+  \begin{beamercolorbox}[wd=\dimexpr\paperwidth-\fau@outer@absenderraum-\fau@outer@linienstaerke+\fau@outer@outlinestaerke,ht=\fau@outer@outlinestaerke,right]{outline}
+  \end{beamercolorbox}
+
+  \begin{beamercolorbox}[wd=\paperwidth,ht=\dimexpr\fau@outer@urlraum-3mm,dp=3mm]{footline}
+  \hskip\dimexpr\fau@outer@absenderraum+\fau@outer@linienstaerke%
+      \begin{beamercolorbox}[wd=170mm]{footline title}
+        \ifx\insertshortauthor\empty\else
+          \insertshortauthor\quad$\cdot$\quad
+        \fi
+        \ifx\insertshortinstitute\empty\else
+          \insertshortinstitute\quad$\cdot$\quad
+        \fi
+        \ifx\insertshorttitle\empty\else
+          \insertshorttitle
+        \fi
+      \end{beamercolorbox}%
+      \begin{beamercolorbox}[wd=30mm]{footline date}
+        \ifx\insertshortdate\empty\else        
+              \insertshortdate
+        \fi
+      \end{beamercolorbox}%
+      \hfill
+      \begin{beamercolorbox}[wd=20mm,right,rightskip=5.5mm]{footline page}
+        \insertpagenumber
+      \end{beamercolorbox}%
+  \end{beamercolorbox}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Frametitle %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamertemplate{frametitle}
+{%
+  \vskip\dimexpr\fau@outer@absenderraum-3\fau@outer@linienstaerke
+  \begin{beamercolorbox}{frametitle}
+    \insertframetitle
+    \ifx\insertframesubtitle\empty\else
+      \newline{\usebeamerfont{framesubtitle}\insertframesubtitle}
+    \fi
+  \end{beamercolorbox}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mode<all>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

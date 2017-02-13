@@ -1,0 +1,151 @@
+% Defines the FAU palette for use with LaTeX.
+%
+% Copyright 2016 by Balthasar Reuter <balthasar.reuter _at_ math.fau.de>
+%
+% This program can be redistributed and/or modified under the terms
+% of the GNU Public License, version 2.
+
+\ProvidesPackage{faucolors}
+\RequirePackage{xcolor}
+
+\newcounter{faucolors@institutecounter}\setcounter{faucolors@institutecounter}{-1}
+\newif\iffaucolors@isfau\faucolors@isfautrue
+\newif\iffaucolors@isphil\faucolors@isphilfalse
+\newif\iffaucolors@isrewi\faucolors@isrewifalse
+\newif\iffaucolors@ismed\faucolors@ismedfalse
+\newif\iffaucolors@isnat\faucolors@isnatfalse
+\newif\iffaucolors@istech\faucolors@istechfalse
+
+\DeclareOption{fau}{%
+  \faucolors@isfautrue
+  \stepcounter{faucolors@institutecounter}
+}
+\DeclareOption{phil}{%
+  \faucolors@isphiltrue
+  \stepcounter{faucolors@institutecounter}
+}
+\DeclareOption{rewi}{%
+  \faucolors@isrewitrue
+  \stepcounter{faucolors@institutecounter}
+}
+\DeclareOption{med}{%
+  \faucolors@ismedtrue
+  \stepcounter{faucolors@institutecounter}
+}
+\DeclareOption{nat}{%
+  \faucolors@isnattrue
+  \stepcounter{faucolors@institutecounter}
+}
+\DeclareOption{tech}{%
+  \faucolors@istechtrue
+  \stepcounter{faucolors@institutecounter}
+}
+\ProcessOptions\relax
+
+\ifnum\value{faucolors@institutecounter}>0
+  \PackageError{faucolors}{Options 'fau', 'phil', 'rewi', 'med', 'nat', and 'tech' are mutually exclusive.}{}
+\fi
+
+% University colors
+\definecolor{faublue}{RGB}{0,56,101}
+\definecolor{faulblue}{RGB}{114,159,207}
+\definecolor{faullblue}{RGB}{221,229,240}
+
+\definecolor{faugrey}{RGB}{150,150,150}
+\definecolor{faulgrey}{RGB}{210,213,215}
+\definecolor{faullgrey}{RGB}{235,236,238}
+
+% Phil colors
+\definecolor{fauphil}{RGB}{201,147,19}
+\definecolor{faulphil}{RGB}{217,198,137}
+\definecolor{faullphil}{RGB}{243,238,223}
+
+% ReWi colors
+\definecolor{faurewi}{RGB}{141,20,41}
+\definecolor{faulrewi}{RGB}{201,169,147}
+\definecolor{faullrewi}{RGB}{237,231,222}
+
+% Med colors
+\definecolor{faumed}{RGB}{0,177,235}
+\definecolor{faulmed}{RGB}{180,214,245}
+\definecolor{faullmed}{RGB}{234,243,252}
+
+% Nat colors
+\definecolor{faunat}{RGB}{0,155,119}
+\definecolor{faulnat}{RGB}{170,207,189}
+\definecolor{faullnat}{RGB}{229,239,234}
+
+% Tech colors
+\definecolor{fautech}{RGB}{152,164,174}
+\definecolor{faultech}{RGB}{210,213,215}
+\definecolor{faulltech}{RGB}{235,236,238}
+
+% % University colors
+% \definecolor{faublue}{cmyk}{100,50,0,50}
+% \definecolor{faulblue}{cmyk}{48,12,0,23}
+% \definecolor{faullblue}{cmyk}{15,3,0,6}
+
+% \definecolor{faugrey}{cmyk}{0,0,0,41}
+% \definecolor{faulgrey}{cmyk}{5,0,0,23}
+% \definecolor{faullgrey}{cmyk}{2,0,0,10}
+
+% % Phil colors
+% \definecolor{fauphil}{cmyk}{10,40,100,20}
+% \definecolor{faulphil}{cmyk}{5,22,55,10}
+% \definecolor{faullphil}{cmyk}{2,6,15,3}
+
+% % ReWi colors
+% \definecolor{faurewi}{cmyk}{30,100,80,30}
+% \definecolor{faulrewi}{cmyk}{10,42,40,15}
+% \definecolor{faullrewi}{cmyk}{4,10,13,3}
+
+% % Med colors
+% \definecolor{faumed}{cmyk}{80,0,0,0}
+% \definecolor{faulmed}{cmyk}{45,0,0,0}
+% \definecolor{faullmed}{cmyk}{14,0,0,0}
+
+% % Nat colors
+% \definecolor{faunat}{cmyk}{100,0,70,0}
+% \definecolor{faulnat}{cmyk}{50,0,35,0}
+% \definecolor{faullnat}{cmyk}{17,0,12,0}
+
+% % Tech colors
+% \definecolor{fautech}{cmyk}{10,0,0,40}
+% \definecolor{faultech}{cmyk}{5,0,0,23}
+% \definecolor{faulltech}{cmyk}{2,0,0,10}
+
+\iffaucolors@isfau
+  \colorlet{institute}{faublue}
+  \colorlet{linstitute}{faulblue}
+  \colorlet{llinstitute}{faullblue}
+\fi
+
+\iffaucolors@isphil
+  \colorlet{institute}{fauphil}
+  \colorlet{linstitute}{faulphil}
+  \colorlet{llinstitute}{faullphil}
+\fi
+
+\iffaucolors@isrewi
+  \colorlet{institute}{faurewi}
+  \colorlet{linstitute}{faulrewi}
+  \colorlet{llinstitute}{faullrewi}
+\fi
+
+\iffaucolors@ismed
+  \colorlet{institute}{faumed}
+  \colorlet{linstitute}{faulmed}
+  \colorlet{llinstitute}{faullmed}
+\fi
+
+\iffaucolors@isnat
+  \colorlet{institute}{faunat}
+  \colorlet{linstitute}{faulnat}
+  \colorlet{llinstitute}{faullnat}
+\fi
+
+\iffaucolors@istech
+  \colorlet{institute}{fautech}
+  \colorlet{linstitute}{faultech}
+  \colorlet{llinstitute}{faulltech}
+\fi

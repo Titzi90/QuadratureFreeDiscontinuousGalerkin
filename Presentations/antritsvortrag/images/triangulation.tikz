@@ -1,0 +1,19 @@
+% draw triangulatiom
+\newcommand{\triangulation}[1]{
+  \pgfmathsetmacro{\triangulationdimension}{#1}
+  \pgfmathsetmacro{\triangulationdim}{\triangulationdimension-1}
+  \begin{scope}[yscale=-1]
+    \draw (1, 1) grid[step=1cm] (\triangulationdimension, \triangulationdimension);
+    \foreach \i  in {1,...,\triangulationdim} {
+      \foreach \j  in {1,...,\triangulationdim} {
+        \draw (\i,\j) -- (\i+1,\j+1);
+      }
+    }
+    \node [below left] at (1,\triangulationdimension) {0,0};
+    \node [left] at (1,1) {1,0};
+    \node [below] at (\triangulationdimension,\triangulationdimension) {0,1};
+    \node [below left] at (2,1) {\(T_1\)};
+    \node [above right] at (\triangulationdim,\triangulationdimension) {\(T_K\)};
+    \node [below left] at (4,2) {\(T_k\)};
+  \end{scope}
+}

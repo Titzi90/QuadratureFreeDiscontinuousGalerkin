@@ -1,0 +1,64 @@
+\ProvidesPackage{beamercolorthemefau}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{ifthen}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareOptionBeamer{institute}{%
+  \PassOptionsToPackage{#1}{faucolors}%
+}
+\newcount\fau@color@variant
+\DeclareOptionBeamer{variant}{%
+  \ifthenelse{\equal{#1}{outline}}{\fau@color@variant=0}{}
+  \ifthenelse{\equal{#1}{fond1}}{\fau@color@variant=1}{}
+  \ifthenelse{\equal{#1}{fond2}}{\fau@color@variant=2}{}
+}
+\ExecuteOptionsBeamer{variant=outline}
+\ProcessOptionsBeamer
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\RequirePackage{faucolors}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\selectcolormodel{rgb}
+\mode<presentation>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamercolor{title page}{fg=white,bg=institute}
+\setbeamercolor{title page headline}{bg=white}
+\setbeamercolor{title page block}{fg=white,bg=institute}
+\setbeamercolor{title page logo}{fg=white}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamercolor{section page}{fg=white,bg=institute}
+\setbeamercolor{section page headline}{bg=white}
+\setbeamercolor{section page block}{fg=white,bg=institute}
+\setbeamercolor{section page logo}{fg=white}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamercolor{headline}{fg=faublue,bg=white}
+\setbeamercolor{sidebar}{fg=faublue,bg=white}
+\setbeamercolor{sidebar top}{fg=white,bg=institute}
+\setbeamercolor{sidebar bot}{fg=white,bg=faublue}
+\setbeamercolor{footline}{fg=faublue,bg=white}
+\setbeamercolor{footline title}{fg=faublue}
+\setbeamercolor{footline date}{fg=faublue}
+\setbeamercolor{footline page}{fg=faublue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ifcase\fau@color@variant
+% outline
+  \setbeamercolor{outline}{fg=white,bg=faublue}
+  \setbeamercolor{frametitle}{fg=faublue,bg=white}
+  \setbeamercolor{normal text}{fg=black,bg=white}
+  \setbeamercolor{block body}{bg=llinstitute}
+\or % fond 1
+  \setbeamercolor{outline}{fg=white,bg=white}
+  \setbeamercolor{frametitle}{fg=white,bg=institute}
+  \setbeamercolor{normal text}{fg=black,bg=faullblue}
+  \setbeamercolor{block body}{bg=white}
+\or % fond 2
+  \setbeamercolor{outline}{fg=white,bg=white}
+  \setbeamercolor{frametitle}{fg=white,bg=institute}
+  \setbeamercolor{normal text}{fg=black,bg=llinstitute}
+  \setbeamercolor{block body}{bg=white}
+\else
+  \PackageError{beamercolorthemefau}{Option 'variant' must be one of 'outline', 'fond1', or 'fond2'.}{}
+\fi
+\setbeamercolor{block title}{bg=faublue,fg=white}
+\setbeamercolor{structure}{fg=faublue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mode<all>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

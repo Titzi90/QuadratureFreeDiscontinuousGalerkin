@@ -1,0 +1,256 @@
+\ProvidesPackage{beamerinnerthemefau}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newdimen\fau@inner@standx
+\newdimen\fau@inner@standy
+\newdimen\fau@inner@logoraum
+\newdimen\fau@inner@logobreite
+\newdimen\fau@inner@logohoehe
+\newdimen\fau@inner@userlogobreite
+\newdimen\fau@inner@userlogohoehe
+\newdimen\fau@inner@userlogostandx
+\newdimen\fau@inner@userlogostandy
+\newdimen\fau@inner@siegelbreite
+\newdimen\fau@inner@urlraum
+\newdimen\fau@inner@absenderraum
+\newdimen\fau@inner@absenderhoehe
+\newdimen\fau@inner@linienstaerke
+\newdimen\fau@inner@skipx
+\newif\iffau@isuserlogo\fau@isuserlogofalse
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareOptionBeamer{standx}{\fau@inner@standx=#1}
+\DeclareOptionBeamer{standy}{\fau@inner@standy=#1}
+\DeclareOptionBeamer{logoraum}{\fau@inner@logoraum=#1}
+\DeclareOptionBeamer{logobreite}{\fau@inner@logobreite=#1}
+\DeclareOptionBeamer{logohoehe}{\fau@inner@logohoehe=#1}
+\DeclareOptionBeamer{userlogobreite}{\fau@inner@userlogobreite=#1}
+\DeclareOptionBeamer{userlogostandx}{\fau@inner@userlogostandx=#1}
+\DeclareOptionBeamer{userlogostandy}{\fau@inner@userlogostandy=#1}
+\DeclareOptionBeamer{siegelbreite}{\fau@inner@siegelbreite=#1}
+\DeclareOptionBeamer{urlraum}{\fau@inner@urlraum=#1}
+\DeclareOptionBeamer{absenderraum}{\fau@inner@absenderraum=#1}
+\DeclareOptionBeamer{absenderhoehe}{\fau@inner@absenderhoehe=#1}
+\DeclareOptionBeamer{linienstaerke}{\fau@inner@linienstaerke=#1}
+\DeclareOptionBeamer{skipx}{\fau@inner@skipx=#1}
+\DeclareOptionBeamer{logo}{\def\fau@inner@logo{#1}}
+\DeclareOptionBeamer{userlogo}{%
+  \fau@isuserlogotrue
+  \def\fau@inner@userlogo{#1}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ProcessOptionsBeamer
+\RequirePackage{tikz}
+\RequirePackage{graphicx}
+\mode<presentation>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Title page %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setbeamertemplate{title page}
+{
+  \hspace{\fau@inner@skipx}
+  \begin{beamercolorbox}[ht=\paperheight]{page outer}
+    \begin{beamercolorbox}[wd=\paperwidth,ht=\fau@inner@logoraum,dp=0ex]{title page headline}
+      \vbox to\fau@inner@logoraum{%
+        \iffau@isuserlogo
+          \vskip\fau@inner@standy
+          \hskip\dimexpr\fau@inner@urlraum+2\fau@inner@linienstaerke
+          \begin{beamercolorbox}[wd=\fau@inner@userlogobreite,ht=\fau@inner@logohoehe,dp=0ex]{headline userlogo}%
+            \vbox to\fau@inner@logohoehe{\vfil
+              \includegraphics[width=\fau@inner@userlogobreite,height=\fau@inner@logohoehe,
+                               keepaspectratio]{\fau@inner@userlogo}
+            }%
+          \end{beamercolorbox}%
+          \hskip\dimexpr\fau@inner@standx-\fau@inner@userlogobreite-\fau@inner@urlraum-2\fau@inner@linienstaerke
+        \else
+          \vskip\fau@inner@standy
+          \hskip\fau@inner@standx
+        \fi
+        \includegraphics[width=\fau@inner@logobreite,height=\fau@inner@logohoehe]{\fau@inner@logo}%
+        \vfil
+      }
+    \end{beamercolorbox}
+
+    \begin{beamercolorbox}[wd=\paperwidth,
+                           ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum,
+                           left]{title page}%
+      \begin{beamercolorbox}[wd=\dimexpr\fau@inner@absenderraum+\fau@inner@linienstaerke,
+                             ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum,dp=0pt]{sidebar}
+        \vbox to\dimexpr2\fau@inner@absenderhoehe+\fau@inner@linienstaerke{%
+          \begin{beamercolorbox}[wd=\fau@inner@absenderraum,ht=\fau@inner@absenderhoehe]{sidebar top}
+          \end{beamercolorbox}
+          \vfil
+          \iffau@isfau
+            \begin{tikzpicture}
+              \fill[fauphil] (0,0.8\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 1.0\fau@inner@absenderhoehe);
+              \fill[faurewi] (0,0.6\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.8\fau@inner@absenderhoehe);
+              \fill[faumed] (0,0.4\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.6\fau@inner@absenderhoehe);
+              \fill[faunat] (0,0.2\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.4\fau@inner@absenderhoehe);
+              \fill[fautech] (0,0.0\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.2\fau@inner@absenderhoehe);
+            \end{tikzpicture}
+          \else
+            \begin{beamercolorbox}[wd=\fau@inner@absenderraum,ht=\fau@inner@absenderhoehe]{sidebar bot}
+            \end{beamercolorbox}
+          \fi
+        }
+        \vskip\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum-2\fau@inner@absenderhoehe-\fau@inner@linienstaerke
+      \end{beamercolorbox}%
+      \begin{beamercolorbox}[ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum]{title page block}
+        \begin{beamercolorbox}[ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum,sep=.5\fau@inner@absenderraum]{title page title}
+          \vbox to\dimexpr2\fau@inner@absenderhoehe+\fau@inner@linienstaerke-\fau@inner@absenderraum{%
+            \vskip.5\fau@inner@absenderraum
+            {\usebeamerfont{title}\inserttitle}
+            \ifx\insertsubtitle\empty\else
+              \vskip.5\fau@inner@absenderraum
+              {\usebeamerfont{subtitle}\insertsubtitle}
+            \fi
+            \vfil
+            \ifx\insertauthor\empty\else
+              \begin{large}\textbf{\insertauthor}\end{large}\newline
+            \fi
+            \ifx\insertinstitute\empty\else
+              \begin{large}\insertinstitute\end{large}\newline
+            \fi
+            \ifx\insertdate\empty\else
+              \begin{large}\insertdate\end{large}
+            \fi
+            \vskip.5\fau@inner@absenderraum
+          }
+        \end{beamercolorbox}
+        \hrule width\dimexpr\paperwidth-\fau@inner@absenderraum-\fau@inner@linienstaerke height\fau@inner@linienstaerke
+        \begin{beamercolorbox}[ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum-2\fau@inner@linienstaerke-2\fau@inner@absenderhoehe,right]{title page block}
+          \iffau@isfau
+            \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                             keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-fau}%
+          \fi
+          \iffau@isphil
+            \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                             keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-phil}%
+          \fi
+          \iffau@isrewi
+            \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                             keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-rewi}%
+          \fi
+          \iffau@ismed
+            \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                             keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-med}%
+          \fi
+          \iffau@isnat
+            \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                             keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-nat}%
+          \fi
+          \iffau@istech
+            \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                             keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-tech}%
+          \fi
+          \hspace{-2\beamer@rightmargin}
+        \end{beamercolorbox}
+      \end{beamercolorbox}
+      \hspace{-\beamer@rightmargin}
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=\paperwidth,ht=\fau@inner@urlraum]{footline}
+    \end{beamercolorbox}%
+  \end{beamercolorbox}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Section page %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\AtBeginSection{%
+  \frame[plain,c]{%
+  \hspace{\fau@inner@skipx}
+  \begin{beamercolorbox}[ht=\paperheight]{page outer}
+    \begin{beamercolorbox}[wd=\paperwidth,ht=\fau@inner@logoraum,dp=0ex]{section page headline}
+      \vbox to\fau@inner@logoraum{%
+        \iffau@isuserlogo
+          \vskip\fau@inner@standy
+          \hskip\dimexpr\fau@inner@urlraum+2\fau@inner@linienstaerke
+          \begin{beamercolorbox}[wd=\fau@inner@userlogobreite,ht=\fau@inner@logohoehe,dp=0ex]{headline userlogo}%
+            \vbox to\fau@inner@logohoehe{\vfil
+              \includegraphics[width=\fau@inner@userlogobreite,height=\fau@inner@logohoehe,
+                               keepaspectratio]{\fau@inner@userlogo}
+            }%
+          \end{beamercolorbox}%
+          \hskip\dimexpr\fau@inner@standx-\fau@inner@userlogobreite-\fau@inner@urlraum-2\fau@inner@linienstaerke
+        \else
+          \vskip\fau@inner@standy
+          \hskip\fau@inner@standx
+        \fi
+        \includegraphics[width=\fau@inner@logobreite,height=\fau@inner@logohoehe]{\fau@inner@logo}%
+        \vfil
+      }
+    \end{beamercolorbox}
+
+      \begin{beamercolorbox}[wd=\paperwidth,
+                             ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum,
+                             left]{section page}%
+        \begin{beamercolorbox}[wd=\dimexpr\fau@inner@absenderraum+\fau@inner@linienstaerke,
+                               ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum,dp=0pt]{sidebar}
+          \vbox to\dimexpr2\fau@inner@absenderhoehe+\fau@inner@linienstaerke{%
+            \begin{beamercolorbox}[wd=\fau@inner@absenderraum,ht=\fau@inner@absenderhoehe]{sidebar top}
+            \end{beamercolorbox}
+            \vfil
+            \iffau@isfau
+              \begin{tikzpicture}
+                \fill[fauphil] (0,0.8\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 1.0\fau@inner@absenderhoehe);
+                \fill[faurewi] (0,0.6\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.8\fau@inner@absenderhoehe);
+                \fill[faumed] (0,0.4\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.6\fau@inner@absenderhoehe);
+                \fill[faunat] (0,0.2\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.4\fau@inner@absenderhoehe);
+                \fill[fautech] (0,0.0\fau@inner@absenderhoehe) rectangle (\fau@inner@absenderraum, 0.2\fau@inner@absenderhoehe);
+              \end{tikzpicture}
+            \else
+              \begin{beamercolorbox}[wd=\fau@inner@absenderraum,ht=\fau@inner@absenderhoehe]{sidebar bot}
+              \end{beamercolorbox}
+            \fi
+          }
+          \vskip\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum-2\fau@inner@absenderhoehe-\fau@inner@linienstaerke
+        \end{beamercolorbox}%
+        \begin{beamercolorbox}[ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum]{section page block}
+          \begin{beamercolorbox}[ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum,sep=.5\fau@inner@absenderraum]{section page title}
+            \vbox to\dimexpr\fau@inner@absenderhoehe-\fau@inner@absenderraum{%
+              \vskip.5\fau@inner@absenderraum
+              {\usebeamerfont{title}\thesection~~\insertsection}
+              \vfil
+              \vskip.5\fau@inner@absenderraum
+            }
+          \end{beamercolorbox}
+          \hrule width\dimexpr\paperwidth-\fau@inner@absenderraum-\fau@inner@linienstaerke height\fau@inner@linienstaerke
+          \begin{beamercolorbox}[ht=\dimexpr\paperheight-\fau@inner@logoraum-\fau@inner@urlraum-\fau@inner@linienstaerke-\fau@inner@absenderhoehe,right]{section page block}
+            \iffau@isfau
+              \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                               keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-fau}%
+            \fi
+            \iffau@isphil
+              \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                               keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-phil}%
+            \fi
+            \iffau@isrewi
+              \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                               keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-rewi}%
+            \fi
+            \iffau@ismed
+              \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                               keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-med}%
+            \fi
+            \iffau@isnat
+              \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                               keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-nat}%
+            \fi
+            \iffau@istech
+              \includegraphics[width=\fau@inner@siegelbreite,height=\fau@inner@siegelbreite,
+                               keepaspectratio,trim=0 3.1mm 4mm 0,clip]{art/siegel-tech}%
+            \fi
+            \hspace{-2\beamer@rightmargin}
+          \end{beamercolorbox}
+        \end{beamercolorbox}
+      \end{beamercolorbox}%
+      \begin{beamercolorbox}[wd=\paperwidth,ht=\fau@inner@urlraum]{footline}
+      \end{beamercolorbox}%
+    \end{beamercolorbox}
+  }
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Boxes and lists %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% adapt height of itemize rectangles
+\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{itemize item}{\raisebox{0.12ex}{$\blacktriangleright$}\hskip0.1em}
+\setbeamertemplate{itemize subitem}{\raisebox{0.12ex}{$\triangleright$}\hskip0.1em}
+\setbeamertemplate{navigation symbols}{}  % no navigation symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mode<all>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
