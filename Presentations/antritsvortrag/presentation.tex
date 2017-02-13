@@ -173,12 +173,11 @@
   \newcommand*{\fatcode}[1]{\mbox{\lstinline[basicstyle=\bfseries\ttfamily\Large]{#1}}}
 
 % Title page
-\title[Quadrature-Free LDG]{Introduction of master
-  thesis:\\[.8em]Quadrature-Free Implementation of the Local Discontinuous
-  Garlerkin Method}
+\title[Quadrature-Free LDG]{Master Thesis Introduction:\\[.8em]
+  Quadrature-Free Implementation of the Local Discontinuous Garlerkin Method}
 \author{Christopher Bross}
-\date[2017-02-09]{Erlangen, 2017-02-09}
-\institute[AM1]{Applied Mathematics I}
+\date[2017-02-14]{Erlangen, 2017-02-14}
+\institute[AM1,I10]{Applied Mathematics I and Computer Science 10}
 
 \begin{document}
 
@@ -310,7 +309,7 @@
 }\only<2,4->{}
 % % SYSTEM OF EQUATIONS
 \only<4>{
-  \tikzoverlay (system) at (-11.43cm, 0cm) {%
+  \tikzoverlay (system) at (-11.50cm, 0cm) {%
     \begin{fblock}{System of equations}{0.91}
       \emph{Modal DG basis} $\forall k\in\{1,\ldots,K\}$,
       $\IP_p(T_k)=\mathrm{span}\,\big\{ \vphi_{ki} \big\}_{i\in\{1,\ldots,N_p\}}$, where
@@ -352,6 +351,43 @@
 }\only<2-3>{}
 \end{frame}
 
+
+%% KLASISCHER DG ANSATZ
+\begin{frame}
+  \frametitle{Classical evaluation of the integrals}
+  Assemble mass Matrix
+  \(\vecc{M}\in\IR^{{KN\times KN}}\):
+  \begin{equation*}
+    [\vecc{M}]_{(k-1)N+i,(k-1)N+j} \;\coloneqq\; \int_{T_k} \vphi_{ki} \, \vphi_{kj} \, \dd\vec{x}.
+  \end{equation*}
+  Since $\vphi_{ki}$, $i\in\{1,\ldots,N\}$ have a support only on $T_k$, $\vecc{M}$ has a block diagonal structure
+  \begin{equation*}
+    \vecc{M} = \begin{bmatrix} \vecc{M}_{T_1} & & \\ & \ddots & \\ & & \vecc{M}_{T_K} \end{bmatrix}
+    \qquad\text{with}\qquad
+    \vecc{M}_{T_k} \;\coloneqq\; \int_{T_k} \begin{bmatrix}
+    \vphi_{k1}\vphi_{k1} & \cdots & \vphi_{k1}\vphi_{kN} \\
+    \vdots               & \ddots & \vdots               \\
+    \vphi_{kN}\vphi_{k1} & \cdots & \vphi_{kN}\vphi_{kN}
+    \end{bmatrix}\,\dd\vec{x}\;.
+  \end{equation*}
+  Using \emph{(Gaussian) quadrature} for the local mass matrix
+  \(\vecc{M}_{T_k}\) the following holds:
+  \begin{equation*}
+    \begin{split}
+      [\vecc{M}_{T_k}]_{i,j}=[\vecc{M}]_{(k-1)N+i,(k-1)N+j} \;
+        &\coloneqq\sum_{q=1}^{N_q^{}} \omega_q'\,g_{kij}^{}(x_{kq}')\\
+        &\;=\sum_{q=1}^{N_q^{}}\omega_q'\sum_{r=1}^N\phi_{krij}\,\vphi_{kr}(x_{kq}')
+    \end{split}
+  \end{equation*}
+  with \(N_q > N\) the required quadrature points on \(T_k\),
+  weightings \(\omega_q'\),
+  the polynomial function \(g_{kij}(x)\) and its local basis expansion
+  \(\sum_{r=1}^N\phi_{krij}^{}\,\vphi_{kr}^{}(x)\)
+
+  \pnote{Aufwand pro Teilintegral ~ N^2 (Nq>N -> exakt lösen)}
+\end{frame}
+
+%% WIE ICH ES MACHEN WERDE
 \begin{frame}
 \frametitle{Backtransformation to the reference triangle}
   \begin{center}\large
@@ -373,11 +409,8 @@
   \end{equation*}
 \end{frame}
 
-%TODO schleifen variante
-%TODO vielleicht auch M
 \begin{frame}
-  \frametitle{Assembly of $\vecc{G^m}$}
-%TODO phi's einführen
+  \frametitle{Quadrature free assembly of mass Matrix \(\vecc{M}\)}
   Use simple \emph{monomial basis} \(B_T^{} \equiv \{\phi_{Tr}^{}\}_{r\in 1,\dots ,N_p} %\,|\,0 \leq r \leq N_p\}
   = \{1,\;x,\;y,\;x^2,\;xy,\;y^2,\;\dots\}\)
   to expand polynomials in integrals:
@@ -389,22 +422,15 @@
   \vspace*{\fill}
 
   \pause
-  Applied in the block matrix \(\vecc{G}^m \in \IR^{KN\times KN}, m \in \{1,2\}\) from the volume
-  integral part:
+  Applied to the block mass matrix \(\vecc{M} \in \IR^{KN\times KN}\):
   \begin{equation*}
     \begin{split}
-      [\vecc{G^1}]_{(k-1)N+i,(k-1)N+j} \;&\coloneqq\; \sum_{l=1}^NU_{kl}^1(t)\int_{T_k} \partial_{x^1}\vphi_{ki}\,\vphi_{kl}\,\vphi_{kj}\,\dd\vec{x}\\
-      &\;= \sum_{l=1}^NU_{kl}^1(t)\left( \vecc{B}_k^{2,2}\int_{\hat T}\partial_{\hat x^1}\hat \vphi_i\,\hat \vphi_l\,\hat \vphi_j\,\dd\vec{\hat x} - \vecc{B}_k^{2,1}\int_{\hat T}\partial_{\hat x^2}\hat \vphi_i\,\hat \vphi_l\,\hat \vphi_j\,\dd\vec{\hat x} \right)\\
-      % &\;= \sum_{l=1}^NU_{kl}^1(t)\left( \vecc{B}_k^{2,2}\sum_{r=1}^Mp_{r,l}^1b_r - \vecc{B}_k^{2,1}\sum_r^Mp_{r,l}^1b_r \right)\\
-      % &\;= \sum_{l=1}^NU_{kl}^1(t)\sum_{r=1}^M\left( \vecc{B}_k^{2,2}p_{r,l}^1 - \vecc{B}_k^{2,1}p_{r,l}^1 \right)b_r
-      &\;= \sum_{l=1}^NU_{kl}^1(t)\sum_{r=1}^M \beta_{kijlr}^1 b_r
+      [\vecc{M}]_{(k-1)N+i,(k-1)N+j} \;&\coloneqq\; \int_{T_k} \vphi_{ki} \, \vphi_{kj} \, \dd\vec{x}\\
+      &\;= 2|T_k| \int_{\hat T}\hat \vphi_i\,\hat \vphi_j\, \dd\vec{\hat x}\\
+      &\;= 2|T_k| \sum_{r=1}^{M}p_{ijr}b_r
     \end{split}
   \end{equation*}
-  with \(\beta_{kijlr}^1 \coloneqq \vecc{B}_k^{2,2}p_{ijlr}^1 - \vecc{B}_k^{2,1}p_{ijlr}^1\)\;
-  and \emph{analytically precomputed integrals}
-  \(b_r \coloneqq \int_{\hat{T}}\phi_{\hat{T}r}^{}\,\dd\vec{\hat{x}} \).\\
-  Analogously for  for \(\vecc{G^2}\).
-  % \vspace*{\fill}
+  with \emph{analytically precomputed integrals} \(b_r \coloneqq \int_{\hat{T}}\phi_{\hat{T}r}^{}\,\dd\vec{\hat{x}} \).
 \end{frame}
 
 \section{Goals of the master thesis}
@@ -442,22 +468,43 @@
 \end{columns}
 \end{frame}
 
-
-
-
-
-
-
-
-
-
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
 \section*{Appendix}
 
 \begin{frame}
-\frametitle{Assembly of mass matrix \(\vecc{M}\)}
+  \frametitle{Quadrature free assembly of $\vecc{G^m}$}
+  Use simple \emph{monomial basis} \(B_T^{} \equiv \{\phi_{Tr}^{}\}_{r\in 1,\dots ,N_p} %\,|\,0 \leq r \leq N_p\}
+  = \{1,\;x,\;y,\;x^2,\;xy,\;y^2,\;\dots\}\)
+  to expand polynomials in integrals:
+  \begin{equation*}
+    \int_{T}P\,\dd\vec{x} = \int_{_T}\sum_{r=1}^Mp_{r}^{}\phi_{Tr}^{}\,\dd\vec{x} = \sum_{r=1}^Mp_{r}^{}\int_T\phi_{Tr}^{}\,\dd\vec{x}
+  \end{equation*}
+  where \(P\in \IP_p(T)\)% denotes an arbitrary polynomial of degree \(p\)
+  , \(M\geq N_p\).
+  \vspace*{\fill}
+
+  \pause
+  Applied in the block matrix \(\vecc{G}^m \in \IR^{KN\times KN}, m \in \{1,2\}\) from the volume
+  integral part:
+  \begin{equation*}
+    \begin{split}
+      [\vecc{G^1}]_{(k-1)N+i,(k-1)N+j} \;&\coloneqq\; \sum_{l=1}^NU_{kl}^1(t)\int_{T_k} \partial_{x^1}\vphi_{ki}\,\vphi_{kl}\,\vphi_{kj}\,\dd\vec{x}\\
+      &\;= \sum_{l=1}^NU_{kl}^1(t)\left( \vecc{B}_k^{2,2}\int_{\hat T}\partial_{\hat x^1}\hat \vphi_i\,\hat \vphi_l\,\hat \vphi_j\,\dd\vec{\hat x} - \vecc{B}_k^{2,1}\int_{\hat T}\partial_{\hat x^2}\hat \vphi_i\,\hat \vphi_l\,\hat \vphi_j\,\dd\vec{\hat x} \right)\\
+      % &\;= \sum_{l=1}^NU_{kl}^1(t)\left( \vecc{B}_k^{2,2}\sum_{r=1}^Mp_{r,l}^1b_r - \vecc{B}_k^{2,1}\sum_r^Mp_{r,l}^1b_r \right)\\
+      % &\;= \sum_{l=1}^NU_{kl}^1(t)\sum_{r=1}^M\left( \vecc{B}_k^{2,2}p_{r,l}^1 - \vecc{B}_k^{2,1}p_{r,l}^1 \right)b_r
+      &\;= \sum_{l=1}^NU_{kl}^1(t)\sum_{r=1}^M \beta_{kijlr}^1 b_r
+    \end{split}
+  \end{equation*}
+  with \(\beta_{kijlr}^1 \coloneqq \vecc{B}_k^{2,2}p_{ijlr}^1 - \vecc{B}_k^{2,1}p_{ijlr}^1\)\;
+  and \emph{analytically precomputed integrals}
+  \(b_r \coloneqq \int_{\hat{T}}\phi_{\hat{T}r}^{}\,\dd\vec{\hat{x}} \).\\
+  Analogously for  for \(\vecc{G^2}\).
+  % \vspace*{\fill}
+\end{frame}
+
+\begin{frame}
+\frametitle{Assembly of mass matrix \(\vecc{M}\) in FESTUNG}
   Mass matrix $\vecc{M}\in\IR^{KN\times KN}$:
   \begin{equation*}
     [\vecc{M}]_{(k-1)N+i,(k-1)N+j} \;\coloneqq\; \int_{T_k} \vphi_{ki} \, \vphi_{kj} \, \dd\vec{x}.
@@ -493,7 +540,8 @@
   where $\otimes$ denotes the Kronecker product.
 \end{frame}
 
-\begin{frame}{L2-projection of coefficient functions}
+\begin{frame}
+\frametitle{L2-projection of coefficient functions}
   We assumed $d_h(t), f_h(t), c_h^0 \in \IP_p(\setT_h)$.
 
   Given an algebraic expression, e.\,g., for $d$ and seek the representation matrix $\vecc{D}(t) \in \IR^{K\times K}$ such that
@@ -507,7 +555,8 @@
   \end{equation*}
 \end{frame}
 
-\begin{frame}{Time discretization}
+\begin{frame}
+\frametitle{Time discretization}
   The linear system can be written as
   \begin{equation*}
     \vecc{M}\partial_t \vec{C}(t) = \vec{V}(t) - \vecc{A}(t) \vec{C}(t) \eqqcolon \vec{S}(t, \vec{C}(t))\,.
