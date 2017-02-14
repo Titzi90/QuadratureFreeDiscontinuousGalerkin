@@ -226,7 +226,6 @@
     \emph{$w^\pm(\vec{x}) \coloneqq \lim_{\varepsilon\rightarrow 0^+} w(\vec{x} - \varepsilon \vec{\nu}_{T^\pm})$}
   \end{fblock}
   \vfill
-  % TODO etwas größer
   \begin{tikzpicture}[scale=2]
     \triangulation{5}
   \end{tikzpicture}
@@ -389,49 +388,81 @@
 
 %% WIE ICH ES MACHEN WERDE
 \begin{frame}
-\frametitle{Backtransformation to the reference triangle}
-  \begin{center}\large
+\frametitle{Quadrature free approach}
+  \centering%
+  \only<1>{
+    \begin{fblock}{Backtransformation to the reference triangle}{0.95}
+      Transform reference triangle $\hat{T}$ to physical triangle $T_k$ using an affine mapping
+      \begin{equation*}
+        \vec{F}_k : \hat{T} \ni \hat{\vec{x}} \mapsto \vecc{B}_k \, \hat{\vec{x}} + \vec{v}_{k1} \in T_k
+        \quad\text{with}\quad
+        \IR^{2\times2} \ni \vecc{B}_k\coloneqq\Big[ \vec{v}_{k2}-\vec{v}_{k1} \big| \vec{v}_{k3}-\vec{v}_{k1}\Big]\;.
+      \end{equation*}
+
+      For $w : \Omega \rightarrow \IR$ we obtain \textbf{transformation formulas}
+      \begin{equation*}
+        \int_{T_k} w\,(\vec{x})\, \dd \vec{x} \;=\; 2\,|T_k|\int_{\hat{T}} w \circ \vec{F}_k (\hat{\vec{x}})\, \dd \hat{\vec{x}}\;, \qquad
+        \int_{E_{kn}} w\,(\vec{x})\, \dd \vec{x} \;=\; \frac{|E_{kn}|}{|\hat{E}_n|}
+        \int_{\hat{E}_n} w \circ \vec{F}_k (\hat{\vec{x}})\, \dd \hat{\vec{x}}\;.
+      \end{equation*}
+    \end{fblock}
+    \vfill
     \input{images/referenceTriangleTransformation.tikz}
-  \end{center}
+    \vfill
+  }
 
-  Transform reference triangle $\hat{T}$ to physical triangle $T_k$ using an affine mapping
-  \begin{equation*}
-    \vec{F}_k : \hat{T} \ni \hat{\vec{x}} \mapsto \vecc{B}_k \, \hat{\vec{x}} + \vec{v}_{k1} \in T_k
-    \quad\text{with}\quad
-    \IR^{2\times2} \ni \vecc{B}_k\coloneqq\Big[ \vec{v}_{k2}-\vec{v}_{k1} \big| \vec{v}_{k3}-\vec{v}_{k1}\Big]\;.
-  \end{equation*}
-  \vfill
-  For $w : \Omega \rightarrow \IR$ we obtain \textbf{transformation formulas}
-  \begin{equation*}
-    \int_{T_k} w\,(\vec{x})\, \dd \vec{x} \;=\; 2\,|T_k|\int_{\hat{T}} w \circ \vec{F}_k (\hat{\vec{x}})\, \dd \hat{\vec{x}}\;, \qquad
-    \int_{E_{kn}} w\,(\vec{x})\, \dd \vec{x} \;=\; \frac{|E_{kn}|}{|\hat{E}_n|}
-    \int_{\hat{E}_n} w \circ \vec{F}_k (\hat{\vec{x}})\, \dd \hat{\vec{x}}\;.
-  \end{equation*}
+  \only<2>{
+    \begin{fblock}{Introducing monomial basis for polynomial expansion in the integrals}{0.95}
+      Use simple \emph{monomial basis} \(B_T^{} \equiv \{\phi_{Tr}^{}\}_{r\in 1,\dots ,N_p} %\,|\,0 \leq r \leq N_p\}
+      = \{1,\;x,\;y,\;x^2,\;xy,\;y^2,\;\dots\}\)
+      to expand polynomials in integrals:
+      \begin{equation*}
+        \int_{T}P\,\dd\vec{x} = \int_{_T}\sum_{r=1}^Mp_{r}^{}\phi_{Tr}^{}\,\dd\vec{x} = \sum_{r=1}^Mp_{r}^{}\int_T\phi_{Tr}^{}\,\dd\vec{x}
+      \end{equation*}
+      where \(P\in \IP_p(T)\)% denotes an arbitrary polynomial of degree \(p\)
+      , \(M\geq N_p\).
+      \vspace*{\fill}
+    \end{fblock}
+  }
+
+  \only<3-4>{
+    \tikzoverlay (transformation) at (-5.85cm, 5.55cm) {
+      \begin{fblock}{Transformation}{0.2}
+        \centering
+        \(\int_{T_k} w\,(\vec{x})\, \dd \vec{x} \;=\; 2\,|T_k|\int_{\hat{T}} w \circ \vec{F}_k (\hat{\vec{x}})\, \dd \hat{\vec{x}}\)
+      \end{fblock}%
+      \begin{minipage}{2.8cm}\centering\Huge
+        \emph{$\rightarrow\oplus\leftarrow$}\vspace{2.2cm}
+      \end{minipage}%
+      \begin{fblock}{Monomial basis}{0.2}
+        \centering
+        \(\int_{T}P\,\dd\vec{x} = \sum_{r=1}^Mp_{r}^{}\int_T\phi_{Tr}^{}\,\dd\vec{x}\)
+      \end{fblock}
+    };
+  }
+  \only<4>{
+    \tikzoverlay (massMatrix) at (-8.09cm, 2cm) {%
+      \begin{fblock}{Assembly mass matrix \(\vecc{M}\in \IR^{KN\times KN}\)}{0.7}
+        \begin{equation*}
+          \begin{split}
+            [\vecc{M}]_{(k-1)N+i,(k-1)N+j} \;&\coloneqq\; \int_{T_k} \vphi_{ki} \, \vphi_{kj} \, \dd\vec{x}\\
+            &\;= 2|T_k| \int_{\hat T}\hat \vphi_i\,\hat \vphi_j\, \dd\vec{\hat x}\\
+            &\;= 2|T_k| \sum_{r=1}^{M}p_{ijr}b_r
+          \end{split}
+        \end{equation*}
+
+        where
+        \(b_r \coloneqq \int_{\hat{T}}\phi_{\hat{T}r}^{}\,\dd\vec{\hat{x}} \)
+        are the \emph{analytically precomputed and stored} integrals.
+      \end{fblock}
+    };
+    % arrow
+    \begin{tikzpicture}[remember picture, overlay]
+      \path [line width=1.5pt,->,institute] (transformation.center) edge (massMatrix.north);
+    \end{tikzpicture}
+  }
 \end{frame}
 
-\begin{frame}
-  \frametitle{Quadrature free assembly of mass Matrix \(\vecc{M}\)}
-  Use simple \emph{monomial basis} \(B_T^{} \equiv \{\phi_{Tr}^{}\}_{r\in 1,\dots ,N_p} %\,|\,0 \leq r \leq N_p\}
-  = \{1,\;x,\;y,\;x^2,\;xy,\;y^2,\;\dots\}\)
-  to expand polynomials in integrals:
-  \begin{equation*}
-    \int_{T}P\,\dd\vec{x} = \int_{_T}\sum_{r=1}^Mp_{r}^{}\phi_{Tr}^{}\,\dd\vec{x} = \sum_{r=1}^Mp_{r}^{}\int_T\phi_{Tr}^{}\,\dd\vec{x}
-  \end{equation*}
-  where \(P\in \IP_p(T)\)% denotes an arbitrary polynomial of degree \(p\)
-  , \(M\geq N_p\).
-  \vspace*{\fill}
-
-  \pause
-  Applied to the block mass matrix \(\vecc{M} \in \IR^{KN\times KN}\):
-  \begin{equation*}
-    \begin{split}
-      [\vecc{M}]_{(k-1)N+i,(k-1)N+j} \;&\coloneqq\; \int_{T_k} \vphi_{ki} \, \vphi_{kj} \, \dd\vec{x}\\
-      &\;= 2|T_k| \int_{\hat T}\hat \vphi_i\,\hat \vphi_j\, \dd\vec{\hat x}\\
-      &\;= 2|T_k| \sum_{r=1}^{M}p_{ijr}b_r
-    \end{split}
-  \end{equation*}
-  with \emph{analytically precomputed integrals} \(b_r \coloneqq \int_{\hat{T}}\phi_{\hat{T}r}^{}\,\dd\vec{\hat{x}} \).
-\end{frame}
 
 \section{Goals of the master thesis}
 \begin{frame}
