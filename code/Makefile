@@ -21,7 +21,7 @@ test: polyTest
 
 ########## LINKING RULEs ######################################
 polyTest: $(OFILES_poly_test)
-	$(CPP) $(CPPFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 ##########  GENERAL RULEs #####################################
 .cpp.o:
@@ -33,4 +33,4 @@ polyTest: $(OFILES_poly_test)
 
 ########## DEPENDENCIES ######################################
 test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp
-polynomial.o: polynomial.cpp polynomial.hpp
+polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp

@@ -1,5 +1,6 @@
 
 #include "polynomial.hpp"
+#include "monmomials_and_basefunctions.hpp"
 
 #include <vector>
 #include <ostream>
@@ -9,6 +10,8 @@
 #include <cassert>
 #include <algorithm>
 #include <iterator>
+
+#include <iostream>
 
 Polynomial2D::Polynomial2D(unsigned int const order)
   :order_(order), coeficents_(( order_+1 )*( order_+1 ), 0.)
@@ -69,6 +72,20 @@ Polynomial2D operator*(double const lhs, Polynomial2D const & rhs)
   return result;
 }
 
+double integradeOverRefTriangle(Polynomial2D const & pol)
+{
+  assert(pol.getOrder() <= 3); // not implemented!
+
+  double integral = 0.;
+
+  for (unsigned int x=0; x<=pol.getOrder(); ++x)
+    for (unsigned int y=0; y<=pol.getOrder(); ++y)
+      {
+        std::cout << pol(x,y) << " " << pol::monomialIntegralsRefTriangle[x][y] <<"\n";
+        integral += pol(x,y)*pol::monomialIntegralsRefTriangle[x][y];
+      }
+  return integral;
+}
 
 // converting a polynomial to a string
 std::string to_string(Polynomial2D const & pol)

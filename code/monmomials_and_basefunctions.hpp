@@ -24,7 +24,12 @@ namespace pol
   Polynomial2D const xy2 = Polynomial2D(1,2,1.);
   Polynomial2D const y3  = Polynomial2D(0,3,1.);
 
-  //TODO testen
+  // integral over reference triangle
+  double const monomialIntegralsRefTriangle[4][4] = {{ 1./2,  1./6 , 1./12, 1./20},
+                                                     { 1./6,  1./24, 1./60, 0    },
+                                                     { 1./12, 1./60, 0    , 0    },
+                                                     { 1./20, 0    , 0    , 0    }};
+
   // Base Functions
   // Order 0
   Polynomial2D const phi1  = sqrt(2)*c;

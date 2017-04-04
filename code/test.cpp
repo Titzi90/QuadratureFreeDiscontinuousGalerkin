@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+// TODO genauichkeit
 template<typename T>
 int test(T a, T b, std::string msg)
 {
@@ -89,9 +90,13 @@ int main()
   Polynomial2D pol10 = pol2 - pol5;
   status = status | test(pol10, -1*pol3, "subtract two polynomials");
 
-  // Test integrate
-  // double integral1 = integradeOverRefTriangle(pol::c);
-  // status = status | test(integral1, std::sqrt(2)/2, "integral 1");
+  // Test integrate 1
+  double integral1 = integradeOverRefTriangle(pol::phi1);
+  status = status | test(integral1, std::sqrt(2)/2, "integral 1");
+
+  // Test integrate 2
+  double integral2 = integradeOverRefTriangle(pol2);
+  status = status | test(integral2, -1./24, "integral 2");
 
   /****************************************************************************/
 

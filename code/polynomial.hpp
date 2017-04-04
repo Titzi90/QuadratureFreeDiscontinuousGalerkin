@@ -63,6 +63,8 @@ inline Polynomial2D operator-(double lhs, Polynomial2D const & rhs){ return Poly
 
 //TODO division
 
+double integradeOverRefTriangle(Polynomial2D const & pol);
+
 // iterator access functions
 inline auto begin(Polynomial2D & pol)      ->decltype(pol.coeficents_.begin()){ return pol.coeficents_.begin(); }
 inline auto begin(Polynomial2D const & pol)->decltype(pol.coeficents_.begin()){ return pol.coeficents_.begin(); }
