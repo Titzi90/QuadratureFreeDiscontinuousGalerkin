@@ -32,4 +32,4 @@ polyTest: $(OFILES_poly_test)
 
 
 ########## DEPENDENCIES ######################################
-test.o: test.cpp polynomial.hpp
+test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp
