@@ -3,11 +3,24 @@
 
 #include <iostream>
 
+template<typename T>
+int test(T a, T b, std::string msg)
+{
+  if ( a != b){
+    std::cerr << "Error!\n" << msg
+              << "\n\tExpackted: " << a
+              << "\n\tgot: " << b
+              << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
 int test(Polynomial2D pol, std::string pol_str, std::string msg)
 {
   if ( pol_str != to_string(pol)){
     std::cerr << "Error!\n" << msg
-              << "\n\tExpackted polynom: " << pol_str
+              << "\n\tExpackted: " << pol_str
               << "\n\tgot: " << to_string(pol)
               << std::endl;
     return -1;
@@ -76,6 +89,10 @@ int main()
   Polynomial2D pol10 = pol2 - pol5;
   status = status | test(pol10, -1*pol3, "subtract two polynomials");
 
+  // Test integrate
+  // double integral1 = integradeOverRefTriangle(pol::c);
+  // status = status | test(integral1, std::sqrt(2)/2, "integral 1");
+
   /****************************************************************************/
 
   status = status | test(pol::c  , "1x^0y^0", "constant monomial");
@@ -88,7 +105,6 @@ int main()
   status = status | test(pol::x2y, "1x^2y^1", "x^2y monomial");
   status = status | test(pol::xy2, "1x^1y^2", "xy^2 monomial");
   status = status | test(pol::y3 , "1x^0y^3", "y^3 monomial");
-
 
   return status;
 }

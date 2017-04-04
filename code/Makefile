@@ -2,12 +2,12 @@
 CC  = gcc
 CPP = g++
 
-CFLAGS = -03 -g -Wall -ansi -std=c++11
+CFLAGS = -O3 -g -Wall -ansi -std=c++11
 RM = rm -f
 
 ########## VARIABLES ##########################################
 BIN = polyTest
-OFILES_poly_test = test.o
+OFILES_poly_test = test.o polynomial.o
 
 ########## TARGETS ############################################
 .PHONY: all test clean
@@ -25,7 +25,7 @@ polyTest: $(OFILES_poly_test)
 
 ##########  GENERAL RULEs #####################################
 .cpp.o:
-	$(CPP) $(CPPFLAGS) -c $<
+	$(CPP) $(CFLAGS) -c $<
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
@@ -33,3 +33,4 @@ polyTest: $(OFILES_poly_test)
 
 ########## DEPENDENCIES ######################################
 test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp
+polynomial.o: polynomial.cpp polynomial.hpp
