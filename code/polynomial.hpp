@@ -141,7 +141,7 @@ std::string to_string(Polynomial2D const & pol)
 // output operator for polynomials
 std::ostream& operator<< (std::ostream& os, Polynomial2D const & pol)
 {
-  os << to_string(pol) << std::endl;
+  os << to_string(pol);
   return os;
 }
 #endif
