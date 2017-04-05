@@ -2,12 +2,14 @@
 #include "monmomials_and_basefunctions.hpp"
 
 #include <iostream>
+#include <cmath>
 
-// TODO genauichkeit
 template<typename T>
 int test(T a, T b, std::string msg)
 {
-  if ( a != b){
+  double const EPSILON = 1e-9;
+
+  if ( EPSILON < std::abs(a-b)){
     std::cerr << "Error!\n" << msg
               << "\n\tExpackted: " << a
               << "\n\tgot: " << b
@@ -95,9 +97,8 @@ int main()
   status = status | test(integral1, std::sqrt(2)/2, "integral 1");
 
   // Test integrate 2
-  // TODO anderer test
-  // double integral2 = integradeOverRefTriangle(pol2);
-  // status = status | test(integral2, -1./24, "integral 2");
+  double integral2 = integradeOverRefTriangle(pol2);
+  status = status | test(integral2, -1./24, "integral 2");
 
   // Test derive constant
   Polynomial2D pol11 = derive(Polynomial2D(0,0,5), Variable::X);
