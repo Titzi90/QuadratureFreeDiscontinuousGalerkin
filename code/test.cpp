@@ -95,8 +95,25 @@ int main()
   status = status | test(integral1, std::sqrt(2)/2, "integral 1");
 
   // Test integrate 2
-  double integral2 = integradeOverRefTriangle(pol2);
-  status = status | test(integral2, -1./24, "integral 2");
+  // TODO anderer test
+  // double integral2 = integradeOverRefTriangle(pol2);
+  // status = status | test(integral2, -1./24, "integral 2");
+
+  // Test derive constant
+  Polynomial2D pol11 = derive(Polynomial2D(0,0,5), Variable::X);
+  status = status | test(pol11, "", "derive constant polynomial"); //TODO das geht nicht !!!!
+
+  // // Test derive X
+  Polynomial2D pol12 = derive(pol2, Variable::X);
+  std::string const pol12_str ("-4x^1y^0 + 3x^0y^1");
+  status = status | test(pol12, pol12_str, "simple derivative (dPol/dX)");
+
+  // // Test derive Y (more complex then the ones before)
+  Polynomial2D pol13 = derive(pol1, Variable::Y);
+  std::string const pol13_str ("2.2x^1y^0 + -4.4x^0y^1 + -1.2x^0y^0");
+  status = status | test(pol13, pol13_str, "more complex derivative (dPol/dY)");
+
+
 
   /****************************************************************************/
 

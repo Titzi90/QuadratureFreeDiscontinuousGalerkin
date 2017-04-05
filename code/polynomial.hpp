@@ -11,6 +11,8 @@
 #include <iterator>
 
 
+enum class Variable {X, Y};
+
 /**
  * Class holding an 2 dimensional polynomial of order 'order'
  */
@@ -64,6 +66,8 @@ inline Polynomial2D operator-(double lhs, Polynomial2D const & rhs){ return Poly
 //TODO division
 
 double integradeOverRefTriangle(Polynomial2D const & pol);
+
+Polynomial2D derive(Polynomial2D const & pol, Variable const var);
 
 // iterator access functions
 inline auto begin(Polynomial2D & pol)      ->decltype(pol.coeficents_.begin()){ return pol.coeficents_.begin(); }

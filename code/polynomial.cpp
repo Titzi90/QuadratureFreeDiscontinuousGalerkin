@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include <iostream>
+#include <iostream> // debugung
 
 Polynomial2D::Polynomial2D(unsigned int const order)
   :order_(order), coeficents_(( order_+1 )*( order_+1 ), 0.)
@@ -80,11 +80,45 @@ double integradeOverRefTriangle(Polynomial2D const & pol)
 
   for (unsigned int x=0; x<=pol.getOrder(); ++x)
     for (unsigned int y=0; y<=pol.getOrder(); ++y)
-      {
-        std::cout << pol(x,y) << " " << pol::monomialIntegralsRefTriangle[x][y] <<"\n";
         integral += pol(x,y)*pol::monomialIntegralsRefTriangle[x][y];
-      }
   return integral;
+}
+
+Polynomial2D derive(Polynomial2D const & pol, Variable const var)
+{
+  if (0 == pol.getOrder() )
+  {
+    return Polynomial2D(0);
+  }
+
+  Polynomial2D result (pol.getOrder()-1);
+
+  for (unsigned int x=0; x<=result.getOrder(); ++x)
+    for (unsigned int y=0; y<=result.getOrder(); ++y)
+    {
+      double exponentMul;
+      unsigned int exponentX, exponentY;
+      switch(var) {
+      case Variable::X:
+        exponentX   = x+1;
+        exponentY   = y;
+        exponentMul = exponentX;
+        break;
+      case Variable::Y:
+        exponentX   = x;
+        exponentY   = y+1;
+        exponentMul = exponentY;
+        break;
+      default:
+        assert(-1); // should never happen! But removed compiler warnings
+        exponentY=-1;
+        exponentX=-1;
+        exponentMul=0;
+      }
+      result(x,y) = exponentMul*pol(exponentX,exponentY);
+    }
+
+  return result;
 }
 
 // converting a polynomial to a string
@@ -105,7 +139,7 @@ std::string to_string(Polynomial2D const & pol)
         }
     }
   std::string str = ss.str();
-  return str.erase(str.size()-3);
+  return str.size()>3 ? str.erase(str.size()-3) : str;
 }
 
 // output operator for polynomials
