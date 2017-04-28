@@ -32,5 +32,5 @@ polyTest: $(OFILES_poly_test)
 
 
 ########## DEPENDENCIES ######################################
-test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp
+test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp
 polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp

@@ -1,11 +1,12 @@
 #include "polynomial.hpp"
 #include "monmomials_and_basefunctions.hpp"
+#include "squareGrid.hpp"
 
 #include <iostream>
 #include <cmath>
 
 template<typename T>
-int test(T a, T b, std::string msg)
+int test(T const & a, T const & b, std::string msg)
 {
   double const EPSILON = 1e-9;
 
@@ -19,7 +20,7 @@ int test(T a, T b, std::string msg)
   return 0;
 }
 
-int test(Polynomial2D pol, std::string pol_str, std::string msg)
+int test(Polynomial2D const & pol, std::string const & pol_str, std::string const & msg)
 {
   if ( pol_str != to_string(pol)){
     std::cerr << "Error!\n" << msg
@@ -30,15 +31,22 @@ int test(Polynomial2D pol, std::string pol_str, std::string msg)
   }
   return 0;
 }
-int test(Polynomial2D pol1, Polynomial2D pol2, std::string msg){ return test(pol1, to_string(pol2), msg); }
+int test(Polynomial2D const & pol1, Polynomial2D const & pol2, std::string const & msg)
+{
+  return test(pol1, to_string(pol2), msg);
+}
 
+int test(Coordinate2D const & cor, double x, double y, std::string const & msg)
+{
+  return test<double>(cor.x, x, "x coordinate of "+msg) | test<double>(cor.y, y, "y coordinate of "+msg);
+}
 
 int main()
 {
   int status = 0;
 
   // Test create 1
-  Polynomial2D pol1 = Polynomial2D(2);
+  Polynomial2D pol1 (2);
   pol1(2,0) = 3.2;
   pol1(1,1) = 2.2;
   pol1(1,0) = 1.2;
@@ -49,14 +57,14 @@ int main()
   status = status | test(pol1, pol1_str, "creating complex 2D polynomial");
 
   // Test create 2
-  Polynomial2D pol2 = Polynomial2D(2);
+  Polynomial2D pol2 (2);
   pol2(2,0) = -2;
   pol2(1,1) = 3;
   std::string const pol2_str ("-2x^2y^0 + 3x^1y^1");
   status = status | test(pol2, pol2_str, "creating complex 2D polynomial");
 
   // Test create 2
-  Polynomial2D pol3 = Polynomial2D(2,1,-2.5);
+  Polynomial2D pol3 (2,1,-2.5);
   std::string const pol3_str ("-2.5x^2y^1");
   status = status | test(pol3, pol3_str, "creating simple 2D polynomial");
 
@@ -128,6 +136,67 @@ int main()
   status = status | test(pol::x2y, "1x^2y^1", "x^2y monomial");
   status = status | test(pol::xy2, "1x^1y^2", "xy^2 monomial");
   status = status | test(pol::y3 , "1x^0y^3", "y^3 monomial");
+
+
+  /****************************************************************************/
+
+  Vector vec1 (1,0);
+  Vector vec2 (0,1);
+  Vector vec3 (3,5);
+  status = status | test(vec3,3,5, "Vector constructor failed");
+
+  // test Vector - Vector
+  Vector vec4 = vec1-vec2;
+  status = status | test(vec4, 1., -1., "Vector - operator failed");
+
+  // test scale operator
+  Vector vec5 = 3*vec4;
+  status = status | test(vec5, 3.,-3., "Vector scaling failed");
+
+  // test length function
+  double l = length(vec5);
+  status |= test(4.242640687119285,l, "vector length failed");
+
+  // test nomalizing
+  Vector vec6 = normalize(vec5);
+  status |= test(1.,length(vec6), "nomalizing of vectr failed");
+  status |= test(vec6,0.7071067811865476,-0.7071067811865476,"nomalizing of vectr failed");
+
+  // test distance
+  double d = distance(vec5, vec3);
+  status |= test (8., d, "calculating distance failed");
+
+  // test dot product
+  double dot1 = dot(vec1, vec2);
+  status |= test(0., dot1, "dot product of unit vectors failed");
+
+  double dot2 = dot(vec3, vec5);
+  status |= test(-6.,dot2, "more complex dot product failed");
+
+  // test getNormal vector
+  Vector vec7 = getNormal(vec1, vec2);
+  status |= test(1., length(vec7), "get normale vector failed (not normalized)");
+  status |= test(0., dot(vec7,vec1-vec2), "get normale vector failed  (not perpendicular)");
+  // status |= test(vec7, 0.7071067811865475,0.7071067811865475, "gte normalized vector failed"); // vec7*(-1) is also ok
+
+  // Test construct a triangle
+  Triangle t1 (vec1, vec2, Vector(0,0));
+  status |= test(t1.getPointA(), 1, 0, "triangle inizailisation Point A failed");
+  status |= test(t1.getPointB(), 0, 1, "triangle inizailisation Point B failed");
+  status |= test(t1.getPointC(), 0, 0, "triangle initialization Point C failed");
+
+  status |= test(1., t1.getLengthA(), "triangle initialization Length a failed");
+  status |= test(1., t1.getLengthB(), "triangle initialization Length b failed");
+  status |= test(1.4142135623730951, t1.getLengthC(), "triangle initialization Length c failed");
+
+  status |= test(t1.getNormalA(), -1,0, "triangle initialization nomal a failed");
+  status |= test(t1.getNormalB(), 0,-1, "triangle initialization nomal b failed");
+  status |= test(t1.getNormalC(), 0.7071067811865476,0.7071067811865476, "triangle initialization nomal c failed");
+
+  status |= test(0.5, t1.getArea(), "triangle initialization of area failed");
+
+
+
 
   return status;
 }
