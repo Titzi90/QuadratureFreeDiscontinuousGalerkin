@@ -8,10 +8,11 @@ RM = rm -f
 ########## VARIABLES ##########################################
 BIN = polyTest
 OFILES_poly_test = test.o polynomial.o
+OFILES_assambly = assambly.o polynomial.o
 
 ########## TARGETS ############################################
 .PHONY: all test clean
-all: test
+all: test assambly
 
 clean:
 	$(RM) $(BIN) $(OFILES_poly_test)
@@ -23,6 +24,9 @@ test: polyTest
 polyTest: $(OFILES_poly_test)
 	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
+assambly: $(OFILES_assambly)
+	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
 ##########  GENERAL RULEs #####################################
 .cpp.o:
 	$(CPP) $(CFLAGS) -c $<
@@ -32,5 +36,6 @@ polyTest: $(OFILES_poly_test)
 
 
 ########## DEPENDENCIES ######################################
-test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp
+test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp Matrix.hpp
 polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp
+assambly.o: assambly.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp Matrix.hpp

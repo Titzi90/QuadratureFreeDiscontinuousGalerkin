@@ -28,7 +28,7 @@ public:
   unsigned int getOrder() const {return order_;}
 
   // getter / setter for coefficients
-  double const & operator()(unsigned int xExponent, unsigned int yExponent) const
+  double operator()(unsigned int xExponent, unsigned int yExponent) const
   {
     return coeficents_[xExponent * (order_+1) + yExponent];
   }

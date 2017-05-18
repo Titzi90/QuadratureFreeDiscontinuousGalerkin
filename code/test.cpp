@@ -1,9 +1,12 @@
 #include "polynomial.hpp"
 #include "monmomials_and_basefunctions.hpp"
 #include "squareGrid.hpp"
+#include "assembly.hpp"
+#include "Matrix.hpp"
 
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 template<typename T>
 int test(T const & a, T const & b, std::string msg)
@@ -38,7 +41,7 @@ int test(Polynomial2D const & pol1, Polynomial2D const & pol2, std::string const
 
 int test(Coordinate2D const & cor, double x, double y, std::string const & msg)
 {
-  return test<double>(cor.x, x, "x coordinate of "+msg) | test<double>(cor.y, y, "y coordinate of "+msg);
+  return test<double>(x, cor.x, "x coordinate of "+msg) | test<double>(y, cor.y, "y coordinate of "+msg);
 }
 
 int main()
@@ -101,7 +104,7 @@ int main()
   status = status | test(pol10, -1*pol3, "subtract two polynomials");
 
   // Test integrate 1
-  double integral1 = integradeOverRefTriangle(pol::phi1);
+  double integral1 = integradeOverRefTriangle(pol::phi[0]);
   status = status | test(integral1, std::sqrt(2)/2, "integral 1");
 
   // Test integrate 2
@@ -194,6 +197,76 @@ int main()
   status |= test(t1.getNormalC(), 0.7071067811865476,0.7071067811865476, "triangle initialization nomal c failed");
 
   status |= test(0.5, t1.getArea(), "triangle initialization of area failed");
+
+  // Test mesh class
+  GridOnSquer grid1(4);
+  Triangle t2 = grid1.get(0,0,0);
+  Triangle t3 = grid1.get(0,0,1);
+  Triangle t4 = grid1.get(1,2,0);
+  Triangle t5 = grid1.get(3,3,1);
+
+  status |= test(t2.getPointA(),0.25,0.25, "first Triangle in mesh is incorrect (Point A)");
+  status |= test(t2.getPointB(),0,0, "first Triangle in mesh is incorrect (Point B)");
+  status |= test(t2.getPointC(),0.25,0, "first Triangle in mesh is incorrect (Point C)");
+
+  status |= test(t2.getArea(), 0.03125, "Area of first triangle is wrong");
+
+  status |= test(t3.getPointA(),0,0, "second Triangle in mesh is incorrect (Point A)");
+  status |= test(t3.getPointB(),0.25,0.25, "second Triangle in mesh is incorrect (Point B)");
+  status |= test(t3.getPointC(),0,0.25, "second Triangle in mesh is incorrect (Point C)");
+
+  status |= test(t4.getPointA(),0.5,0.75, "Triangle in mesh is incorrect (Point A)");
+  status |= test(t4.getPointB(),0.25,0.5, "Triangle in mesh is incorrect (Point B)");
+  status |= test(t4.getPointC(),0.5,0.5, "Triangle in mesh is incorrect (Point C)");
+
+  status |= test(t5.getPointA(),0.75,0.75, "last Triangle in mesh is incorrect (Point A)");
+  status |= test(t5.getPointB(),1,1, "last Triangle in mesh is incorrect (Point B)");
+  status |= test(t5.getPointC(),0.75,1, "last Triangle in mesh is incorrect (Point C)");
+
+
+  // test Jakobian
+  Jakobian b1 = t2.getJakobian();
+  status |= test(-0.25, b1[0][0], "Jakobia[1][1] of first (lower) triangle is wrong");
+  status |= test(-0.25, b1[1][0], "Jakobia[2][1] of first (lower) triangle is wrong");
+  status |= test( 0.  , b1[0][1], "Jakobia[1][2] of first (lower) triangle is wrong");
+  status |= test(-0.25, b1[1][1], "Jakobia[2][2] of first (lower) triangle is wrong");
+
+  Jakobian b2 = t5.getJakobian();
+  status |= test( 0.25, b2[0][0], "Jakobia[1][1] of last (upper) triangle is wrong");
+  status |= test( 0.25, b2[1][0], "Jakobia[2][1] of last (upper) triangle is wrong");
+  status |= test( 0.  , b2[0][1], "Jakobia[1][2] of last (upper) triangle is wrong");
+  status |= test( 0.25, b2[1][1], "Jakobia[2][2] of last (upper) triangle is wrong");
+
+
+  /****************************************************************************/
+  // Test assambly
+  int const order = 1;     // max polynomial degree
+  int const refinment = 2; // order if mesh refinement
+  GridOnSquer mesh(refinment);
+  std::vector<double> u1 (mesh.getSize(), 1.);  // velocity x component
+  std::vector<double> u2 (mesh.getSize(), 1.);  // velocity y component
+  std::vector<double> f (mesh.getSize(), 0.);   // source terms
+
+  //test Mhat
+  Matrix hatM = assemblyHatM(order);
+  status |= test(1., hatM(0,0), "hatM(0,0)");
+  status |= test(1., hatM(1,1), "hatM(1,1)");
+  status |= test(1., hatM(2,2), "hatM(2,2)");
+  status |= test(0., hatM(0,1), "hatM(0,1)");
+  status |= test(0., hatM(0,2), "hatM(0,2)");
+  status |= test(0., hatM(1,0), "hatM(1,0)");
+  status |= test(0., hatM(1,2), "hatM(1,2)");
+  status |= test(0., hatM(2,0), "hatM(2,0)");
+  status |= test(0., hatM(2,1), "hatM(2,1)");
+
+  // test global M
+  Matrix M = assemblyM(mesh, order);
+  status |= test(0.125, M(0,0), "M(0,0)");
+  status |= test(0.125, M(6,6), "M(0,0)");
+  status |= test(0.125, M(15,15), "M(0,0)");
+  status |= test(0., M(0,1), ";(0,1)");
+  status |= test(0., M(1,0), ";(1,0)");
+  status |= test(0., M(7,16), ";(7,16)");
 
 
 

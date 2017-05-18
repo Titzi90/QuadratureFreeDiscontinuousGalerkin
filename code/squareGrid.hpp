@@ -6,23 +6,6 @@
 #include <vector>
 
 
-#include <iostream>
-
-
-
-
-
-
-
-/**TODO
- * refinmet
- * math
- */
-
-
-
-
-
 
 class Coordinate2D
 {
@@ -104,6 +87,7 @@ inline double dot(Vector const & a, Vector const & b)
   return a.x*b.x + a.y*b.y;
 }
 
+typedef double const (*Jakobian)[2];
 
 class Triangle
 {
@@ -127,65 +111,135 @@ public:
     edgeNormale_[2] = dot(nc,c-a)>0 ? -1*nc : nc;
 
     // calculate area of the triangle using Heron's formula
-    double s = 0.5*(edgeLength_[0]+edgeLength_[1]*edgeLength_[2]);
+    double s = 0.5*(edgeLength_[0]+edgeLength_[1]+edgeLength_[2]);
     area_ = std::sqrt(s * (s-edgeLength_[0]) * (s-edgeLength_[1]) * (s-edgeLength_[2]));
+
+    // calculate Jakobian matrix [B-A | C-A]
+    jakobian_[0][0] = getPointB().x - getPointA().x;
+    jakobian_[1][0] = getPointB().y - getPointA().y;
+    jakobian_[0][1] = getPointC().x - getPointA().x;
+    jakobian_[1][1] = getPointC().y - getPointA().y;
   }
 
   Point const & getPointA() const { return coordinates_[0]; }
   Point const & getPointB() const { return coordinates_[1]; }
   Point const & getPointC() const { return coordinates_[2]; }
-  Point       & getPointA()       { return coordinates_[0]; }
-  Point       & getPointB()       { return coordinates_[1]; }
-  Point       & getPointC()       { return coordinates_[2]; }
+  // Point       & getPointA()       { return coordinates_[0]; }
+  // Point       & getPointB()       { return coordinates_[1]; }
+  // Point       & getPointC()       { return coordinates_[2]; }
 
   double   getLengthA() const { return edgeLength_[0]; }
   double   getLengthB() const { return edgeLength_[1]; }
   double   getLengthC() const { return edgeLength_[2]; }
-  double & getLengthA()       { return edgeLength_[0]; }
-  double & getLengthB()       { return edgeLength_[1]; }
-  double & getLengthC()       { return edgeLength_[2]; }
+  // double & getLengthA()       { return edgeLength_[0]; }
+  // double & getLengthB()       { return edgeLength_[1]; }
+  // double & getLengthC()       { return edgeLength_[2]; }
 
   Vector const & getNormalA() const { return edgeNormale_[0]; }
   Vector const & getNormalB() const { return edgeNormale_[1]; }
   Vector const & getNormalC() const { return edgeNormale_[2]; }
-  Vector       & getNormalA()       { return edgeNormale_[0]; }
-  Vector       & getNormalB()       { return edgeNormale_[1]; }
-  Vector       & getNormalC()       { return edgeNormale_[2]; }
+  // Vector       & getNormalA()       { return edgeNormale_[0]; }
+  // Vector       & getNormalB()       { return edgeNormale_[1]; }
+  // Vector       & getNormalC()       { return edgeNormale_[2]; }
 
   double   getArea() const { return area_; }
-  double & getArea()       { return area_; }
+  // double & getArea()       { return area_; }
+
+
+  Jakobian getJakobian() const { return jakobian_; }
+
 
 private:
   Point coordinates_[3];
   double edgeLength_[3];
   Vector edgeNormale_[3];
   double area_;
+  double jakobian_[2][2];
 };
 
-//TODO testen
+
+
+
+/**
+ *    +----------->x_2
+ *    |
+ *    |
+ *    |
+ *    |
+ *    v
+ *    x_1
+ */
 class GridOnSquer
 {
 public:
-  inline Triangle & get(unsigned int row, unsigned int col, unsigned int position)
+  /**
+   * Construct an uniform triangle mesh on the unique square with 2*n^2 triangles
+   */
+  GridOnSquer(unsigned int n)
+    : numberOfRows_(n), numberOfColums_(n)
   {
-    assert (row < numberOfRows_);
-    assert (col < numberOfColums_);
-    assert (position < 2);
-    return gridData_.at(row*numberOfRows_*2 + col*2 + position);
-  }
-  inline Triangle const & get(unsigned int row, unsigned int col, unsigned int position) const
-  {
-    assert (row < numberOfRows_);
-    assert (col < numberOfColums_);
-    assert (position < 2);
-    return gridData_.at(row*numberOfRows_*2 + col*2 + position);
+    double const h = 1./n;
+
+    for (unsigned int row=0; row<n; ++row)
+      for (unsigned int col=0; col<n; ++col)
+      {
+        Point ul ( row   *h,  col   *h); // upper left corner
+        Point ur ( row   *h, (col+1)*h); // upper right corner
+        Point ll ((row+1)*h,  col   *h); // lower left corner
+        Point lr ((row+1)*h, (col+1)*h); // lower right corner
+
+        gridData_.push_back(Triangle(lr,ul,ll)); // lower triangle
+        gridData_.push_back(Triangle(ul,lr,ur)); // upper triangle
+      }
   }
 
+  /**
+   * returns the triangle defined by 'row', 'col' and the 'position'
+   * 'position' is 0 for lower triangle and 1 for upper triangle
+   */
+  Triangle & get(unsigned int row, unsigned int col, unsigned int position)
+  {
+    assert (row < numberOfRows_);
+    assert (col < numberOfColums_);
+    assert (position < 2);
+    return gridData_[row*numberOfRows_*2 + col*2 + position];
+  }
+  // Triangle const & get(unsigned int row, unsigned int col, unsigned int position) const
+  // {
+  //   assert (row < numberOfRows_);
+  //   assert (col < numberOfColums_);
+  //   assert (position < 2);
+  //   return gridData_[row*numberOfRows_*2 + col*2 + position];
+  // }
+
+  unsigned int getRows() const { return numberOfRows_; }
+  unsigned int getColums() const { return numberOfColums_; }
+  unsigned int getSize() const { return gridData_.size(); }
+
 private:
-  std::vector<Triangle> gridData_; //TODO different layouts
+  std::vector<Triangle> gridData_;
   unsigned int numberOfRows_;
   unsigned int numberOfColums_;
+
+  // friends declarations
+  friend auto begin(GridOnSquer &) ->decltype(gridData_.begin());
+  friend auto begin(GridOnSquer const &) ->decltype(const_cast<const std::vector<Triangle>&>(gridData_).begin());
+
+  friend auto end(GridOnSquer &) ->decltype(gridData_.end());
+  friend auto end(GridOnSquer const &) ->decltype(const_cast<const std::vector<Triangle>&>(gridData_).end());
 };
+
+
+
+// iterator access function for grid elements
+inline auto begin(GridOnSquer & mesh)
+  ->decltype(mesh.gridData_.begin()){ return mesh.gridData_.begin(); }
+inline auto begin(GridOnSquer const & mesh)
+  ->decltype(const_cast<const std::vector<Triangle>&>(mesh.gridData_).begin()){ return mesh.gridData_.begin(); }
+
+inline auto end(GridOnSquer & mesh) ->decltype(mesh.gridData_.end()){ return mesh.gridData_.end(); }
+inline auto end(GridOnSquer const & mesh)
+  ->decltype(const_cast<const std::vector<Triangle>&>(mesh.gridData_).end()){ return mesh.gridData_.end(); }
 
 
 #endif
