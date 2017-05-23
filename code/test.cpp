@@ -11,7 +11,7 @@
 template<typename T>
 int test(T const & a, T const & b, std::string msg)
 {
-  double const EPSILON = 1e-9;
+  double const EPSILON = 1e-3;
 
   if ( EPSILON < std::abs(a-b)){
     std::cerr << "Error!\n" << msg
@@ -205,36 +205,36 @@ int main()
   Triangle t4 = grid1.get(1,2,0);
   Triangle t5 = grid1.get(3,3,1);
 
-  status |= test(t2.getPointA(),0.25,0.25, "first Triangle in mesh is incorrect (Point A)");
-  status |= test(t2.getPointB(),0,0, "first Triangle in mesh is incorrect (Point B)");
-  status |= test(t2.getPointC(),0.25,0, "first Triangle in mesh is incorrect (Point C)");
+  status |= test(t2.getPointA(),0.,0., "first Triangle in mesh is incorrect (Point A)");
+  status |= test(t2.getPointB(),0.25,0., "first Triangle in mesh is incorrect (Point B)");
+  status |= test(t2.getPointC(),0.,0.25, "first Triangle in mesh is incorrect (Point C)");
 
   status |= test(t2.getArea(), 0.03125, "Area of first triangle is wrong");
 
-  status |= test(t3.getPointA(),0,0, "second Triangle in mesh is incorrect (Point A)");
+  status |= test(t3.getPointA(),0.25,0., "second Triangle in mesh is incorrect (Point A)");
   status |= test(t3.getPointB(),0.25,0.25, "second Triangle in mesh is incorrect (Point B)");
-  status |= test(t3.getPointC(),0,0.25, "second Triangle in mesh is incorrect (Point C)");
+  status |= test(t3.getPointC(),0.,0.25, "second Triangle in mesh is incorrect (Point C)");
 
-  status |= test(t4.getPointA(),0.5,0.75, "Triangle in mesh is incorrect (Point A)");
-  status |= test(t4.getPointB(),0.25,0.5, "Triangle in mesh is incorrect (Point B)");
+  status |= test(t4.getPointA(),0.5,0.25, "Triangle in mesh is incorrect (Point A)");
+  status |= test(t4.getPointB(),0.75,0.25, "Triangle in mesh is incorrect (Point B)");
   status |= test(t4.getPointC(),0.5,0.5, "Triangle in mesh is incorrect (Point C)");
 
-  status |= test(t5.getPointA(),0.75,0.75, "last Triangle in mesh is incorrect (Point A)");
-  status |= test(t5.getPointB(),1,1, "last Triangle in mesh is incorrect (Point B)");
-  status |= test(t5.getPointC(),0.75,1, "last Triangle in mesh is incorrect (Point C)");
+  status |= test(t5.getPointA(),1.,0.75, "last Triangle in mesh is incorrect (Point A)");
+  status |= test(t5.getPointB(),1.,1., "last Triangle in mesh is incorrect (Point B)");
+  status |= test(t5.getPointC(),0.75,1., "last Triangle in mesh is incorrect (Point C)");
 
 
   // test Jakobian
   Jakobian b1 = t2.getJakobian();
-  status |= test(-0.25, b1[0][0], "Jakobia[1][1] of first (lower) triangle is wrong");
-  status |= test(-0.25, b1[1][0], "Jakobia[2][1] of first (lower) triangle is wrong");
+  status |= test( 0.25, b1[0][0], "Jakobia[1][1] of first (lower) triangle is wrong");
+  status |= test( 0.  , b1[1][0], "Jakobia[2][1] of first (lower) triangle is wrong");
   status |= test( 0.  , b1[0][1], "Jakobia[1][2] of first (lower) triangle is wrong");
-  status |= test(-0.25, b1[1][1], "Jakobia[2][2] of first (lower) triangle is wrong");
+  status |= test( 0.25, b1[1][1], "Jakobia[2][2] of first (lower) triangle is wrong");
 
   Jakobian b2 = t5.getJakobian();
-  status |= test( 0.25, b2[0][0], "Jakobia[1][1] of last (upper) triangle is wrong");
+  status |= test( 0.  , b2[0][0], "Jakobia[1][1] of last (upper) triangle is wrong");
   status |= test( 0.25, b2[1][0], "Jakobia[2][1] of last (upper) triangle is wrong");
-  status |= test( 0.  , b2[0][1], "Jakobia[1][2] of last (upper) triangle is wrong");
+  status |= test(-0.25, b2[0][1], "Jakobia[1][2] of last (upper) triangle is wrong");
   status |= test( 0.25, b2[1][1], "Jakobia[2][2] of last (upper) triangle is wrong");
 
 
@@ -259,11 +259,73 @@ int main()
   status |= test(0., hatM(2,0), "hatM(2,0)");
   status |= test(0., hatM(2,1), "hatM(2,1)");
 
+  // test hatG
+  auto hatG = assemblyHatG(order);
+  status |= test(0., hatG[0](0,0,0), "hatG1(0,0,0)");
+  status |= test(0., hatG[0](0,1,0), "hatG1(0,1,0)");
+  status |= test(0., hatG[0](0,2,0), "hatG1(0,2,0)");
+  status |= test(0., hatG[0](0,0,1), "hatG1(0,0,1)");
+  status |= test(0., hatG[0](0,1,1), "hatG1(0,1,1)");
+  status |= test(0., hatG[0](0,2,1), "hatG1(0,2,1)");
+  status |= test(0., hatG[0](0,0,2), "hatG1(0,0,2)");
+  status |= test(0., hatG[0](0,1,2), "hatG1(0,1,2)");
+  status |= test(0., hatG[0](0,2,2), "hatG1(0,2,2)");
+
+  status |= test(-6., hatG[0](1,0,0), "hatG1(1,0,0)");
+  status |= test(0., hatG[0](1,1,0), "hatG1(1,1,0)");
+  status |= test(0., hatG[0](1,2,0), "hatG1(1,2,0)");
+  status |= test(0., hatG[0](1,0,1), "hatG1(1,0,1)");
+  status |= test(-6., hatG[0](1,1,1), "hatG1(1,1,1)");
+  status |= test(0., hatG[0](1,2,1), "hatG1(1,2,1)");
+  status |= test(0., hatG[0](1,0,2), "hatG1(1,0,2)");
+  status |= test(0., hatG[0](1,1,2), "hatG1(1,1,2)");
+  status |= test(-6., hatG[0](1,2,2), "hatG1(1,2,2)");
+
+  status |= test(-3.4641, hatG[0](2,0,0), "hatG1(2,0,0)");
+  status |= test(0., hatG[0](2,1,0), "hatG1(2,1,0)");
+  status |= test(0., hatG[0](2,2,0), "hatG1(2,2,0)");
+  status |= test(0., hatG[0](2,0,1), "hatG1(2,0,1)");
+  status |= test(-3.4641, hatG[0](2,1,1), "hatG1(2,1,1)");
+  status |= test(0., hatG[0](2,2,1), "hatG1(2,2,1)");
+  status |= test(0., hatG[0](2,0,2), "hatG1(2,0,2)");
+  status |= test(0., hatG[0](2,1,2), "hatG1(2,1,2)");
+  status |= test(-3.4641, hatG[0](2,2,2), "hatG1(2,2,2)");
+
+  status |= test(0., hatG[1](0,0,0), "hatG2(0,0,0)");
+  status |= test(0., hatG[1](0,1,0), "hatG2(0,1,0)");
+  status |= test(0., hatG[1](0,2,0), "hatG2(0,2,0)");
+  status |= test(0., hatG[1](0,0,1), "hatG2(0,0,1)");
+  status |= test(0., hatG[1](0,1,1), "hatG2(0,1,1)");
+  status |= test(0., hatG[1](0,2,1), "hatG2(0,2,1)");
+  status |= test(0., hatG[1](0,0,2), "hatG2(0,0,2)");
+  status |= test(0., hatG[1](0,1,2), "hatG2(0,1,2)");
+  status |= test(0., hatG[1](0,2,2), "hatG2(0,2,2)");
+
+  status |= test(0., hatG[1](1,0,0), "hatG2(1,0,0)");
+  status |= test(0., hatG[1](1,1,0), "hatG2(1,1,0)");
+  status |= test(0., hatG[1](1,2,0), "hatG2(1,2,0)");
+  status |= test(0., hatG[1](1,0,1), "hatG2(1,0,1)");
+  status |= test(0., hatG[1](1,1,1), "hatG2(1,1,1)");
+  status |= test(0., hatG[1](1,2,1), "hatG2(1,2,1)");
+  status |= test(0., hatG[1](1,0,2), "hatG2(1,0,2)");
+  status |= test(0., hatG[1](1,1,2), "hatG2(1,1,2)");
+  status |= test(0., hatG[1](1,2,2), "hatG2(1,2,2)");
+
+  status |= test(-6.9282, hatG[1](2,0,0), "hatG2(2,0,0)");
+  status |= test(0., hatG[1](2,1,0), "hatG2(2,1,0)");
+  status |= test(0., hatG[1](2,2,0), "hatG2(2,2,0)");
+  status |= test(0., hatG[1](2,0,1), "hatG2(2,0,1)");
+  status |= test(-6.9282, hatG[1](2,1,1), "hatG2(2,1,1)");
+  status |= test(0., hatG[1](2,2,1), "hatG2(2,2,1)");
+  status |= test(0., hatG[1](2,0,2), "hatG2(2,0,2)");
+  status |= test(0., hatG[1](2,1,2), "hatG2(2,1,2)");
+  status |= test(-6.9282, hatG[1](2,2,2), "hatG2(2,2,2)");
+
   // test global M
   Matrix M = assemblyM(mesh, order);
-  status |= test(0.125, M(0,0), "M(0,0)");
-  status |= test(0.125, M(6,6), "M(0,0)");
-  status |= test(0.125, M(15,15), "M(0,0)");
+  status |= test(0.25, M(0,0), "M(0,0)");
+  status |= test(0.25, M(6,6), "M(0,0)");
+  status |= test(0.25, M(15,15), "M(0,0)");
   status |= test(0., M(0,1), ";(0,1)");
   status |= test(0., M(1,0), ";(1,0)");
   status |= test(0., M(7,16), ";(7,16)");

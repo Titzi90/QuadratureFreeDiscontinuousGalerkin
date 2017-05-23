@@ -161,13 +161,14 @@ private:
 
 
 /**
- *    +----------->x_2
+ *    x_2
+ *    ^
  *    |
  *    |
  *    |
  *    |
- *    v
- *    x_1
+ *    |
+ *    +----------->x_1
  */
 class GridOnSquer
 {
@@ -183,13 +184,13 @@ public:
     for (unsigned int row=0; row<n; ++row)
       for (unsigned int col=0; col<n; ++col)
       {
-        Point ul ( row   *h,  col   *h); // upper left corner
-        Point ur ( row   *h, (col+1)*h); // upper right corner
-        Point ll ((row+1)*h,  col   *h); // lower left corner
-        Point lr ((row+1)*h, (col+1)*h); // lower right corner
+        Point ll ( col   *h,  row   *h); // lower left corner
+        Point lr ((col+1)*h,  row   *h); // lower right corner
+        Point ul ( col   *h, (row+1)*h); // upper left corner
+        Point ur ((col+1)*h, (row+1)*h); // upper right corner
 
-        gridData_.push_back(Triangle(lr,ul,ll)); // lower triangle
-        gridData_.push_back(Triangle(ul,lr,ur)); // upper triangle
+        gridData_.push_back(Triangle(ll,lr,ul)); // lower triangle
+        gridData_.push_back(Triangle(lr,ur,ul)); // upper triangle
       }
   }
 
