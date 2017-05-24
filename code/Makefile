@@ -38,4 +38,4 @@ assambly: $(OFILES_assambly)
 ########## DEPENDENCIES ######################################
 test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp Matrix.hpp
 polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp
-assambly.o: assambly.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp Matrix.hpp
+assambly.o: assembly.hpp assambly.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp Matrix.hpp

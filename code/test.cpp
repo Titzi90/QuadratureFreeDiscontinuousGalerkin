@@ -50,19 +50,19 @@ int main()
 
   // Test create 1
   Polynomial2D pol1 (2);
-  pol1(2,0) = 3.2;
-  pol1(1,1) = 2.2;
-  pol1(1,0) = 1.2;
-  pol1(0,2) = -2.2;
-  pol1(0,1) = -1.2;
-  pol1(0,0) = 5.2;
+  pol1.get(2,0) = 3.2;
+  pol1.get(1,1) = 2.2;
+  pol1.get(1,0) = 1.2;
+  pol1.get(0,2) = -2.2;
+  pol1.get(0,1) = -1.2;
+  pol1.get(0,0) = 5.2;
   std::string const pol1_str ("3.2x^2y^0 + 2.2x^1y^1 + 1.2x^1y^0 + -2.2x^0y^2 + -1.2x^0y^1 + 5.2x^0y^0");
   status = status | test(pol1, pol1_str, "creating complex 2D polynomial");
 
   // Test create 2
   Polynomial2D pol2 (2);
-  pol2(2,0) = -2;
-  pol2(1,1) = 3;
+  pol2.get(2,0) = -2;
+  pol2.get(1,1) = 3;
   std::string const pol2_str ("-2x^2y^0 + 3x^1y^1");
   status = status | test(pol2, pol2_str, "creating complex 2D polynomial");
 
@@ -70,6 +70,13 @@ int main()
   Polynomial2D pol3 (2,1,-2.5);
   std::string const pol3_str ("-2.5x^2y^1");
   status = status | test(pol3, pol3_str, "creating simple 2D polynomial");
+
+  // Test evaluation
+  double eval1 = pol3(2,3);
+  status |= test(-30., eval1, "evaluation of simple polynomial");
+
+  double eval2 = pol2(3,-1.5);
+  status |= test(-31.5, eval2, "evaluation of more complex polynomial");
 
   // Test plus
   Polynomial2D pol4 = pol1 + pol2;

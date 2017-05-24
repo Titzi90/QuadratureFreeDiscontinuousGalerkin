@@ -9,6 +9,7 @@
 #include <cassert>
 #include <algorithm>
 #include <iterator>
+#include <cmath>
 
 
 enum class Variable {X, Y};
@@ -28,14 +29,28 @@ public:
   unsigned int getOrder() const {return order_;}
 
   // getter / setter for coefficients
-  double operator()(unsigned int xExponent, unsigned int yExponent) const
+  double get(unsigned int xExponent, unsigned int yExponent) const
   {
     return coeficents_[xExponent * (order_+1) + yExponent];
   }
-  double& operator() (unsigned int xExponent, unsigned int yExponent)
+
+  double& get(unsigned int xExponent, unsigned int yExponent)
   {
     return coeficents_[xExponent * (order_+1) + yExponent];
   }
+
+  // evaluate polynomial
+  double operator()(double x, double y) const
+  {
+    double val = 0.;
+
+    for (unsigned int xExponent=0; xExponent<=order_; ++xExponent)
+      for (unsigned int yExponent=0; yExponent<=order_; ++yExponent)
+        val += (*this).get(xExponent,yExponent) * std::pow(x,xExponent) * std::pow(y,yExponent);
+
+    return val;
+  }
+
 
 private:
   unsigned int const order_;
@@ -66,6 +81,8 @@ inline Polynomial2D operator-(double lhs, Polynomial2D const & rhs){ return Poly
 //TODO division
 
 double integradeOverRefTriangle(Polynomial2D const & pol);
+
+//TODO integrieren über kante
 
 Polynomial2D derive(Polynomial2D const & pol, Variable const var);
 

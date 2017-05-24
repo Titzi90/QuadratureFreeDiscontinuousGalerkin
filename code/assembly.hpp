@@ -38,7 +38,7 @@ inline Matrix assemblyM (Matrix const & hatM, GridOnSquer const & mesh, int poly
 
     for (int i=0; i<pol::polynomialGad[polynomialDegree]; ++i)
       for (int j=0; j<pol::polynomialGad[polynomialDegree]; ++j)
-        M(offset+i,offset+j) = t.getArea() * hatM(i,j);
+        M(offset+i,offset+j) = 2. * t.getArea() * hatM(i,j);
 
     ++t_id;
   }
@@ -70,14 +70,15 @@ inline std::vector<Tensor> assemblyHatG (int const polynomialDegree)
 }
 
 /**
- * Assembly global matrix G
+ * Assembly global matrix A
+ * A = -G1 -G2 +R
  */
-inline Matrix assemblyG (std::vector<Tensor> const & hatG,
+inline Matrix assemblyA (std::vector<Tensor> const & hatG,
                          GridOnSquer const & mesh,
-                         std::vector< std::vector<double> > const & u,
+                         std::vector<Coefficient> const & u,
                          int polynomialDegree)
 {
-  Matrix G (pol::polynomialGad[polynomialDegree] * mesh.getSize());
+  Matrix A (pol::polynomialGad[polynomialDegree] * mesh.getSize());
   int t_id = 0;
   for (Triangle const & t : mesh)
     {
@@ -88,29 +89,33 @@ inline Matrix assemblyG (std::vector<Tensor> const & hatG,
         for (int j=0; j<pol::polynomialGad[polynomialDegree]; ++j)
           {
             // G = -G1*u1 -G2*u2
-            // with G1 = sum_l {  B_{2,2}*hatG1 - B_{2,1}*hatG2 }
-            // and  G2 = sum_l { -B_{1,2}*hatG1 + B_{1,1}*harG2 }
+            // with G1 = sum_l {  B_{2,2}*hatG1_l - B_{2,1}*hatG2_l }
+            // and  G2 = sum_l { -B_{1,2}*hatG1_l + B_{1,1}*hatG2_l }
             double g1 = 0.;
             double g2 = 0.;
+            double r =0.; //TODO
             for (int l=0; l<pol::polynomialGad[polynomialDegree]; ++l)
               {
-                g1 +=  B[1][1]*hatG[0](i,j,l) - B[1][0]*hatG[1](i,j,l);
-                g2 += -B[0][1]*hatG[0](i,j,l) + B[0][0]*hatG[1](i,j,l);
+                g1 += u[0].get(t_id, l) * (  B[1][1]*hatG[0](i,j,l) - B[1][0]*hatG[1](i,j,l) );
+                g2 += u[1].get(t_id, l) * ( -B[0][1]*hatG[0](i,j,l) + B[0][0]*hatG[1](i,j,l) );
               }
-            G(offset+i,offset+j) =  -g1*u[0][t_id] - g2*u[1][t_id];
+            A(offset+i,offset+j) =  -g1 - g2 +r;
           }
       ++t_id;
     }
 
-  return G;
+  return A;
 }
 
-inline Matrix assemblyG (GridOnSquer const & mesh,
-                         std::vector< std::vector<double> > const & u,
+inline Matrix assemblyA (GridOnSquer const & mesh,
+                         std::vector<Coefficient> const & u,
                          int const polynomialDegree)
 {
-  return assemblyG(assemblyHatG(polynomialDegree), mesh, u, polynomialDegree);
+  return assemblyA(assemblyHatG(polynomialDegree), mesh, u, polynomialDegree);
 }
+
+inline Coefficient assemblyL (Matrix const & M, Coefficient const & F) { return M*F; }
+
 
 
 

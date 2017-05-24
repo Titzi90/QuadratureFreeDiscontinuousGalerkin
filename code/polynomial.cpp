@@ -10,6 +10,7 @@
 #include <cassert>
 #include <algorithm>
 #include <iterator>
+#include <cassert>
 
 #include <iostream> // debugung
 
@@ -20,16 +21,18 @@ Polynomial2D::Polynomial2D(unsigned int const order)
 Polynomial2D::Polynomial2D(unsigned int xEx, unsigned int yEx, double coeficent)
   :order_(xEx+yEx), coeficents_((order_+1)*(order_+1),0.)
 {
-  (*this)(xEx,yEx) = coeficent;
+  (*this).get(xEx,yEx) = coeficent;
 }
 
 template <class BinaryOperation>
 Polynomial2D operatorPlusMinusHelper(Polynomial2D const & lhs, Polynomial2D const & rhs, BinaryOperation op)
 {
   Polynomial2D result (lhs);
+
   for (unsigned int x=0; x<=rhs.getOrder(); ++x)
     for (unsigned int y=0; y<=rhs.getOrder(); ++y)
-      result(x,y) = op(result(x,y), rhs(x,y));
+      result.get(x,y) = op(result.get(x,y), rhs.get(x,y));
+
   return result;
 }
 
@@ -49,17 +52,15 @@ Polynomial2D operator*(Polynomial2D const & lhs, Polynomial2D const & rhs)
   for (unsigned int lhs_x=0; lhs_x<=lhs.getOrder(); ++lhs_x)
     for (unsigned int lhs_y=0; lhs_y<=lhs.getOrder(); ++lhs_y)
       {
-        double lhs_coefficent = lhs(lhs_x, lhs_y);
+        double lhs_coefficent = lhs.get(lhs_x, lhs_y);
         if (0 == lhs_coefficent)
           continue;
         //loop over rhs
         for (unsigned int rhs_x=0; rhs_x<=rhs.getOrder(); ++rhs_x)
           for (unsigned int rhs_y=0; rhs_y<=rhs.getOrder(); ++rhs_y)
             {
-              double rhs_coefficent = rhs(rhs_x, rhs_y);
-              if (0 == rhs_coefficent)
-                continue;
-              result(lhs_x+rhs_x, lhs_y+rhs_y) += lhs_coefficent*rhs_coefficent;
+              double rhs_coefficent = rhs.get(rhs_x, rhs_y);
+              result.get(lhs_x+rhs_x, lhs_y+rhs_y) += lhs_coefficent*rhs_coefficent;
             }
       }
   return result;
@@ -80,7 +81,7 @@ double integradeOverRefTriangle(Polynomial2D const & pol)
 
   for (unsigned int x=0; x<=pol.getOrder(); ++x)
     for (unsigned int y=0; y<=pol.getOrder(); ++y)
-        integral += pol(x,y)*pol::monomialIntegralsRefTriangle[x][y];
+        integral += pol.get(x,y)*pol::monomialIntegralsRefTriangle[x][y];
   return integral;
 }
 
@@ -115,7 +116,7 @@ Polynomial2D derive(Polynomial2D const & pol, Variable const var)
         exponentX=-1;
         exponentMul=0;
       }
-      result(x,y) = exponentMul*pol(exponentX,exponentY);
+      result.get(x,y) = exponentMul*pol.get(exponentX,exponentY);
     }
 
   return result;
@@ -131,10 +132,10 @@ std::string to_string(Polynomial2D const & pol)
     {
       for(unsigned int y=order-x; y!=std::numeric_limits<unsigned int>::max(); --y)
         {
-          if(0 != pol(x,y))
+          if(0 != pol.get(x,y))
             {
               //TODO plus nur wenn ned minus
-              ss << pol(x,y) << "x^" << x << "y^" << y << " + ";
+              ss << pol.get(x,y) << "x^" << x << "y^" << y << " + ";
             }
         }
     }
