@@ -12,7 +12,59 @@
 #include <cmath>
 
 
+#include <iostream>
+
 enum class Variable {X, Y};
+
+//TODO polynomial muttererklasse -> templatey loswerden
+/**
+ * Class holding an 1 dimensional polynomial of order 'order'
+ * TODO Testen
+ */
+class Polynomial1D
+{
+public:
+  // Constructor getting the order (-> size) of the polynomial
+  Polynomial1D(unsigned int order);
+  // Constructor for simple polynomials with one coefficient non equal to 0
+  Polynomial1D(unsigned int xEx, double coeficent);
+
+  // geter for the order of the polynomial
+  unsigned int getOrder() const {return order_;}
+
+  // getter / setter for coefficients
+  double get(unsigned int xExponent) const
+  {
+    return coeficents_[xExponent];
+  }
+
+  double& get(unsigned int xExponent)
+  {
+    return coeficents_[xExponent];
+  }
+
+  // evaluate polynomial
+  double operator()(double x) const
+  {
+    double val = 0.;
+
+    for (unsigned int xExponent=0; xExponent<=order_; ++xExponent)
+        val += (*this).get(xExponent) * std::pow(x,xExponent);
+
+    return val;
+  }
+
+
+private:
+  unsigned int order_;
+  std::vector<double> coeficents_;
+
+  // friends declarations
+  friend auto begin(Polynomial1D & pol)      ->decltype(coeficents_.begin());
+  friend auto begin(Polynomial1D const & pol)->decltype(const_cast<const std::vector<double>&>(coeficents_).begin());
+  friend auto end(Polynomial1D & pol)        ->decltype(coeficents_.end());
+  friend auto end(Polynomial1D const & pol)  ->decltype(const_cast<const std::vector<double>&>(coeficents_).end());
+};
 
 /**
  * Class holding an 2 dimensional polynomial of order 'order'
@@ -63,39 +115,76 @@ private:
   friend auto end(Polynomial2D const & pol)  ->decltype(const_cast<const std::vector<double>&>(coeficents_).end());
 };
 
+// plus assignment operator for polynomials
+inline Polynomial1D& operator+=(Polynomial1D & lhs, Polynomial1D const & rhs)
+{
+  assert(lhs.getOrder()>=rhs.getOrder());
+  for (unsigned int s=0; s<=rhs.getOrder(); ++s)
+    lhs.get(s) += rhs.get(s);
+  return lhs;
+}
+inline Polynomial2D& operator+=(Polynomial2D & lhs, Polynomial2D const & rhs)
+{
+  assert(lhs.getOrder()>=rhs.getOrder());
+  for (unsigned int x=0; x<=rhs.getOrder(); ++x)
+    for (unsigned int y=0; y<=rhs.getOrder(); ++y)
+      lhs.get(x,y) += rhs.get(x,y);
+  return lhs;
+}
 // plus operator for polynomials
-Polynomial2D operator+(Polynomial2D const & lhs, Polynomial2D const & rhs);
+template <typename Polynomial> Polynomial operator+(Polynomial const & lhs, Polynomial const & rhs);
+inline Polynomial1D operator+(Polynomial1D const & lhs, double rhs){ return lhs + Polynomial1D(0,rhs); }
 inline Polynomial2D operator+(Polynomial2D const & lhs, double rhs){ return lhs + Polynomial2D(0,0,rhs); }
-inline Polynomial2D operator+(double lhs, Polynomial2D const & rhs){ return rhs+lhs; }
+template<typename Polynomial> inline Polynomial operator+(double lhs, Polynomial const & rhs){ return rhs+lhs; }
 
 // multiplication operator for polynomials
+Polynomial1D operator*(Polynomial1D const & lhs, Polynomial1D const & rhs);
 Polynomial2D operator*(Polynomial2D const & lhs, Polynomial2D const & rhs);
-Polynomial2D operator*(double const lhs, Polynomial2D const & rhs);
-inline Polynomial2D operator*(Polynomial2D const & lhs, double rhs){ return rhs*lhs; }
+template<typename Polynomial> Polynomial operator*(double lhs, Polynomial const & rhs);
+template<typename Polynomial> inline Polynomial operator*(Polynomial const & lhs, double rhs){ return rhs*lhs; }
 
 // minus operator for polynomials
-inline Polynomial2D operator-(Polynomial2D const & lhs, Polynomial2D const & rhs){ return lhs + (-1*rhs); }
-inline Polynomial2D operator-(Polynomial2D const & lhs, double rhs){ return lhs-Polynomial2D(0,0,rhs); }
-inline Polynomial2D operator-(double lhs, Polynomial2D const & rhs){ return Polynomial2D(0,0,lhs)-rhs; }
+template<typename Polynomial> Polynomial operator-(Polynomial const & lhs, Polynomial const & rhs)
+{ return lhs + (-1*rhs); }
+template<typename Polynomial> Polynomial operator-(Polynomial const & lhs, double rhs)
+{ return lhs + (-1*rhs); }
+template<typename Polynomial> Polynomial operator-(double lhs, Polynomial const & rhs)
+{ return lhs + (-1*rhs); }
+
 
 //TODO division
 
 double integradeOverRefTriangle(Polynomial2D const & pol);
 
-//TODO integrieren über kante
+double integradeOverRefEdge(Polynomial1D const & pol);
 
 Polynomial2D derive(Polynomial2D const & pol, Variable const var);
 
 // iterator access functions
+inline auto begin(Polynomial1D & pol)      ->decltype(pol.coeficents_.begin()){ return pol.coeficents_.begin(); }
+inline auto begin(Polynomial1D const & pol)->decltype(pol.coeficents_.begin()){ return pol.coeficents_.begin(); }
+inline auto end(Polynomial1D & pol)        ->decltype(pol.coeficents_.end())  { return pol.coeficents_.end(); }
+inline auto end(Polynomial1D const & pol)  ->decltype(pol.coeficents_.end())  { return pol.coeficents_.end(); }
+
 inline auto begin(Polynomial2D & pol)      ->decltype(pol.coeficents_.begin()){ return pol.coeficents_.begin(); }
 inline auto begin(Polynomial2D const & pol)->decltype(pol.coeficents_.begin()){ return pol.coeficents_.begin(); }
 inline auto end(Polynomial2D & pol)        ->decltype(pol.coeficents_.end())  { return pol.coeficents_.end(); }
 inline auto end(Polynomial2D const & pol)  ->decltype(pol.coeficents_.end())  { return pol.coeficents_.end(); }
 
 // converting a polynomial to a string
+std::string to_string(Polynomial1D const & pol);
 std::string to_string(Polynomial2D const & pol);
 
 // output operator for polynomials
-std::ostream& operator<< (std::ostream& os, Polynomial2D const & pol);
+inline std::ostream& operator<< (std::ostream& os, Polynomial1D const & pol)
+{
+  os << to_string(pol);
+  return os;
+}
+inline std::ostream& operator<< (std::ostream& os, Polynomial2D const & pol)
+{
+  os << to_string(pol);
+  return os;
+}
 
 #endif

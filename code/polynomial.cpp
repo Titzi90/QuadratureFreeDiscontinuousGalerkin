@@ -14,6 +14,15 @@
 
 #include <iostream> // debugung
 
+Polynomial1D::Polynomial1D(unsigned int const order)
+  :order_(order), coeficents_(order_+1, 0.)
+{}
+
+Polynomial1D::Polynomial1D(unsigned int const xEx, double const coeficent)
+  :order_(xEx), coeficents_(order_+1,0.)
+{
+  (*this).get(xEx) = coeficent;
+}
 Polynomial2D::Polynomial2D(unsigned int const order)
   :order_(order), coeficents_(( order_+1 )*( order_+1 ), 0.)
 {}
@@ -24,26 +33,60 @@ Polynomial2D::Polynomial2D(unsigned int xEx, unsigned int yEx, double coeficent)
   (*this).get(xEx,yEx) = coeficent;
 }
 
-template <class BinaryOperation>
-Polynomial2D operatorPlusMinusHelper(Polynomial2D const & lhs, Polynomial2D const & rhs, BinaryOperation op)
+// template <class BinaryOperation>
+// Polynomial1D operatorPlusMinusHelper(Polynomial1D  lhs, Polynomial1D const & rhs, BinaryOperation op)
+// {
+
+//   for (unsigned int x=0; x<=rhs.getOrder(); ++x)
+//       lhs.get(x) = op(lhs.get(x), rhs.get(x));
+
+//   return lhs;
+// }
+// template <class BinaryOperation>
+// Polynomial2D operatorPlusMinusHelper(Polynomial2D lhs, Polynomial2D const & rhs, BinaryOperation op)
+// {
+
+//   for (unsigned int x=0; x<=rhs.getOrder(); ++x)
+//     for (unsigned int y=0; y<=rhs.getOrder(); ++y)
+//       lhs.get(x,y) = op(lhs.get(x,y), rhs.get(x,y));
+
+//   return lhs;
+// }
+template <typename Polynomial>
+Polynomial operatorPlusHelper(Polynomial lhs, Polynomial const & rhs)
 {
-  Polynomial2D result (lhs);
-
-  for (unsigned int x=0; x<=rhs.getOrder(); ++x)
-    for (unsigned int y=0; y<=rhs.getOrder(); ++y)
-      result.get(x,y) = op(result.get(x,y), rhs.get(x,y));
-
-  return result;
+  return lhs += rhs;
 }
-
 // plus operator for polynomials
-Polynomial2D operator+(Polynomial2D const & lhs, Polynomial2D const & rhs)
+template <typename Polynomial>
+Polynomial operator+(Polynomial const & lhs, Polynomial const & rhs)
 {
-  return lhs.getOrder()>rhs.getOrder() ? operatorPlusMinusHelper(lhs, rhs, std::plus<double>())
-                                       : operatorPlusMinusHelper(rhs, lhs, std::plus<double>());
+  return lhs.getOrder()>rhs.getOrder() ? operatorPlusHelper(lhs, rhs)
+                                       : operatorPlusHelper(rhs, lhs);
 }
+template Polynomial1D operator+(Polynomial1D const & lhs, Polynomial1D const & rhs);
+template Polynomial2D operator+(Polynomial2D const & lhs, Polynomial2D const & rhs);
 
 // multiplication operator for polynomials
+Polynomial1D operator*(Polynomial1D const & lhs, Polynomial1D const & rhs)
+{
+  Polynomial1D result = Polynomial1D(lhs.getOrder()+rhs.getOrder());
+
+  //loop over lhs
+  for (unsigned int lhs_x=0; lhs_x<=lhs.getOrder(); ++lhs_x)
+  {
+    double lhs_coefficent = lhs.get(lhs_x);
+    if (0 == lhs_coefficent)
+      continue;
+    //loop over rhs
+    for (unsigned int rhs_x=0; rhs_x<=rhs.getOrder(); ++rhs_x)
+    {
+      double rhs_coefficent = rhs.get(rhs_x);
+      result.get(lhs_x+rhs_x) += lhs_coefficent*rhs_coefficent;
+    }
+  }
+  return result;
+}
 Polynomial2D operator*(Polynomial2D const & lhs, Polynomial2D const & rhs)
 {
   Polynomial2D result = Polynomial2D(lhs.getOrder()+rhs.getOrder());
@@ -65,13 +108,16 @@ Polynomial2D operator*(Polynomial2D const & lhs, Polynomial2D const & rhs)
       }
   return result;
 }
-Polynomial2D operator*(double const lhs, Polynomial2D const & rhs)
+template <typename Polynomial>
+Polynomial operator*(double const lhs, Polynomial const & rhs)
 {
-  Polynomial2D result = Polynomial2D(rhs.getOrder());
+  Polynomial result = Polynomial(rhs.getOrder());
   std::transform(begin(rhs), end(rhs), begin(result),
                  [lhs](decltype(*begin(rhs)) x){ return lhs * x; });
   return result;
 }
+template Polynomial1D operator*(double lhs, Polynomial1D const & rhs);
+template Polynomial2D operator*(double lhs, Polynomial2D const & rhs);
 
 double integradeOverRefTriangle(Polynomial2D const & pol)
 {
@@ -82,6 +128,15 @@ double integradeOverRefTriangle(Polynomial2D const & pol)
   for (unsigned int x=0; x<=pol.getOrder(); ++x)
     for (unsigned int y=0; y<=pol.getOrder(); ++y)
         integral += pol.get(x,y)*pol::monomialIntegralsRefTriangle[x][y];
+  return integral;
+}
+
+double integradeOverRefEdge(Polynomial1D const & pol)
+{
+  assert(pol.getOrder() <= 3); // not implemented!
+  double integral = 0.;
+  for (unsigned int s=0; s<=pol.getOrder(); ++s)
+    integral += pol.get(s) * pol::monomialIntegralsRefEdge[s];
   return integral;
 }
 
@@ -123,6 +178,16 @@ Polynomial2D derive(Polynomial2D const & pol, Variable const var)
 }
 
 // converting a polynomial to a string
+std::string to_string(Polynomial1D const & pol)
+{
+  std::stringstream ss;
+  for(unsigned int x=pol.getOrder(); x!=std::numeric_limits<unsigned int>::max(); --x)
+    if (0!=pol.get(x))
+      //TODO plus nur wenn ned minus
+      ss << pol.get(x) << "x^" << x << " + ";
+  std::string str = ss.str();
+  return str.size()>3 ? str.erase(str.size()-3) : str;
+}
 std::string to_string(Polynomial2D const & pol)
 {
   std::stringstream ss;
@@ -141,11 +206,4 @@ std::string to_string(Polynomial2D const & pol)
     }
   std::string str = ss.str();
   return str.size()>3 ? str.erase(str.size()-3) : str;
-}
-
-// output operator for polynomials
-std::ostream& operator<< (std::ostream& os, Polynomial2D const & pol)
-{
-  os << to_string(pol);
-  return os;
 }

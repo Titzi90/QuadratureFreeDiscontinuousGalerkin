@@ -68,9 +68,10 @@ public:
   // create a discreet Coefficient d_h using L2 projection in to the polynomial space
   // from a continues coeficentFunction d
   //TODO testen
+  //TODO iterators
   Coefficient(GridOnSquer mesh, int polynomialDegree, std::function<double(double,double)> coeficentFunction)
-    :data_(mesh.getSize()*pol::polynomialGad[polynomialDegree]),
-     numberOfBasefunctions_(pol::polynomialGad[polynomialDegree])
+    :data_(mesh.getSize()*pol::numberOf2DBasefunctions(polynomialDegree)),
+     numberOfBasefunctions_(pol::numberOf2DBasefunctions(polynomialDegree))
   {
     int t_id = 0;
     for (Triangle const & t : mesh)
@@ -113,6 +114,9 @@ public:
 
   int getNumberOfbasisFunctions() const { return numberOfBasefunctions_; }
 
+  std::vector<double> const & getData() const { return data_; }
+
+
 private:
   std::vector<double> data_;
   int const numberOfBasefunctions_;
@@ -121,34 +125,39 @@ private:
 
 
 /**
- * dense square Matrix class
+ * dense Matrix class
  */
 class Matrix
 {
 public:
   Matrix(unsigned int N)
-    :data_(N*N, 0.), N_(N) {}
+    :data_(N*N, 0.), N_(N),M_(N) {}
+  Matrix(unsigned int N, unsigned int M)
+    :data_(N*M, 0.), N_(N),M_(M) {
+    std::cout << N << " " << M << std::endl;
+  }
 
   double operator()(unsigned int i, unsigned int j) const
   {
     assert(i<N_);
-    assert(j<N_);
+    assert(j<M_);
 
-    return data_[i*N_+j];
+    return data_[i*M_+j];
   }
   double & operator()(unsigned int i, unsigned int j)
   {
     assert(i<N_);
-    assert(j<N_);
+    assert(j<M_);
 
-    return data_[i*N_+j];
+    return data_[i*M_+j];
   }
 
-  int getSize() const { return N_; }
+  unsigned int getN() const { return N_; }
+  unsigned int getM() const { return M_; }
 
 private:
   std::vector<double> data_;
-  unsigned int N_;
+  unsigned int N_, M_;
 };
 
 /**
@@ -196,9 +205,9 @@ std::ostream& operator<< (std::ostream& os, Coefficient const & c)
 std::ostream& operator<< (std::ostream& os, Matrix const & m)
 {
   os <<  std::fixed << std::setprecision(3);
-  for (int i=0; i<m.getSize(); ++i)
+  for (unsigned int i=0; i<m.getN(); ++i)
   {
-    for (int j=0; j<m.getSize();++j)
+    for (unsigned int j=0; j<m.getM();++j)
     os << std::setw(6) << m(i,j) << " ";
     os << "\n" ;
   }
@@ -242,5 +251,18 @@ inline Coefficient matVecMul (Matrix const & A, Coefficient const & b)
 }
 
 inline Coefficient operator* (Matrix const & A, Coefficient const & b) { return matVecMul(A,b); }
+
+// element wise multiplication of two Coefficients
+inline Coefficient operator* (Coefficient const & lhs, Coefficient const & rhs)
+{
+  assert (lhs.size() == rhs.size());
+  assert (lhs.getNumberOfbasisFunctions() == rhs.getNumberOfbasisFunctions());
+
+  Coefficient result (lhs.size(), lhs.getNumberOfbasisFunctions());
+  for (int i=0; i<lhs.size(); ++i)
+    result[i] = lhs[i] * rhs[i];
+
+  return result;
+}
 
 #endif

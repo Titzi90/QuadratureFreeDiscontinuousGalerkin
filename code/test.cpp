@@ -23,6 +23,17 @@ int test(T const & a, T const & b, std::string msg)
   return 0;
 }
 
+int test(Polynomial1D const & pol, std::string const & pol_str, std::string const & msg)
+{
+  if ( pol_str != to_string(pol)){
+    std::cerr << "Error!\n" << msg
+              << "\n\tExpackted: " << pol_str
+              << "\n\tgot: " << to_string(pol)
+              << std::endl;
+    return -1;
+  }
+  return 0;
+}
 int test(Polynomial2D const & pol, std::string const & pol_str, std::string const & msg)
 {
   if ( pol_str != to_string(pol)){
@@ -93,6 +104,30 @@ int main()
   std::string const pol6_str ("-2.5x^2y^1 + -2x^2y^0 + 3x^1y^1 + 3.7x^0y^0");
   status = status | test(pol6, pol6_str, "add real number to polynomial");
 
+  //Test 1D + and +=
+  Polynomial1D pol1Dc (0, 3);
+  Polynomial1D pol1Ds (1, 5);
+  Polynomial1D pol1D0 (1);
+
+  std::string const pol1Dc_str ("3x^0");
+  std::string const pol1Ds_str ("5x^1");
+  std::string const pol1D0_str ("");
+  status |= test(pol1Dc, pol1Dc_str, "construct simple 1D polynomial");
+  status |= test(pol1Ds, pol1Ds_str, "construct simple 1D polynomial");
+  status |= test(pol1D0, pol1D0_str, "construct null 1D polynomial");
+
+  Polynomial1D pol1D_1 = pol1Dc + pol1Ds;
+  std::string const pol1D_1_str ("5x^1 + 3x^0");
+  status |= test(pol1D_1, pol1D_1_str, "add two simple 1D polynomials");
+
+  // Test assignment-add
+  pol1D_1 += pol1Dc;
+  std::string pol1D_2_str ("5x^1 + 6x^0");
+  status |= test(pol1D_1, pol1D_2_str, "assigment-add two simple 1D polynomials");
+
+  pol1D0 += pol1D_1;
+  status |= test(pol1D0, pol1D_2_str, "assigment-add two simple 1D polynomials to zero pol");
+
   // Test ...
   // Polynomial2D pol7 =
 
@@ -136,7 +171,7 @@ int main()
 
   /****************************************************************************/
 
-  status = status | test(pol::c  , "1x^0y^0", "constant monomial");
+  status = status | test(pol::c2D  , "1x^0y^0", "constant monomial");
   status = status | test(pol::x  , "1x^1y^0", "x monomial");
   status = status | test(pol::y  , "1x^0y^1", "y monomial");
   status = status | test(pol::x2 , "1x^2y^0", "x^2 monomial");
@@ -250,9 +285,15 @@ int main()
   int const order = 1;     // max polynomial degree
   int const refinment = 2; // order if mesh refinement
   GridOnSquer mesh(refinment);
-  std::vector<double> u1 (mesh.getSize(), 1.);  // velocity x component
-  std::vector<double> u2 (mesh.getSize(), 1.);  // velocity y component
-  std::vector<double> f (mesh.getSize(), 0.);   // source terms
+
+  auto u1 = [](double x, double y)->double{ return 1.; };
+  auto u2 = [](double x, double y)->double{ return 1.; };
+  auto f  = [](double x, double y)->double{ return 0.; };
+  Coefficient U1 (mesh, order, u1);  // velocity x component
+  Coefficient U2 (mesh, order, u2);  // velocity y component
+  Coefficient F  (mesh, order, f);   // rhs vector
+
+  //TODO Testen Coefficients
 
   //test Mhat
   Matrix hatM = assemblyHatM(order);
@@ -337,8 +378,31 @@ int main()
   status |= test(0., M(1,0), ";(1,0)");
   status |= test(0., M(7,16), ";(7,16)");
 
+  // test global G
+  Matrix G = assemblyG(mesh, {U1,U2}, order);
+  status |= test(0.     , G(0,0), "G(0,0)");
+  status |= test(-2.1213, G(1,0), "G(1,0)");
+  status |= test(-3.6742, G(2,0), "G(2,0)");
+  status |= test(0.     , G(0,1), "G(0,1)");
+  status |= test(0.     , G(1,1), "G(1,1)");
+  status |= test(0.     , G(2,1), "G(2,1)");
+  status |= test(0.     , G(0,2), "G(0,2)");
+  status |= test(0.     , G(1,2), "G(1,2)");
+  status |= test(0.     , G(2,2), "G(2,2)");
 
+  status |= test(0.     , G(3,3), "G(3,3)");
+  status |= test(-4.2426, G(4,3), "G(4,3)");
+  status |= test(0.     , G(5,3), "G(5,3)");
+  status |= test(0.     , G(3,4), "G(3,4)");
+  status |= test(0.     , G(4,4), "G(4,4)");
+  status |= test(0.     , G(5,4), "G(5,4)");
+  status |= test(0.     , G(3,5), "G(3,5)");
+  status |= test(0.     , G(4,5), "G(4,5)");
+  status |= test(0.     , G(5,5), "G(5,5)");
 
+  status |= test(0.     , G(6,6), "G(6,6)");
+  status |= test(-2.1213, G(7,6), "G(7,6)");
+  status |= test(-3.6742, G(8,6), "G(8,6)");
 
   return status;
 }

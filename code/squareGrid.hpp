@@ -87,7 +87,8 @@ inline double dot(Vector const & a, Vector const & b)
   return a.x*b.x + a.y*b.y;
 }
 
-typedef double const (*Jakobian)[2];
+typedef double const (*Jakobian)[2]; // 2D Jacobian Matrix -> 2x2
+typedef double const (*T_linear)[2]; // Transformation Matrix for linear Functtions from 2D to 1D -> 3x2
 
 class Triangle
 {
@@ -158,6 +159,34 @@ private:
 };
 
 
+// calulates Tansformation matrixes from Reference triangle to reference edge
+// linear case!
+// std::vector<double(*)[2]> getLinearTrasformationToRefEdge()
+// TODO Matrix machen
+inline std::vector<T_linear> getLinearTrasformationToRefEdge(int const polynomialDegree)
+{
+  assert(polynomialDegree == 1); //just linear T is implemented!
+
+  double t1[3][2];
+  t1[0][0] =  std::sqrt(2); t1[0][1] = 0.;
+  t1[1][0] = -1.          ; t1[1][1] = -3./std::sqrt(3);
+  t1[2][0] = -std::sqrt(3); t1[2][1] = 1.;
+
+  double t2[3][2];
+  t2[0][0] =  std::sqrt(2); t2[0][1] = 0.;
+  t2[1][0] =  2.          ; t2[1][1] = 0.;
+  t2[2][0] =  0.          ; t2[2][1] = -2.;
+
+  double t3[3][2];
+  t3[0][0] =  std::sqrt(2); t3[0][1] = 0.;
+  t3[1][0] = -1.          ; t3[1][1] = 3./std::sqrt(3);
+  t3[2][0] =  std::sqrt(3); t3[2][1] = 1.;
+
+  return {t1,t2,t3};
+}
+
+
+
 
 
 /**
@@ -203,7 +232,14 @@ public:
     assert (row < numberOfRows_);
     assert (col < numberOfColums_);
     assert (position < 2);
-    return gridData_[row*numberOfRows_*2 + col*2 + position];
+    return gridData_[getID(row,col,position)];
+  }
+  Triangle const & get(unsigned int row, unsigned int col, unsigned int position) const
+  {
+    assert (row < numberOfRows_);
+    assert (col < numberOfColums_);
+    assert (position < 2);
+    return gridData_[getID(row,col,position)];
   }
   // Triangle const & get(unsigned int row, unsigned int col, unsigned int position) const
   // {
@@ -216,6 +252,11 @@ public:
   unsigned int getRows() const { return numberOfRows_; }
   unsigned int getColums() const { return numberOfColums_; }
   unsigned int getSize() const { return gridData_.size(); }
+
+  unsigned int getID (unsigned int row, unsigned int col, unsigned int position) const
+  {
+    return row*numberOfRows_*2 + col*2 + position;
+  }
 
 private:
   std::vector<Triangle> gridData_;
@@ -230,8 +271,6 @@ private:
   friend auto end(GridOnSquer const &) ->decltype(const_cast<const std::vector<Triangle>&>(gridData_).end());
 };
 
-
-
 // iterator access function for grid elements
 inline auto begin(GridOnSquer & mesh)
   ->decltype(mesh.gridData_.begin()){ return mesh.gridData_.begin(); }
@@ -241,6 +280,12 @@ inline auto begin(GridOnSquer const & mesh)
 inline auto end(GridOnSquer & mesh) ->decltype(mesh.gridData_.end()){ return mesh.gridData_.end(); }
 inline auto end(GridOnSquer const & mesh)
   ->decltype(const_cast<const std::vector<Triangle>&>(mesh.gridData_).end()){ return mesh.gridData_.end(); }
+
+
+
+
+
+
 
 
 #endif
