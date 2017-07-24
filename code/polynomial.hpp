@@ -10,38 +10,39 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
-
-
+#include <numeric>
 #include <iostream>
+
 
 enum class Variable {X, Y};
 
-//TODO polynomial muttererklasse -> templatey loswerden
 /**
  * Class holding an 1 dimensional polynomial of order 'order'
- * TODO Testen
  */
 class Polynomial1D
 {
 public:
+  // standard Constructor creates 0 as a polynomial
+  Polynomial1D()
+    :order_(0), coeficents_(order_+1,0.)
+  {}
   // Constructor getting the order (-> size) of the polynomial
-  Polynomial1D(unsigned int order);
+  Polynomial1D(unsigned int order)
+    :order_(order), coeficents_(order_+1, 0.)
+  {}
   // Constructor for simple polynomials with one coefficient non equal to 0
-  Polynomial1D(unsigned int xEx, double coeficent);
+  Polynomial1D(unsigned int xEx, double coeficent)
+    :order_(xEx), coeficents_(order_+1,0.)
+  {
+    (*this).get(xEx) = coeficent;
+  }
 
   // geter for the order of the polynomial
   unsigned int getOrder() const {return order_;}
 
   // getter / setter for coefficients
-  double get(unsigned int xExponent) const
-  {
-    return coeficents_[xExponent];
-  }
-
-  double& get(unsigned int xExponent)
-  {
-    return coeficents_[xExponent];
-  }
+  double get(unsigned int xExponent) const { return coeficents_[xExponent]; }
+  double & get(unsigned int xExponent) { return coeficents_[xExponent]; }
 
   // evaluate polynomial
   double operator()(double x) const
@@ -72,21 +73,30 @@ private:
 class Polynomial2D
 {
 public:
+  // standard Constructor creates 0 as a polynomial
+  Polynomial2D()
+    :order_(0), coeficents_(( order_+1 )*( order_+1 ), 0.)
+  {}
   // Constructor getting the order (-> size) of the polynomial
-  Polynomial2D(unsigned int order);
+  Polynomial2D(unsigned int order)
+    :order_(order), coeficents_(( order_+1 )*( order_+1 ), 0.)
+  {}
   // Constructor for simple polynomials with one coefficient non equal to 0
-  Polynomial2D(unsigned int xEx, unsigned int yEx, double coeficent);
+  Polynomial2D(unsigned int xEx, unsigned int yEx, double coeficent)
+    :order_(xEx+yEx), coeficents_((order_+1)*(order_+1),0.)
+  {
+    (*this).get(xEx,yEx) = coeficent;
+  }
 
   // geter for the order of the polynomial
-  unsigned int getOrder() const {return order_;}
+  unsigned int getOrder() const { return order_; }
 
   // getter / setter for coefficients
   double get(unsigned int xExponent, unsigned int yExponent) const
   {
     return coeficents_[xExponent * (order_+1) + yExponent];
   }
-
-  double& get(unsigned int xExponent, unsigned int yExponent)
+  double & get(unsigned int xExponent, unsigned int yExponent)
   {
     return coeficents_[xExponent * (order_+1) + yExponent];
   }
@@ -103,9 +113,8 @@ public:
     return val;
   }
 
-
 private:
-  unsigned int const order_;
+  unsigned int order_;
   std::vector<double> coeficents_;
 
   // friends declarations
@@ -114,6 +123,7 @@ private:
   friend auto end(Polynomial2D & pol)        ->decltype(coeficents_.end());
   friend auto end(Polynomial2D const & pol)  ->decltype(const_cast<const std::vector<double>&>(coeficents_).end());
 };
+
 
 // plus assignment operator for polynomials
 inline Polynomial1D& operator+=(Polynomial1D & lhs, Polynomial1D const & rhs)
@@ -131,6 +141,7 @@ inline Polynomial2D& operator+=(Polynomial2D & lhs, Polynomial2D const & rhs)
       lhs.get(x,y) += rhs.get(x,y);
   return lhs;
 }
+
 // plus operator for polynomials
 template <typename Polynomial> Polynomial operator+(Polynomial const & lhs, Polynomial const & rhs);
 inline Polynomial1D operator+(Polynomial1D const & lhs, double rhs){ return lhs + Polynomial1D(0,rhs); }
@@ -154,9 +165,6 @@ template<typename Polynomial> Polynomial operator-(double lhs, Polynomial const 
 
 //TODO division
 
-double integradeOverRefTriangle(Polynomial2D const & pol);
-
-double integradeOverRefEdge(Polynomial1D const & pol);
 
 Polynomial2D derive(Polynomial2D const & pol, Variable const var);
 
@@ -186,5 +194,18 @@ inline std::ostream& operator<< (std::ostream& os, Polynomial2D const & pol)
   os << to_string(pol);
   return os;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif

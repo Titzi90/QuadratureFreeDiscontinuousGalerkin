@@ -1,6 +1,6 @@
 #include "assembly.hpp"
-#include "Matrix.hpp"
-#include "squareGrid.hpp"
+#include "DataTypes.hpp"
+#include "Grid.hpp"
 
 #include <iostream>
 #include <vector>
@@ -25,49 +25,52 @@ int main()
   int const order = 1;     // max polynomial degree
   int const refinment = 2; // order if mesh refinement
 
-  GridOnSquer mesh(refinment);
+  UniqueSquareGrid mesh(refinment);
 
-  Coefficient C  (mesh, order, c);   // c -> gesuchte größe
-  Coefficient U1 (mesh, order, u1);  // velocity x component
-  Coefficient U2 (mesh, order, u2);  // velocity y component
-  Coefficient F  (mesh, order, f);   // rhs vector
-  Coefficient F1 = C*U1;             // Flux x component
-  Coefficient F2 = C*U2;             // Flux x component
+  assamblyC(mesh, order, c);          // gesuchte Größe c
+  assamblyU(mesh, order, u1, u2);     // velocity field U
+  assamblyF(mesh, order, 2*order, assamblyLocalLinearF);  // Flux field f=cu
 
-  Matrix hatM = assemblyHatM(order);
-  Matrix M = assemblyM(hatM, mesh, order);
+  auto hatM (assemblyHatM(order));
+  auto hatG (assemblyHatG(order));
+  auto hatE (assemblyHatE(order));
+  auto hatT (getLinearTrasformationToRefEdge(order));
+  auto hatI (getHatI(order));
 
-  auto hatG = assemblyHatG(order);
-  Matrix G = assemblyG(hatG, mesh,{U1,U2}, order);
+  assemblyM(mesh, hatM);
+  assemblyG(mesh, hatG);
+  assemblyE(mesh, hatE);
+  assemblyFr(mesh, order, riemanSolver_UpWinding, hatT, hatI);
+  assamblyL(mesh, order, f);          // RHS vector
 
-  auto hatE = assemblyHatE(order);
-  auto E = assemblyE(hatE, mesh, order);
 
-  auto hatI = getHatI(order);
-  auto Fr = assemblyRiemanFlux_UpWinding(mesh, {U1,U2}, {F1,F2}, hatI, {U1,U2}, order);
 
-  Coefficient L = assemblyL(M,F);
+  printC(mesh, std::cout);
+  std::cout << "\v\v\v";
+  printU(mesh, std::cout);
+  std::cout << "\v\v\v";
+  printF(mesh, std::cout);
+  std::cout << std::endl;
 
-  std::cout << "M hat:\n" << hatM
-            << "\v\v\vG1 hat:\n" << hatG[0]
-            << "\v\v\vG2 hat:\n" << hatG[1]
+  std::cout << "hatM:\n" << hatM
+            << "\v\v\vhatG1:\n" << hatG[0]
+            << "\v\v\vhatG2:\n" << hatG[1]
+            << "\v\v\vhatEa:\n" << hatE[0]
+            << "\v\v\vhatEb:\n" << hatE[1]
+            << "\v\v\vhatEc:\n" << hatE[2]
+            << "\v\v\vhatI:\n"  << hatI
             << std::endl;
 
-  std::cout << "\v\v\vL:\n" << L << std::endl;
-
-  std::cout << "\v\v\vM:\n" << M
-            << "\v\vG:\n" << G
-            << std::endl;
-
-  std::cout << "\v\v\vE1 hat:\n" << hatE[0]
-            << "\v\v\vE2 hat:\n" << hatE[1]
-            << "\v\v\vE3 hat:\n" << hatE[2]
-            << "\v\v\vE1:\n" << E[0]
-            << "\v\v\vE2:\n" << E[1]
-            << "\v\v\vE3:\n" << E[2]
-            << "\v\v\vRiemanFlux1:\n" << Fr[0]
-            << "\v\v\vRiemanFlux2:\n" << Fr[1]
-            << "\v\v\vRiemanFlux3:\n" << Fr[2]
-            <<std::endl;
+  std::cout << "\v\v\v";
+  printM(mesh, std::cout);
+  std::cout << "\v\v\v";
+  printG(mesh, std::cout);
+  std::cout << "\v\v\v";
+  printE(mesh, std::cout);
+  std::cout << "\v\v\v";
+  printFr(mesh, std::cout);
+  std::cout << "\v\v\v";
+  printL(mesh, std::cout);
+  std::cout << std::endl;
 
 }

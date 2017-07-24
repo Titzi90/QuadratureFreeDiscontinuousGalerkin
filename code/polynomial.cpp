@@ -11,27 +11,11 @@
 #include <algorithm>
 #include <iterator>
 #include <cassert>
+#include <numeric>
 
 #include <iostream> // debugung
 
-Polynomial1D::Polynomial1D(unsigned int const order)
-  :order_(order), coeficents_(order_+1, 0.)
-{}
 
-Polynomial1D::Polynomial1D(unsigned int const xEx, double const coeficent)
-  :order_(xEx), coeficents_(order_+1,0.)
-{
-  (*this).get(xEx) = coeficent;
-}
-Polynomial2D::Polynomial2D(unsigned int const order)
-  :order_(order), coeficents_(( order_+1 )*( order_+1 ), 0.)
-{}
-
-Polynomial2D::Polynomial2D(unsigned int xEx, unsigned int yEx, double coeficent)
-  :order_(xEx+yEx), coeficents_((order_+1)*(order_+1),0.)
-{
-  (*this).get(xEx,yEx) = coeficent;
-}
 
 // template <class BinaryOperation>
 // Polynomial1D operatorPlusMinusHelper(Polynomial1D  lhs, Polynomial1D const & rhs, BinaryOperation op)
@@ -119,26 +103,7 @@ Polynomial operator*(double const lhs, Polynomial const & rhs)
 template Polynomial1D operator*(double lhs, Polynomial1D const & rhs);
 template Polynomial2D operator*(double lhs, Polynomial2D const & rhs);
 
-double integradeOverRefTriangle(Polynomial2D const & pol)
-{
-  assert(pol.getOrder() <= 3); // not implemented!
 
-  double integral = 0.;
-
-  for (unsigned int x=0; x<=pol.getOrder(); ++x)
-    for (unsigned int y=0; y<=pol.getOrder(); ++y)
-        integral += pol.get(x,y)*pol::monomialIntegralsRefTriangle[x][y];
-  return integral;
-}
-
-double integradeOverRefEdge(Polynomial1D const & pol)
-{
-  assert(pol.getOrder() <= 3); // not implemented!
-  double integral = 0.;
-  for (unsigned int s=0; s<=pol.getOrder(); ++s)
-    integral += pol.get(s) * pol::monomialIntegralsRefEdge[s];
-  return integral;
-}
 
 Polynomial2D derive(Polynomial2D const & pol, Variable const var)
 {

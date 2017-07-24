@@ -15,7 +15,7 @@ OFILES_assambly = assambly.o polynomial.o
 all: test assambly
 
 clean:
-	$(RM) $(BIN) $(OFILES_poly_test)
+	$(RM) $(BIN) $(OFILES_poly_test) $(OFILES_assambly)
 
 test: polyTest
 	./polyTest
@@ -36,6 +36,6 @@ assambly: $(OFILES_assambly)
 
 
 ########## DEPENDENCIES ######################################
-test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp Matrix.hpp
+test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp
 polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp
-assambly.o: assembly.hpp assambly.cpp polynomial.hpp monmomials_and_basefunctions.hpp squareGrid.hpp Matrix.hpp
+assambly.o: assembly.hpp assambly.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp
