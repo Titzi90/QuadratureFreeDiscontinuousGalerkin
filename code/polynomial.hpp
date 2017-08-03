@@ -13,6 +13,7 @@
 #include <numeric>
 #include <iostream>
 
+// #include "monmomials_and_basefunctions.hpp"
 
 enum class Variable {X, Y};
 
@@ -113,6 +114,7 @@ public:
     return val;
   }
 
+
 private:
   unsigned int order_;
   std::vector<double> coeficents_;
@@ -124,6 +126,21 @@ private:
   friend auto end(Polynomial2D const & pol)  ->decltype(const_cast<const std::vector<double>&>(coeficents_).end());
 };
 
+inline std::vector<double> serialize(Polynomial2D const & pol)
+{
+  //TODO testen
+  std::vector<double> c;
+  // c.reserve(numberOf2DBasefunctions(pol.getOrder()));
+
+  for (unsigned int i=0; i<=pol.getOrder(); ++i)
+    for (unsigned int x=i; x!=std::numeric_limits<unsigned int>::max(); --x)
+      {
+        unsigned int y = i-x;
+        c.push_back(pol.get(x,y));
+      }
+
+  return c;
+}
 
 // plus assignment operator for polynomials
 inline Polynomial1D& operator+=(Polynomial1D & lhs, Polynomial1D const & rhs)

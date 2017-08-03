@@ -8,11 +8,11 @@ RM = rm -f
 ########## VARIABLES ##########################################
 BIN = polyTest
 OFILES_poly_test = test.o polynomial.o
-OFILES_assambly = assambly.o polynomial.o
+OFILES_assembly = assembly.o polynomial.o
 
 ########## TARGETS ############################################
 .PHONY: all test clean
-all: test assambly
+all: test assembly
 
 clean:
 	$(RM) $(BIN) $(OFILES_poly_test) $(OFILES_assambly)
@@ -24,7 +24,7 @@ test: polyTest
 polyTest: $(OFILES_poly_test)
 	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-assambly: $(OFILES_assambly)
+assembly: $(OFILES_assembly)
 	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 ##########  GENERAL RULEs #####################################
@@ -36,6 +36,6 @@ assambly: $(OFILES_assambly)
 
 
 ########## DEPENDENCIES ######################################
-test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp
+test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp assembly.hpp
 polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp
-assambly.o: assembly.hpp assambly.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp
+assembly.o: assembly.hpp assembly.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp

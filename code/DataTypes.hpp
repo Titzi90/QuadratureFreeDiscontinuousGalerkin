@@ -1,6 +1,7 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
+#include "polynomial.hpp"
 #include "monmomials_and_basefunctions.hpp"
 
 #include <vector>
@@ -103,6 +104,11 @@ inline std::vector<double> matVecMul(BlockMatrix const & A, std::vector<double> 
 inline std::vector<double> operator* (BlockMatrix const & A, std::vector<double> const & b)
 {
   return matVecMul(A,b);
+}
+
+inline std::vector<double> operator*(BlockMatrix const & M, Polynomial2D const & pol)
+{
+  return matVecMul(M,serialize(pol));
 }
 
 inline std::vector<double> operator* (double c, std::vector<double> const & v)

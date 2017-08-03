@@ -130,15 +130,18 @@ inline void assemblyG (UniqueSquareGrid & mesh,
 /**
  * Generate matrices[hatE_1, hatE_2, hatE_3] for the reference element t^
  */
-inline std::vector<BlockMatrix> assemblyHatE (unsigned int polynomialDegree)
+inline std::vector<BlockMatrix> assemblyHatE (unsigned int polynomialDegree,
+                                              unsigned int polynomialDegreeF)
 {
   unsigned int dof1D      = numberOf1DBasefunctions(polynomialDegree);
   unsigned int dof2D      = numberOf2DBasefunctions(polynomialDegree);
-  std::vector<T_linear> T = getLinearTrasformationToRefEdge(polynomialDegree);
+  unsigned int dofF       = numberOf1DBasefunctions(polynomialDegreeF);
+  std::vector<BlockMatrix> T = getLinearTrasformationToRefEdge(polynomialDegree);
+  //TODO T muss hier ganz anderes sein
 
-  BlockMatrix E1(dof2D, dof1D);
-  BlockMatrix E2(dof2D, dof1D);
-  BlockMatrix E3(dof2D, dof1D);
+  BlockMatrix E1(dof2D, dofF);
+  BlockMatrix E2(dof2D, dofF);
+  BlockMatrix E3(dof2D, dofF);
 
   // E = (T*B)*b^t
   for (unsigned int i=0; i<dof2D; ++i)
@@ -150,13 +153,13 @@ inline std::vector<BlockMatrix> assemblyHatE (unsigned int polynomialDegree)
       // MatRow-Vec-Mul tmp=T_i*B^
       for (unsigned int ii=0; ii<dof1D; ++ii)
         {
-          tmp1 += T[0][i][ii] * pol::phi1D[ii];
-          tmp2 += T[1][i][ii] * pol::phi1D[ii];
-          tmp3 += T[2][i][ii] * pol::phi1D[ii];
+          tmp1 += T[0](ii, i) * pol::phi1D[ii];
+          tmp2 += T[1](ii, i) * pol::phi1D[ii];
+          tmp3 += T[2](ii, i) * pol::phi1D[ii];
         }
 
       // Vec-VecTrans-Mul E=tmp*B^t
-      for (unsigned int j=0; j<dof1D; ++j)
+      for (unsigned int j=0; j<dofF; ++j)
         {
           E1(i,j) = integradeOverRefEdge(tmp1 * pol::phi1D[j]);
           E2(i,j) = integradeOverRefEdge(tmp2 * pol::phi1D[j]);
@@ -170,14 +173,15 @@ inline std::vector<BlockMatrix> assemblyHatE (unsigned int polynomialDegree)
 /**
  * Calculate local matrices [E1_k, E2_k, E3_k] for element t_k
  */
+//TODO größe von E ist noch falsch
 inline std::vector<BlockMatrix> assemblyLocalE_k (std::vector<BlockMatrix> hatE,
                                                   std::vector<double> const & length_k)
 {
-  unsigned int dof1D = hatE[0].getM();
-  unsigned int dof2D = hatE[0].getN();
+  unsigned int N = hatE[0].getN();
+  unsigned int M = hatE[0].getM();
 
-  for (unsigned int i=0; i<dof2D; ++i)
-    for (unsigned int j=0; j<dof1D; ++j)
+  for (unsigned int i=0; i<N; ++i)
+    for (unsigned int j=0; j<M; ++j)
       for (int e=0; e<3; ++e)
         hatE[e](i, j) *= length_k[e];
 
@@ -207,7 +211,7 @@ inline void assemblyE (UniqueSquareGrid & mesh,
 
 /******** Vector representing the Flux F **************************************/
 
-typedef std::function<std::vector<double>(unsigned int,
+typedef std::function<std::vector<double>(unsigned int, unsigned int,
                                           std::vector<double>const &,
                                           std::vector<double>const &,
                                           std::vector<double>const &,
@@ -217,8 +221,8 @@ typedef std::function<std::vector<double>(unsigned int,
                                           std::vector<double>const &,
                                           std::vector<double>const &,
                                           Vector const &,
-                                          T_linear const &,
-                                          T_linear const &,
+                                          unsigned int const,
+                                          unsigned int const,
                                           std::vector<double> const &)> RiemanSolver;
 
 /**
@@ -226,45 +230,52 @@ typedef std::function<std::vector<double>(unsigned int,
  */
 inline void assemblyFr(UniqueSquareGrid & mesh,
                        unsigned int polynomialDegree,
+                       unsigned int polynomialDegreeF,
                        RiemanSolver const & riemanSolver,
-                       std::vector<T_linear> const & hatT,
                        std::vector<double> const & hatI)
 {
   for ( unsigned int row=0; row<mesh.getRows(); ++row)
     for ( unsigned int col=0; col<mesh.getColumns(); ++col)
     {
       { // Lower Triangle
+        //TODO periodic boundary
         Triangle & k   = mesh.getLower(row, col);
         Triangle & n_a = mesh.getUpper(row, col);
-        Triangle & n_b = mesh.getUpper(row, col-1);
-        Triangle & n_c = mesh.getUpper(row-1, col);
+        Triangle & n_b = col>0 ? mesh.getUpper(row, col-1) : mesh.getUpper(row, mesh.getColumns()-1);
+        Triangle & n_c = row>0 ? mesh.getUpper(row-1, col) : mesh.getUpper(mesh.getRows()-1, col);
 
-        k.F_a() = riemanSolver(polynomialDegree, k.F1(), k.F2(), n_a.F1(), n_a.F2(),
+        k.F_a() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
+                               n_a.F1(), n_a.F2(),
                                k.U1(), k.U2(), n_a.U1(), n_a.U2(), k.getNormalA(),
-                               hatT[0],  hatT[1], hatI);
-        k.F_b() = riemanSolver(polynomialDegree, k.F1(), k.F2(), n_b.F1(), n_b.F2(),
+                               0, 1, hatI);
+        k.F_b() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
+                               n_b.F1(), n_b.F2(),
                                k.U1(), k.U2(), n_b.U1(), n_b.U2(), k.getNormalB(),
-                               hatT[1],  hatT[2], hatI);
-        k.F_c() = riemanSolver(polynomialDegree, k.F1(), k.F2(), n_c.F1(), n_c.F2(),
+                               1,  2, hatI);
+        k.F_c() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
+                               n_c.F1(), n_c.F2(),
                                k.U1(), k.U2(), n_c.U1(), n_c.U2(), k.getNormalC(),
-                               hatT[2],  hatT[0], hatI);
+                               2,  0, hatI);
       }
 
       { // Upper Triangle
         Triangle & k   = mesh.getUpper(row, col);
-        Triangle & n_a = mesh.getLower(row+1, col);
+        Triangle & n_a = row==mesh.getRows()-1 ? mesh.getLower(0, col) : mesh.getLower(row+1, col);
         Triangle & n_b = mesh.getLower(row, col);
-        Triangle & n_c = mesh.getLower(row, col+1);
+        Triangle & n_c = col==mesh.getColumns()-1 ? mesh.getLower(row,0) : mesh.getLower(row, col+1);
 
-        k.F_a() = riemanSolver(polynomialDegree, k.F1(), k.F2(), n_a.F1(), n_a.F2(),
+        k.F_a() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
+                               n_a.F1(), n_a.F2(),
                                k.U1(), k.U2(), n_a.U1(), n_a.U2(), k.getNormalA(),
-                               hatT[0],  hatT[2], hatI);
-        k.F_b() = riemanSolver(polynomialDegree, k.F1(), k.F2(), n_b.F1(), n_b.F2(),
+                               0,  2, hatI);
+        k.F_b() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
+                               n_b.F1(), n_b.F2(),
                                k.U1(), k.U2(), n_b.U1(), n_b.U2(), k.getNormalB(),
-                               hatT[1],  hatT[0], hatI);
-        k.F_c() = riemanSolver(polynomialDegree, k.F1(), k.F2(), n_c.F1(), n_c.F2(),
+                               1, 0, hatI);
+        k.F_c() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
+                               n_c.F1(), n_c.F2(),
                                k.U1(), k.U2(), n_c.U1(), n_c.U2(), k.getNormalC(),
-                               hatT[2],  hatT[1], hatI);
+                               2, 1, hatI);
       }
     }
 }
@@ -278,6 +289,7 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
  * Fr_ke = upwinding(F_k,F_n) * n_ke
  */
 inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree,
+                                                   unsigned int polynomialDegreeF,
                                                    std::vector<double> const & F1_k,
                                                    std::vector<double> const & F2_k,
                                                    std::vector<double> const & F1_n,
@@ -287,18 +299,21 @@ inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree
                                                    std::vector<double> const & U1_n,
                                                    std::vector<double> const & U2_n,
                                                    Vector const & n_ke,
-                                                   T_linear const & T_ke,
-                                                   T_linear const & T_ne,
+                                                   unsigned int const edgeID_k,
+                                                   unsigned int const edgeID_n,
                                                    std::vector<double> const & hatI)
 {
+
   std::vector<double> Frn_e;
 
+  std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
+  std::vector<BlockMatrix> T_f = getLinearTrasformationToRefEdge(polynomialDegreeF);
 
   // normal u at edge from both sides
-  std::vector<double> ubar1_k = convertToEdge(T_ke, U1_k, polynomialDegree);
-  std::vector<double> ubar2_k = convertToEdge(T_ke, U2_k, polynomialDegree);
-  std::vector<double> ubar1_n = convertToEdge(T_ne, U1_n, polynomialDegree);
-  std::vector<double> ubar2_n = convertToEdge(T_ne, U2_n, polynomialDegree);
+  std::vector<double> ubar1_k = convertToEdge(T[edgeID_k], U1_k, polynomialDegree);
+  std::vector<double> ubar2_k = convertToEdge(T[edgeID_k], U2_k, polynomialDegree);
+  std::vector<double> ubar1_n = convertToEdge(T[edgeID_n], U1_n, polynomialDegree);
+  std::vector<double> ubar2_n = convertToEdge(T[edgeID_n], U2_n, polynomialDegree);
 
   Polynomial1D uNormal_k = reconstructFunction1D(polynomialDegree, n_ke.x*ubar1_k + n_ke.y*ubar2_k);
   Polynomial1D uNormal_n = reconstructFunction1D(polynomialDegree, n_ke.x*ubar1_n + n_ke.y*ubar2_n);
@@ -309,15 +324,15 @@ inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree
   // up_wind direction
   if ( 0 >= u_k+u_n)
     { // from elemnt k to n
-      auto Fr1_e = convertToEdge(T_ke, F1_k, polynomialDegree);
-      auto Fr2_e = convertToEdge(T_ke, F2_k, polynomialDegree);
+      auto Fr1_e = convertToEdge(T_f[edgeID_k], F1_k, polynomialDegreeF);
+      auto Fr2_e = convertToEdge(T_f[edgeID_k], F2_k, polynomialDegreeF);
 
       Frn_e = Fr1_e*n_ke.x + Fr2_e*n_ke.y;
     }
   else
     { // from elemnt n to k
-      auto Fr1_e = convertToEdge(T_ne, F1_n, polynomialDegree);
-      auto Fr2_e = convertToEdge(T_ne, F2_n, polynomialDegree);
+      auto Fr1_e = convertToEdge(T_f[edgeID_n], F1_n, polynomialDegreeF);
+      auto Fr2_e = convertToEdge(T_f[edgeID_n], F2_n, polynomialDegreeF);
 
       Frn_e = elementWiseMul(hatI, Fr1_e*n_ke.x + Fr2_e*n_ke.y);
     }
@@ -448,7 +463,7 @@ inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const &
                                                                 unsigned int targetPolynomialDegree,
                                                                 unsigned int polynomialDegree)
 {
-  //TODO hier mit etwas rumspeilen
+  //TODO hier mit targetDegree etwas rumspeilen
 
   auto c_pol ( reconstructFunction2D(polynomialDegree, t_k.C()) );
   auto u1_pol ( reconstructFunction2D(polynomialDegree, t_k.U1()) );
@@ -457,13 +472,15 @@ inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const &
   auto F1_pol = c_pol * u1_pol;
   auto F2_pol = c_pol * u2_pol;
 
-  auto F1 (l2Projection(targetPolynomialDegree, F1_pol));
-  auto F2 (l2Projection(targetPolynomialDegree, F2_pol));
+
+  BlockMatrix T = getPolynomialMapping(targetPolynomialDegree);
+
+  auto F1 (T * F1_pol);
+  auto F2 (T * F2_pol);
 
   return {F1, F2};
 }
 
-//TODO Rand machen für U[1,2] und F[1,2]
 
 
 
@@ -480,7 +497,6 @@ inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const &
 
 
 
-//TODO print methode die globale maxtix prinded
 
 
 #endif

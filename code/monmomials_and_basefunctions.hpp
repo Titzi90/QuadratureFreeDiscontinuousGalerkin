@@ -121,56 +121,127 @@ namespace pol
   };
 }  // end namespace pol
 
-// 3x2 Matrix for the linear mapping from 2D to 1D
-// TODO Matrix machen
-typedef double const (*T_linear)[2]; // Transformation Matrix for linear Functtions from 2D to 1D -> 3x2
 
 /**
  * convert function f^ from ref. Element to ref. edge
  * f_ = T^t * f^
  */
-inline std::vector<double> convertToEdge (T_linear const & T_ke,
-                                          std::vector<double> f,
+inline std::vector<double> convertToEdge (BlockMatrix const & T_ke,
+                                          std::vector<double> const & f,
                                           int polynomialDegree)
 {
-  int dof1D = numberOf1DBasefunctions(polynomialDegree);
-  int dof2D = numberOf2DBasefunctions(polynomialDegree);
 
-  std::vector<double> f_ (dof1D, 0.);
 
-  for (int i=0; i<dof1D; ++i)
-    for (int j=0; j<dof2D; ++j)
-      f_[i] += T_ke[j][i] * f[j];
+  std::vector<double> f_ = T_ke * f;
 
-  return f_;
+  return T_ke * f;
 }
 
 /**
  * calculates transformation matrices from reference triangle to reference edge
+ * returns transposed matrix!
  * linear case!
  */
-inline std::vector<T_linear> getLinearTrasformationToRefEdge(int const polynomialDegree)
+inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polynomialDegree)
 {
-  //TODO higher dimension
-  assert(polynomialDegree == 1); //just linear T is implemented!
+  unsigned int dof1D = numberOf1DBasefunctions(polynomialDegree);
+  unsigned int dof2D = numberOf2DBasefunctions(polynomialDegree);
 
-  double t1[3][2];
-  t1[0][0] =  std::sqrt(2); t1[0][1] = 0.;
-  t1[1][0] = -1.          ; t1[1][1] = -3./std::sqrt(3);
-  t1[2][0] = -std::sqrt(3); t1[2][1] = 1.;
+  BlockMatrix t1(dof1D,dof2D);
+  BlockMatrix t2(dof1D,dof2D);
+  BlockMatrix t3(dof1D,dof2D);
 
-  double t2[3][2];
-  t2[0][0] =  std::sqrt(2); t2[0][1] = 0.;
-  t2[1][0] =  2.          ; t2[1][1] = 0.;
-  t2[2][0] =  0.          ; t2[2][1] = -2.;
+  using std::sqrt;
+  switch(polynomialDegree)
+    {
+    case 2:
+      t1(0,3) = sqrt(6)/3    ; t1(1,3) = sqrt(2)       ; t1(2,3) = sqrt(30)/3;
+      t1(0,4) = 19*sqrt(3)/3 ; t1(1,4) =-8             ; t1(2,4) = sqrt(15)/3;
+      t1(0,5) = sqrt(5)      ; t1(1,5) = 0             ; t1(2,5) = -1;
 
-  double t3[3][2];
-  t3[0][0] =  std::sqrt(2); t3[0][1] = 0.;
-  t3[1][0] = -1.          ; t3[1][1] = 3./std::sqrt(3);
-  t3[2][0] =  std::sqrt(3); t3[2][1] = 1.;
+      t2(0,3) = sqrt(6);
+      t2(0,4) =-2*sqrt(3)    ; t2(1,4) =-2/3           ; t2(2,4) = -sqrt(15)/2;
+      t2(0,5) =-3*sqrt(5)/5  ; t2(1,5) =-3*sqrt(15)/10 ; t2(2,5) = 3/2;
+
+      t2(0,3) =-2*sqrt(6)/3  ; t3(1,3) =-sqrt(2)       ; t2(2,3) = sqrt(30)/3;
+      t2(0,4) =-4*sqrt(3)/3  ; t2(1,4) =-1/2           ; t2(2,4) = sqrt(15)/6;
+      t2(0,5) = 0            ; t2(1,5) = sqrt(15)/2    ; t2(2,5) = 3/2;
+    case 1:
+      t1(0,0) =  sqrt(2)     ; t1(1,0) = 0.;
+      t1(0,1) = -1.          ; t1(1,1) = -sqrt(3);
+      t1(0,2) = -sqrt(3)     ; t1(1,2) = 1.;
+
+      t2(0,0) =  sqrt(2)     ; t2(1,0) = 0.;
+      t2(0,1) =  2.          ; t2(1,1) = 0.;
+      t2(0,2) =  0.          ; t2(1,2) = -2.;
+
+      t3(0,0) =  sqrt(2)     ; t3(1,0) = 0.;
+      t3(0,1) = -1.          ; t3(1,1) = sqrt(3);
+      t3(0,2) =  sqrt(3)     ; t3(1,2) = 1.;
+
+      break;
+    default:
+      assert(-1);
+    }
+
+
 
   return {t1,t2,t3};
 }
+
+/**
+ * Transformation Matrix from 2D Polynomial to 2D Monomial base space
+ */
+inline BlockMatrix getPolynomialMapping (unsigned int polynomialDegree)
+{
+  using std::sqrt;
+  BlockMatrix T;
+  switch(polynomialDegree)
+    {
+    case 0:
+      T = BlockMatrix(1);
+      T(0,0) = 1./sqrt(2);
+      break;
+    case 1:
+      T = BlockMatrix(3);
+      T(0,0) = 1./sqrt(2);
+      T(0,1) = 1./(3.*sqrt(2));
+      T(0,2) = 1./(3.*sqrt(2));
+      T(1,1) = -1./6.;
+      T(1,2) = 1./12.;
+      T(2,2) = -1./(4.*sqrt(3));
+      break;
+    case 2:
+      T = BlockMatrix(6);
+      T(0,0) = 1./sqrt(2);
+      T(0,1) = 1./(3.*sqrt(2));
+      T(0,2) = 1./(3.*sqrt(2));
+      T(0,3) = sqrt(2)/12.;
+      T(0,5) = sqrt(2)/12.;
+      T(0,4) = sqrt(2)/24.;
+      T(1,1) = -1./6.;
+      T(1,2) = 1./12.;
+      T(1,3) = -2./15;
+      T(1,5) = 1./15;
+      T(1,4) = -1./60;
+      T(2,2) = -1./(4.*sqrt(3));
+      T(2,5) = -sqrt(3)/15.;
+      T(2,4) = -sqrt(3)/60.;
+      T(3,3) = sqrt(6)/60.;
+      T(3,5) = sqrt(6)/180.;
+      T(3,4) = sqrt(6)/120.;
+      T(4,5) = -sqrt(3)/45.;
+      T(4,4) = sqrt(3)/120.;
+      T(5,4) = sqrt(5)/120.;
+    default:
+      assert(-1);
+    }
+
+  return T;
+}
+
+
+
 
 inline double integradeOverRefTriangle(Polynomial2D const & pol)
 {
@@ -258,8 +329,8 @@ inline double integradeOverRefTriangle_gaus(std::function<double(double,double)>
  */
 inline std::vector<double> l2Projection (unsigned int polynomialDegree,
                                          std::function<double(double,double)> const & f,
-                                  Jakobian const & B_k,
-                                  Point const & A_k)
+                                         Jakobian const & B_k,
+                                         Point const & A_k)
 {
   unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
 
@@ -288,14 +359,17 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
  * int{b_i * f} = sum{int{F_j * B_j * B_i} }= sum {F_j * int{δ_{ij}} } = F_i
  */
 inline std::vector<double> l2Projection (unsigned int polynomialDegree,
-                                  Polynomial2D const & f)
+                                         Polynomial2D const & f)
 {
-  std::vector<double> F;
+  std::cout << "l2Projetion: " << polynomialDegree << std::endl;
   unsigned int dof (numberOf2DBasefunctions(polynomialDegree));
+
+  std::vector<double> F;
   F.reserve(dof);
 
   for (unsigned int i=0; i<dof; ++i)
     F.push_back(integradeOverRefTriangle(pol::phi[i] * f));
+  //TODO poly hier ist natürlich nochmal ein gard höher
 
   return F;
 }

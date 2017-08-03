@@ -91,7 +91,8 @@ inline double dot(Vector const & a, Vector const & b)
   return a.x*b.x + a.y*b.y;
 }
 
-typedef double (*Jakobian)[2]; // 2D Jacobian Matrix -> 2x2
+// typedef double (*Jakobian)[2]; // 2D Jacobian Matrix -> 2x2
+typedef double (Jakobian)[2][2];
 
 
 /**
@@ -123,7 +124,7 @@ public:
     B_[1][1] = c.y - a.y;
   }
 
-  Point const & getA() { return A_; }
+  Point const & getA() const { return A_; }
 
   double getLengthA() const { return length1_; }
   double getLengthB() const { return length2_; }
@@ -204,6 +205,9 @@ public:
   UniqueSquareGrid(unsigned int n)
     :rows_(n), columns_(n)
   {
+    lower_.reserve((n+1)*(n+1));
+    upper_.reserve((n+1)*(n+1));
+
     double const h = 1./n;
 
     // ghost layer bottom row
@@ -211,8 +215,8 @@ public:
     for (unsigned int col=0; col<columns_; ++col)
       {
         Point lr ((col+1)*h, -h);
-        Point ul ( col   *h, 0.);
         Point ur ((col+1)*h, 0.);
+        Point ul ( col   *h, 0.);
         upper_.push_back( Triangle(lr,ur,ul) );
       }
     for (unsigned int row=0; row<rows_; ++row)
@@ -220,8 +224,8 @@ public:
         // add ghost triangle (left site)
         {
           Point lr (0.,  row   *h); // lower right corner
-          Point ul (-h, (row+1)*h); // upper left corner
           Point ur (0., (row+1)*h); // upper right corner
+          Point ul (-h, (row+1)*h); // upper left corner
           upper_.push_back( Triangle(lr,ur,ul) );
         }
         for (unsigned int col=0; col<columns_; ++col)
@@ -229,26 +233,26 @@ public:
             // add physical triangles
             Point ll ( col   *h,  row   *h); // lower left corner
             Point lr ((col+1)*h,  row   *h); // lower right corner
-            Point ul ( col   *h, (row+1)*h); // upper left corner
             Point ur ((col+1)*h, (row+1)*h); // upper right corner
+            Point ul ( col   *h, (row+1)*h); // upper left corner
 
             lower_.push_back( Triangle(ll,lr,ul) );
             upper_.push_back( Triangle(lr,ur,ul) );
           }
         // add ghost triangle (right site)
         {
-          Point ll ( columns_   *h,  row   *h); // lower left corner
-          Point lr ((columns_+1)*h,  row   *h); // lower right corner
-          Point ul ( columns_   *h, (row+1)*h); // upper left corner
+          Point ll ( 1.  ,  row   *h); // lower left corner
+          Point lr ( 1.+h,  row   *h); // lower right corner
+          Point ul ( 1.  , (row+1)*h); // upper left corner
           lower_.push_back( Triangle(ll,lr,ul) );
         }
       }
     // ghost layer top row
     for (unsigned int col=0; col<columns_; ++col)
       {
-        Point ll ( columns_   *h,  rows_   *h); // lower left corner
-        Point lr ((columns_+1)*h,  rows_   *h); // lower right corner
-        Point ul ( columns_   *h, (rows_+1)*h); // upper left corner
+        Point ll ( col   *h, 1.  ); // lower left corner
+        Point lr ((col+1)*h, 1.  ); // lower right corner
+        Point ul ( col   *h, 1.+h); // upper left corner
         lower_.push_back( Triangle(ll,lr,ul) );
       }
   }
@@ -278,7 +282,7 @@ public:
 
     assert (row < rows_+1);
     assert (col < columns_+1);
-    return lower_[row*(columns_+1) + col];
+    return upper_[row*(columns_+1) + col];
   }
   Triangle & getUpper(unsigned int row, unsigned int col)
   {
@@ -286,7 +290,7 @@ public:
 
     assert (row < rows_+1);
     assert (col < columns_+1);
-    return lower_[row*(columns_+1) + col];
+    return upper_[row*(columns_+1) + col];
   }
 
   unsigned int getRows() const { return rows_; }
