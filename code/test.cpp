@@ -279,6 +279,10 @@ int assamblyTest()
   assamblyC(mesh, order, c);          // gesuchte Größe c
   assamblyU(mesh, order, u1, u2);     // velocity field U
   assamblyF(mesh, order, 2*order, assamblyLocalLinearF);  // Flux field f=cu
+  setBoundary_Periodic(mesh, Boundary::bottom);
+  setBoundary_Periodic(mesh, Boundary::top);
+  setBoundary_Periodic(mesh, Boundary::left);
+  setBoundary_Periodic(mesh, Boundary::right);
 
   auto hatM (assemblyHatM(order));
   auto hatG (assemblyHatG(order));

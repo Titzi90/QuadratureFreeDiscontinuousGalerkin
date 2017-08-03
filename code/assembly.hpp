@@ -241,8 +241,8 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
         //TODO periodic boundary
         Triangle & k   = mesh.getLower(row, col);
         Triangle & n_a = mesh.getUpper(row, col);
-        Triangle & n_b = col>0 ? mesh.getUpper(row, col-1) : mesh.getUpper(row, mesh.getColumns()-1);
-        Triangle & n_c = row>0 ? mesh.getUpper(row-1, col) : mesh.getUpper(mesh.getRows()-1, col);
+        Triangle & n_b = mesh.getUpper(row, col-1);
+        Triangle & n_c = mesh.getUpper(row-1, col);
 
         k.F_a() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
                                n_a.F1(), n_a.F2(),
@@ -260,9 +260,9 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
 
       { // Upper Triangle
         Triangle & k   = mesh.getUpper(row, col);
-        Triangle & n_a = row==mesh.getRows()-1 ? mesh.getLower(0, col) : mesh.getLower(row+1, col);
+        Triangle & n_a = mesh.getLower(row+1, col);
         Triangle & n_b = mesh.getLower(row, col);
-        Triangle & n_c = col==mesh.getColumns()-1 ? mesh.getLower(row,0) : mesh.getLower(row, col+1);
+        Triangle & n_c = mesh.getLower(row, col+1);
 
         k.F_a() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
                                n_a.F1(), n_a.F2(),
@@ -481,8 +481,103 @@ inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const &
   return {F1, F2};
 }
 
+enum class Boundary {left, right, top, bottom};
+/**
+ * Set boundary
+ */
+inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
+{
+  switch (b)
+    {
+    case Boundary::left :
+      for (unsigned int i=0; i<mesh.getRows(); ++i)
+        {
+          mesh.getUpper(i, -1).U1() = mesh.getUpper(i,mesh.getColumns()-1).U1();
+          mesh.getUpper(i, -1).U2() = mesh.getUpper(i,mesh.getColumns()-1).U2();
+          mesh.getUpper(i, -1).F1() = mesh.getUpper(i,mesh.getColumns()-1).F1();
+          mesh.getUpper(i, -1).F2() = mesh.getUpper(i,mesh.getColumns()-1).F2();
+        }
+      break;
+    case Boundary::right :
+      for (unsigned int i=0; i<mesh.getRows(); ++i)
+        {
+          mesh.getLower(i, mesh.getColumns()).U1() = mesh.getLower(i, 0).U1();
+          mesh.getLower(i, mesh.getColumns()).U2() = mesh.getLower(i, 0).U2();
+          mesh.getLower(i, mesh.getColumns()).F1() = mesh.getLower(i, 0).F1();
+          mesh.getLower(i, mesh.getColumns()).F2() = mesh.getLower(i, 0).F2();
+        }
+      break;
+    case Boundary::bottom :
+      for (unsigned int i=0; i<mesh.getColumns(); ++i)
+        {
+          mesh.getUpper(-1, i).U1() = mesh.getUpper(mesh.getRows()-1, i).U1();
+          mesh.getUpper(-1, i).U2() = mesh.getUpper(mesh.getRows()-1, i).U2();
+          mesh.getUpper(-1, i).F1() = mesh.getUpper(mesh.getRows()-1, i).F1();
+          mesh.getUpper(-1, i).F2() = mesh.getUpper(mesh.getRows()-1, i).F2();
+        }
+      break;
+    case Boundary::top :
+      for (unsigned int i=0; i<mesh.getColumns(); ++i)
+        {
+          mesh.getLower(mesh.getRows(), i).U1() = mesh.getLower(0, i).U1();
+          mesh.getLower(mesh.getRows(), i).U2() = mesh.getLower(0, i).U2();
+          mesh.getLower(mesh.getRows(), i).F1() = mesh.getLower(0, i).F1();
+          mesh.getLower(mesh.getRows(), i).F2() = mesh.getLower(0, i).F2();
+        }
+      break;
+    }
+}
 
+inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
+                                  unsigned int polynomialDegree,
+                                  std::function<double(double,double)> const & f1,
+                                  std::function<double(double,double)> const & f2)
+{
+  switch (b)
+    {
+    case Boundary::left :
+      for (unsigned int i=0; i<mesh.getRows(); ++i)
+        {
+          Triangle & t = mesh.getLower(i, -1);
+          t.U1() = mesh.getUpper(i,0).U1();
+          t.U2() = mesh.getUpper(i,0).U2();
+          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
+          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+        }
+      break;
+    case Boundary::right :
+      for (unsigned int i=0; i<mesh.getRows(); ++i)
+        {
+          Triangle & t = mesh.getLower(i, mesh.getColumns());
 
+          t.U1() = mesh.getLower(i, mesh.getColumns()-1).U1();
+          t.U2() = mesh.getLower(i, mesh.getColumns()-1).U2();
+          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
+          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+        }
+      break;
+    case Boundary::bottom :
+      for (unsigned int i=0; i<mesh.getColumns(); ++i)
+        {
+          Triangle & t = mesh.getUpper(-1, i);
+          t.U1() = mesh.getUpper(0, i).U1();
+          t.U2() = mesh.getUpper(0, i).U2();
+          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
+          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+        }
+      break;
+    case Boundary::top :
+      for (unsigned int i=0; i<mesh.getColumns(); ++i)
+        {
+          Triangle & t = mesh.getLower(mesh.getRows(), i);
+          t.U1() = mesh.getLower(mesh.getRows()-1, i).U1();
+          t.U2() = mesh.getLower(mesh.getRows()-1, i).U2();
+          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
+          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+        }
+      break;
+    }
+}
 
 
 
