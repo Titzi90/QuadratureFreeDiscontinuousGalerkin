@@ -1,6 +1,7 @@
 #include "assembly.hpp"
 #include "DataTypes.hpp"
 #include "Grid.hpp"
+#include "VTKwriter.hpp"
 
 #include <iostream>
 #include <vector>
@@ -89,6 +90,7 @@ int main()
         std::cout << dc_u << std::endl;
       }
 
-
+  VTKwriter writer ("test", mesh);
+  writer.write();
 
 }

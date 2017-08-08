@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "polynomial.hpp"
 #include "Grid.hpp"
+#include "DataTypes.hpp"
 
 /**
  * gives the number of base function for a given order in 1D and 2D

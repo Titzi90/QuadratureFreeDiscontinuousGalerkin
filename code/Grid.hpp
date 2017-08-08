@@ -5,6 +5,7 @@
 #include <cassert>
 #include <vector>
 
+#include "monmomials_and_basefunctions.hpp"
 #include "DataTypes.hpp"
 
 
@@ -207,8 +208,21 @@ public:
   {
     lower_.reserve((n+1)*(n+1));
     upper_.reserve((n+1)*(n+1));
+    vertices_.reserve((n+1)*(n+1));
 
     double const h = 1./n;
+
+    // POINTS
+    for (unsigned int row=0; row<rows_+1; ++row)
+      for (unsigned int col=0; col<columns_+1; ++col)
+        vertices_.push_back(Point(row*h, col*h));
+
+
+
+
+
+    //TRIANGLES
+    //TODO neu aus punkt menge generieren
 
     // ghost layer bottom row
     upper_.push_back( Triangle({0.,-h}, {0.,0.}, {-h,0.}) );
@@ -296,7 +310,7 @@ public:
   unsigned int getRows() const { return rows_; }
   unsigned int getColumns() const { return columns_; }
 
-  Point const & getVertex(unsigned int row, unsigned int col)
+  Point const & getVertex(unsigned int row, unsigned int col) const
   {
     assert (row < rows_+1);
     assert (col < columns_+1);
@@ -457,6 +471,12 @@ inline std::ostream& printFr(UniqueSquareGrid const & mesh, std::ostream& os)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       os << mesh.getUpper(row, col).F_c();
 
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream & os, Point const & p)
+{
+  os << p.x << " " << p.y;
   return os;
 }
 
