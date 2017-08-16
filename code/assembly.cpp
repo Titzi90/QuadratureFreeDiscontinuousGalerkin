@@ -90,7 +90,7 @@ int main()
         std::cout << dc_u << std::endl;
       }
 
-  VTKwriter writer ("test", mesh);
+  VTKwriter writer ("test", mesh, order);
   writer.write();
 
 }
