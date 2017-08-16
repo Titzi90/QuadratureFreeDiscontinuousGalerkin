@@ -2,9 +2,10 @@
 #include "Grid.hpp"
 #include "DataTypes.hpp"
 
+#include  <cstdlib>
+#include <ctime>
 
-
-UniqueSquareGrid::UniqueSquareGrid(unsigned int n)
+UniqueSquareGrid::UniqueSquareGrid(unsigned int n, double maxVariance)
   :rows_(n), columns_(n)
 {
   lower_.reserve((n+1)*(n+1));
@@ -12,11 +13,19 @@ UniqueSquareGrid::UniqueSquareGrid(unsigned int n)
   vertices_.reserve((n+1)*(n+1));
 
   double const h = 1./n;
+  // std::srand(std::time(0));
+
 
   // POINTS
   for (unsigned int row=0; row<rows_+1; ++row)
     for (unsigned int col=0; col<columns_+1; ++col)
-        vertices_.push_back(Point(col*h, row*h));
+      {
+        // randome shift
+        double var = 2.*std::rand()/RAND_MAX  - 1;
+        std::cout << var << std::endl;
+        double dh = var*maxVariance * h;
+        vertices_.push_back(Point(col*h +dh, row*h +dh));
+      }
 
   //TRIANGLES
   // lower left ghost corner (just for indexing)

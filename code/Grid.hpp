@@ -37,8 +37,10 @@ class UniqueSquareGrid
 public:
   /**
    * Construct an uniform triangle mesh on the unique square with 2*n^2 triangles
+   * n is the refiment level in x and y direction
+   * variance the max shift of the points in % from the uniform mesh; variance=[0,1]
    */
-  UniqueSquareGrid(unsigned int n);
+  UniqueSquareGrid(unsigned int n, double variance=0.);
 
   /**
    * get the lower triangle from cell defined by 'row' and 'col'
