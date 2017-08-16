@@ -11,7 +11,7 @@ int main()
 {
 int order = 1;
 int orderF = 2;
-int refiment = 32;
+int refiment = 16;
 
 
 auto u1 = [](double x, double y, double t){return 0.;};
@@ -20,7 +20,7 @@ auto f  = [](double x, double y, double t){return -std::exp(-t);};
 auto c0 = [](double x, double y){return 1.;};
 auto cExact = [](double x, double y, double t){return std::exp(-t);};
 
-UniqueSquareGrid mesh (refiment);
+ UniqueSquareGrid mesh (refiment, 0.25);
  VTKwriter writer ("analyticalTest", mesh, order);
 auto bcHanderl = [](UniqueSquareGrid & mesh)
   {
