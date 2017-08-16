@@ -6,26 +6,31 @@ CFLAGS = -O3 -g -Wall -ansi -std=c++11
 RM = rm -f
 
 ########## VARIABLES ##########################################
-BIN = polyTest
-OFILES_poly_test = test.o polynomial.o
-OFILES_assembly = assembly.o polynomial.o VTKwriter.o
+BIN = test assembly analyticalTest
+OFILES_test = test.o polynomial.o Grid.o
+OFILES_assembly = assembly.o polynomial.o VTKwriter.o Grid.o
+OFILES_analyticalTest = analyticalTest.o polynomial.o VTKwriter.o Grid.o
 
 ########## TARGETS ############################################
 .PHONY: all test clean
-all: test assembly
+all: ${BIN}
 
 clean:
-	$(RM) $(BIN) $(OFILES_poly_test) $(OFILES_assembly)
+	$(RM) $(BIN) $(OFILES_test) $(OFILES_assembly) ${OFILES_analyticalTest}
 
-test: polyTest
-	./polyTest
+test: test_compile
+	./test
 
 ########## LINKING RULEs ######################################
-polyTest: $(OFILES_poly_test)
-	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+test_compile: $(OFILES_test)
+	$(CPP) $(CFLAGS) -o test $^ $(LDFLAGS)
 
 assembly: $(OFILES_assembly)
 	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+analyticalTest: $(OFILES_analyticalTest)
+	$(CPP) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
 
 ##########  GENERAL RULEs #####################################
 .cpp.o:
@@ -40,3 +45,5 @@ test.o: test.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTy
 polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp
 assembly.o: assembly.hpp assembly.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp
 VTKwriter.o: VTKwriter.cpp VTKwriter.hpp Grid.hpp DataTypes.hpp
+analyticalTest.o: analyticalTest.cpp stepper.hpp Grid.hpp VTKwriter.hpp
+Grid.o: Grid.hpp DataTypes.hpp
