@@ -124,21 +124,6 @@ namespace pol
 
 
 /**
- * convert function f^ from ref. Element to ref. edge
- * f_ = T^t * f^
- */
-inline std::vector<double> convertToEdge (BlockMatrix const & T_ke,
-                                          std::vector<double> const & f,
-                                          int polynomialDegree)
-{
-
-
-  std::vector<double> f_ = T_ke * f;
-
-  return T_ke * f;
-}
-
-/**
  * calculates transformation matrices from reference triangle to reference edge
  * returns transposed matrix!
  * linear case!
@@ -373,6 +358,35 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
   //TODO poly hier ist natürlich nochmal ein gard höher
 
   return F;
+}
+
+inline std::vector<double> lagrangeProjection(std::vector<double> const & c, unsigned int polynomialDegree)
+{
+  Polynomial2D pol = reconstructFunction2D(polynomialDegree, c);
+  std::vector<double> l;
+
+  switch (polynomialDegree)
+    {
+    case 0: // locally constant -> evaluate in ref. triangle center
+      l.push_back(pol(1./3., 1./3.));
+      break;
+    case 1: // locally linear -> evaluate at corners
+      l.push_back(pol(0,0));
+      l.push_back(pol(1,0));
+      l.push_back(pol(0,1));
+      break;
+    default: // locally quadratic -> evaluate at corners and edge mid points
+      if (polynomialDegree > 2)
+        std::cerr << "ploting is limited to 2 order" << std::endl;
+
+      l.push_back(pol(0,0));
+      l.push_back(pol(1,0));
+      l.push_back(pol(0,1));
+      l.push_back(pol(0.5,0));
+      l.push_back(pol(0.5,0.5));
+      l.push_back(pol(0,0.5));
+    }
+  return l;
 }
 
 #endif

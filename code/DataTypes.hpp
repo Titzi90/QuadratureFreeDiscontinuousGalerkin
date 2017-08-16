@@ -133,6 +133,14 @@ inline std::vector<double> operator+ (std::vector<double> const & lhs, std::vect
   return res;
 }
 
+inline std::vector<double>& operator+= (std::vector<double> &lhs, std::vector<double> const & rhs)
+{
+  assert (lhs.size() == rhs.size());
+  for (unsigned int i=0; i<lhs.size(); ++i)
+    lhs[i] += rhs[i];
+  return lhs;
+}
+
 
 /**
  * element wise multiplication of two vectors
@@ -155,11 +163,11 @@ inline std::vector<double> elementWiseMul (std::vector<double> const & lhs,
 
 inline std::ostream& operator<< (std::ostream& os, std::vector<double> const & v)
 {
-  os <<  std::fixed << std::setprecision(3);
+  os <<  std::fixed << std::setprecision(10);
   for (auto i : v)
-    os << std::setw(6) << i << "\n";
+    os << std::setw(13) << i << " ";
 
-  return os;
+  return os << "\b\n";
 }
 
 inline std::ostream& operator<< (std::ostream& os, BlockMatrix const & m)

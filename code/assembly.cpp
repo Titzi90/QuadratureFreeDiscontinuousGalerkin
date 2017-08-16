@@ -23,6 +23,11 @@ int main()
   auto f  = [](double x, double y)->double{ return 0.; };
   auto c  = [](double x, double y)->double{ return 1.; };
 
+  auto hatM (assemblyHatM(order));
+  auto hatG (assemblyHatG(order));
+  auto hatE (assemblyHatE(order, 2*order));
+  auto hatI (getHatI(2*order));
+
   assamblyC(mesh, order, c);          // gesuchte Größe c
   assamblyU(mesh, order, u1, u2);     // velocity field U
   assamblyF(mesh, order, 2*order, assamblyLocalLinearF);  // Flux field f=cu
@@ -30,11 +35,6 @@ int main()
   setBoundary_Periodic(mesh, Boundary::top);
   setBoundary_Periodic(mesh, Boundary::left);
   setBoundary_Periodic(mesh, Boundary::right);
-
-  auto hatM (assemblyHatM(order));
-  auto hatG (assemblyHatG(order));
-  auto hatE (assemblyHatE(order, 2*order));
-  auto hatI (getHatI(2*order));
 
   assemblyM(mesh, hatM);
   assemblyG(mesh, hatG);

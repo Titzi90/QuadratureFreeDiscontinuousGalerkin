@@ -58,6 +58,18 @@ inline void assemblyM (UniqueSquareGrid & mesh, BlockMatrix const & hatM)
       }
 }
 
+/**
+ * invert mass matrix M
+ * M have to be a quadratic diagonal matrix!!!
+ */
+BlockMatrix invertM(BlockMatrix M)
+{
+  for (unsigned int i=0; i<M.getM(); ++i)
+    M(i,i) = 1./M(i,i);
+
+  return M;
+}
+
 /******** Volume integral Matrix part G ***************************************/
 
 /**
@@ -309,11 +321,11 @@ inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree
   std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
   std::vector<BlockMatrix> T_f = getLinearTrasformationToRefEdge(polynomialDegreeF);
 
-  // normal u at edge from both sides
-  std::vector<double> ubar1_k = convertToEdge(T[edgeID_k], U1_k, polynomialDegree);
-  std::vector<double> ubar2_k = convertToEdge(T[edgeID_k], U2_k, polynomialDegree);
-  std::vector<double> ubar1_n = convertToEdge(T[edgeID_n], U1_n, polynomialDegree);
-  std::vector<double> ubar2_n = convertToEdge(T[edgeID_n], U2_n, polynomialDegree);
+  // u on the edge from both sides
+  std::vector<double> ubar1_k = T[edgeID_k] * U1_k;
+  std::vector<double> ubar2_k = T[edgeID_k] * U2_k;
+  std::vector<double> ubar1_n = T[edgeID_n] * U1_n;
+  std::vector<double> ubar2_n = T[edgeID_n] * U2_n;
 
   Polynomial1D uNormal_k = reconstructFunction1D(polynomialDegree, n_ke.x*ubar1_k + n_ke.y*ubar2_k);
   Polynomial1D uNormal_n = reconstructFunction1D(polynomialDegree, n_ke.x*ubar1_n + n_ke.y*ubar2_n);
@@ -324,15 +336,15 @@ inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree
   // up_wind direction
   if ( 0 >= u_k+u_n)
     { // from elemnt k to n
-      auto Fr1_e = convertToEdge(T_f[edgeID_k], F1_k, polynomialDegreeF);
-      auto Fr2_e = convertToEdge(T_f[edgeID_k], F2_k, polynomialDegreeF);
+      auto Fr1_e = T_f[edgeID_k] * F1_k;
+      auto Fr2_e = T_f[edgeID_k] * F2_k;
 
       Frn_e = Fr1_e*n_ke.x + Fr2_e*n_ke.y;
     }
   else
     { // from elemnt n to k
-      auto Fr1_e = convertToEdge(T_f[edgeID_n], F1_n, polynomialDegreeF);
-      auto Fr2_e = convertToEdge(T_f[edgeID_n], F2_n, polynomialDegreeF);
+      auto Fr1_e = T_f[edgeID_n] * F1_n;
+      auto Fr2_e = T_f[edgeID_n] * F2_n;
 
       Frn_e = elementWiseMul(hatI, Fr1_e*n_ke.x + Fr2_e*n_ke.y);
     }
@@ -367,11 +379,12 @@ std::vector<double> getHatI (int const polynomialDegree)
  */
 inline std::vector<double> assemblyLocalL_k (unsigned int polynomialDegree,
                                              std::function<double(double,double)> const & f,
-                                             BlockMatrix const & M_k,
+                                             // BlockMatrix const & M_k,
                                              Jakobian const & B_k,
                                              Point const & A_k)
 {
-  return M_k * l2Projection(polynomialDegree, f, B_k, A_k);
+  // return M_k * l2Projection(polynomialDegree, f, B_k, A_k);
+  return l2Projection(polynomialDegree, f, B_k, A_k);
 }
 
 inline void assamblyL (UniqueSquareGrid & mesh,
@@ -384,8 +397,10 @@ inline void assamblyL (UniqueSquareGrid & mesh,
         Triangle & l = mesh.getLower(row, col);
         Triangle & u = mesh.getUpper(row, col);
 
-        l.L() = assemblyLocalL_k(polynomialDegree, f, l.M(), l.getJakobian(), l.getA());
-        u.L() = assemblyLocalL_k(polynomialDegree, f, u.M(), u.getJakobian(), u.getA());
+        // l.L() = assemblyLocalL_k(polynomialDegree, f, l.M(), l.getJakobian(), l.getA());
+        // u.L() = assemblyLocalL_k(polynomialDegree, f, u.M(), u.getJakobian(), u.getA());
+        l.L() = assemblyLocalL_k(polynomialDegree, f, l.getJakobian(), l.getA());
+        u.L() = assemblyLocalL_k(polynomialDegree, f, u.getJakobian(), u.getA());
       }
 }
 
