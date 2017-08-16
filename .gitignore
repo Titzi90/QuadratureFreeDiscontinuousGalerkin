@@ -7,3 +7,12 @@ auto/*
 *.pdfpc
 *.gz
 *.vrb
+code/*.vtk
+code/vtk/*
+code/*.out
+.dir-locals.el
+TODO
+code/analyticalTest
+code/assembly
+code/test
+
