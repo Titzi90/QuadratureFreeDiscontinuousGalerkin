@@ -12,6 +12,14 @@
 
 using namespace std::placeholders;
 
+
+/*** forward declaration ***********/
+double l2Error(UniqueSquareGrid const &, unsigned int, unsigned int, std::function<double(double,double)> f_ex);
+class Stepper;
+
+
+/*** class implementation ***********/
+
 class Stepper
 {
 public:
@@ -19,7 +27,7 @@ public:
           std::function<double(double,double, double)> u1, std::function<double(double,double, double)> u2,
           std::function<double(double,double, double)> f,
           std::function<double(double,double)> c0, std::function<double(double,double, double)> cExact,
-          std::function<void(UniqueSquareGrid &)> boundaryHandler,
+          std::function<void(UniqueSquareGrid &, double)> boundaryHandler,
           VTKwriter & writer, unsigned int writeInterval,
           bool writeInitialData)
     :mesh_(mesh), order_(order), orderF_(orderF), u1_(u1), u2_(u2), f_(f), c0_(c0), cExact_(cExact),
@@ -41,6 +49,9 @@ public:
     // write initial data
     if (writeInitialData)
       writer_.write();
+
+    //error
+    std::cout << "initial L2 error: " << this->l2error() << std::endl;
   }
 
   /**
@@ -51,7 +62,7 @@ public:
     std::cout << "STEP " << step_ << ": time=" << t_ << std::endl;
 
     // update boundary
-    boundaryHandler_(mesh_);
+    boundaryHandler_(mesh_, t_);
 
     // Assembly matrices and vectors for computation
     assamblyL(mesh_, order_, std::bind(f_, _1, _2, t_));          // RHS vector
@@ -60,7 +71,7 @@ public:
     assemblyFr(mesh_, order_, orderF_, riemanSolver_UpWinding, hatI_);
 
     //TODO set deltaT;
-    deltaT_ = 0.01;
+    deltaT_ = 0.001;
 
     //increase time
     ++step_;
@@ -124,18 +135,22 @@ public:
     if (step_ % writeInterval_ == 0)
       writer_.write();
 
+    // error
+    std::cout << "L2 error: " << this->l2error() << std::endl;;
+
+  }
+
+  /**
+   * get L2 error of current time step
+   */
+  double l2error()
+  {
+    return l2Error(mesh_, order_, order_*2, std::bind(cExact_, _1, _2, t_));
   }
 
 
   double getTime() const {return t_;}
   unsigned int getSteps() const { return step_;}
-
-  double l2Error()
-  {
-    //TODO
-    return -1.;
-  }
-
 
 
 private:
@@ -148,7 +163,7 @@ private:
   std::vector<Tensor> hatG_;
   std::vector<BlockMatrix> hatE_;
   std::vector<double> hatI_;
-  std::function<void(UniqueSquareGrid &)> boundaryHandler_;
+  std::function<void(UniqueSquareGrid &, double)> boundaryHandler_;
   VTKwriter & writer_;
   unsigned int const writeInterval_;
 
@@ -158,6 +173,56 @@ private:
 };
 
 
+/*** free function implementation ***********/
+
+double l2Error(UniqueSquareGrid const & mesh,
+               unsigned int polynomialDegree,
+               unsigned int integragradeDegree,
+               std::function<double(double,double)> f_ex)
+{
+  double err = 0;
+
+  for (unsigned int row=0; row<mesh.getRows(); ++row)
+    for (unsigned int col=0; col<mesh.getColumns(); ++col)
+      {
+        Triangle t = mesh.getLower(row,col);
+        Jakobian const & B_k (t.getJakobian());
+        Point A_k = t.getA();
+        Polynomial2D f_aprox = reconstructFunction2D(polynomialDegree, t.C());
+        double area_k = t.getArea();
+
+        err += 2*area_k * integradeOverRefTriangle_gaus([&f_ex, &f_aprox, &B_k, &A_k](double x1_hat, double x2_hat)
+                                                        {
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c_ex = f_ex(x1,x2);
+                                                          double c_aprox = f_aprox(x1_hat, x2_hat);
+
+                                                          return (c_ex-c_aprox)*(c_ex-c_aprox);
+                                                        },
+                                                        integragradeDegree);
+
+        t = mesh.getLower(row,col);
+        Jakobian const & B_u = t.getJakobian();
+        A_k = t.getA();
+        f_aprox = reconstructFunction2D(polynomialDegree, t.C());
+        area_k = t.getArea();
+
+        err += 2*area_k * integradeOverRefTriangle_gaus([&f_ex, &f_aprox, &B_u, &A_k](double x1_hat, double x2_hat)
+                                                        {
+                                                          double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                          double c_ex = f_ex(x1,x2);
+                                                          double c_aprox = f_aprox(x1_hat, x2_hat);
+
+                                                          return (c_ex-c_aprox)*(c_ex-c_aprox);
+                                                        },
+                                                        integragradeDegree);
+
+      }
+
+  return std::sqrt(err);
+}
 
 
 
