@@ -22,7 +22,6 @@ UniqueSquareGrid::UniqueSquareGrid(unsigned int n, double maxVariance)
       {
         // randome shift
         double var = 2.*std::rand()/RAND_MAX  - 1;
-        std::cout << var << std::endl;
         double dh = var*maxVariance * h;
         vertices_.push_back(Point(col*h +dh, row*h +dh));
       }
