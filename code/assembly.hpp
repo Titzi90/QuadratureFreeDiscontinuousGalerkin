@@ -545,50 +545,67 @@ inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
 
 inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
                                   unsigned int polynomialDegree,
-                                  std::function<double(double,double)> const & f1,
-                                  std::function<double(double,double)> const & f2)
+                                  unsigned int polynomialDegreeF,
+                                  std::function<double(double,double,double)> const & c,
+                                  double time)
 {
+  using namespace std::placeholders;
   switch (b)
     {
     case Boundary::left :
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
-          Triangle & t = mesh.getLower(i, -1);
-          t.U1() = mesh.getUpper(i,0).U1();
-          t.U2() = mesh.getUpper(i,0).U2();
-          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
-          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+          Triangle & t = mesh.getUpper(i, -1);
+          t.U1() = mesh.getLower(i,0).U1();
+          t.U2() = mesh.getLower(i,0).U2();
+          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
+                                t.getJakobian(), t.getA());
+          //TODO nihct nur linar F
+          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
+          t.F1() = F[0];
+          t.F2() = F[1];
         }
       break;
     case Boundary::right :
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
           Triangle & t = mesh.getLower(i, mesh.getColumns());
-
-          t.U1() = mesh.getLower(i, mesh.getColumns()-1).U1();
-          t.U2() = mesh.getLower(i, mesh.getColumns()-1).U2();
-          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
-          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+          t.U1() = mesh.getUpper(i, mesh.getColumns()-1).U1();
+          t.U2() = mesh.getUpper(i, mesh.getColumns()-1).U2();
+          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
+                                t.getJakobian(), t.getA());
+          //TODO nihct nur linar F
+          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
+          t.F1() = F[0];
+          t.F2() = F[1];
         }
       break;
     case Boundary::bottom :
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           Triangle & t = mesh.getUpper(-1, i);
-          t.U1() = mesh.getUpper(0, i).U1();
-          t.U2() = mesh.getUpper(0, i).U2();
-          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
-          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+          t.U1() = mesh.getLower(0, i).U1();
+          t.U2() = mesh.getLower(0, i).U2();
+          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
+                                t.getJakobian(), t.getA());
+          //TODO nihct nur linar F
+          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
+          t.F1() = F[0];
+          t.F2() = F[1];
         }
       break;
     case Boundary::top :
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           Triangle & t = mesh.getLower(mesh.getRows(), i);
-          t.U1() = mesh.getLower(mesh.getRows()-1, i).U1();
-          t.U2() = mesh.getLower(mesh.getRows()-1, i).U2();
-          t.F1() = l2Projection(polynomialDegree, f1, t.getJakobian(), t.getA());
-          t.F2() = l2Projection(polynomialDegree, f2, t.getJakobian(), t.getA());
+          t.U1() = mesh.getUpper(mesh.getRows()-1, i).U1();
+          t.U2() = mesh.getUpper(mesh.getRows()-1, i).U2();
+          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
+                                t.getJakobian(), t.getA());
+          //TODO nihct nur linar F
+          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
+          t.F1() = F[0];
+          t.F2() = F[1];
         }
       break;
     }
