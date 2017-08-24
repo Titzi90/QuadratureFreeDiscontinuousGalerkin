@@ -334,7 +334,7 @@ inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree
   double u_n = integradeOverRefEdge(uNormal_n);
 
   // up_wind direction
-  if ( 0 >= u_k+u_n)
+  if ( 0 <= u_k+u_n)
     { // from elemnt k to n
       auto Fr1_e = T_f[edgeID_k] * F1_k;
       auto Fr2_e = T_f[edgeID_k] * F2_k;
