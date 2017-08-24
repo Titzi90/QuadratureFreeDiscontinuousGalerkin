@@ -147,34 +147,34 @@ void VTKwriter::write()
           switch (order_)
             {
             case 0:
-              file << data2_l[0] << " " << data1_l[0] << " 0\n"
-                   << data2_l[0] << " " << data1_l[0] << " 0\n"
-                   << data2_l[0] << " " << data1_l[0] << " 0\n";
-              file << data2_u[0] << " " << data1_u[0] << " 0\n"
-                   << data2_u[0] << " " << data1_u[0] << " 0\n"
-                   << data2_u[0] << " " << data1_u[0] << " 0\n";
+              file << data1_l[0] << " " << data2_l[0] << " 0\n"
+                   << data1_l[0] << " " << data2_l[0] << " 0\n"
+                   << data1_l[0] << " " << data2_l[0] << " 0\n";
+              file << data1_u[0] << " " << data2_u[0] << " 0\n"
+                   << data1_u[0] << " " << data2_u[0] << " 0\n"
+                   << data1_u[0] << " " << data2_u[0] << " 0\n";
               break;
             case 1:
-              file << data2_l[0] << " " << data1_l[0] << " 0\n"
-                   << data2_l[1] << " " << data1_l[1] << " 0\n"
-                   << data2_l[2] << " " << data1_l[2] << " 0\n";
-              file << data2_u[0] << " " << data1_u[0] << " 0\n"
-                   << data2_u[1] << " " << data1_u[1] << " 0\n"
-                   << data2_u[2] << " " << data1_u[2] << " 0\n";
+              file << data1_l[0] << " " << data2_l[0] << " 0\n"
+                   << data1_l[1] << " " << data2_l[1] << " 0\n"
+                   << data1_l[2] << " " << data2_l[2] << " 0\n";
+              file << data1_u[0] << " " << data2_u[0] << " 0\n"
+                   << data1_u[1] << " " << data2_u[1] << " 0\n"
+                   << data1_u[2] << " " << data2_u[2] << " 0\n";
               break;
             case 2:
-              file << data2_l[0] << " " << data1_l[0] << " 0\n"
-                   << data2_l[1] << " " << data1_l[1] << " 0\n"
-                   << data2_l[2] << " " << data1_l[2] << " 0\n"
-                   << data2_l[3] << " " << data1_l[3] << " 0\n"
-                   << data2_l[4] << " " << data1_l[4] << " 0\n"
-                   << data2_l[5] << " " << data1_l[5] << " 0\n";
-              file << data2_u[0] << " " << data1_u[0] << " 0\n"
-                   << data2_u[1] << " " << data1_u[1] << " 0\n"
-                   << data2_u[2] << " " << data1_u[2] << " 0\n"
-                   << data2_u[3] << " " << data1_u[3] << " 0\n"
-                   << data2_u[4] << " " << data1_u[4] << " 0\n"
-                   << data2_u[5] << " " << data1_u[5] << " 0\n";
+              file << data1_l[0] << " " << data2_l[0] << " 0\n"
+                   << data1_l[1] << " " << data2_l[1] << " 0\n"
+                   << data1_l[2] << " " << data2_l[2] << " 0\n"
+                   << data1_l[3] << " " << data2_l[3] << " 0\n"
+                   << data1_l[4] << " " << data2_l[4] << " 0\n"
+                   << data1_l[5] << " " << data2_l[5] << " 0\n";
+              file << data1_u[0] << " " << data2_u[0] << " 0\n"
+                   << data1_u[1] << " " << data2_u[1] << " 0\n"
+                   << data1_u[2] << " " << data2_u[2] << " 0\n"
+                   << data1_u[3] << " " << data2_u[3] << " 0\n"
+                   << data1_u[4] << " " << data2_u[4] << " 0\n"
+                   << data1_u[5] << " " << data2_u[5] << " 0\n";
               break;
             }
         }
