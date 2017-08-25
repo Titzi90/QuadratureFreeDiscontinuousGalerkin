@@ -294,6 +294,7 @@ inline double integradeOverRefTriangle_gaus(std::function<double(double,double)>
   std::vector<double> w,x1,x2;
 
   switch(order){
+  case 0:
   case 1:
     return f(1./3,1./3) * 0.5;
     break;
