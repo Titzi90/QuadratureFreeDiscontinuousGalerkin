@@ -9,6 +9,7 @@
 #include <functional>
 #include <vector>
 #include <iostream>
+#include <limits>
 
 using namespace std::placeholders;
 
@@ -28,12 +29,14 @@ public:
           std::function<double(double,double, double)> f,
           std::function<double(double,double)> c0, std::function<double(double,double, double)> cExact,
           std::function<void(UniqueSquareGrid &, double)> boundaryHandler,
-          VTKwriter & writer, unsigned int writeInterval,
-          bool writeInitialData)
+          double tEnd, unsigned int numSteps,
+          VTKwriter & writer, unsigned int writeInterval=std::numeric_limits<unsigned int>::max(),
+          bool writeInitialData=false, bool writeError=true)
     :mesh_(mesh), order_(order), orderF_(orderF), u1_(u1), u2_(u2), f_(f), c0_(c0), cExact_(cExact),
      hatM_(assemblyHatM(order_)), hatG_(assemblyHatG(order_)), hatE_(assemblyHatE(order_, orderF_)),
      hatI_(getHatI(orderF_)), boundaryHandler_(boundaryHandler),
-     writer_(writer), writeInterval_(writeInterval),
+     numSteps_(numSteps), deltaT_(tEnd/numSteps_),
+     writer_(writer), writeInterval_(writeInterval), writeError_(writeError),
      t_(0.), step_(0)
   {
     // set initial data
@@ -59,7 +62,8 @@ public:
    */
   void next()
   {
-    std::cout << "STEP " << step_ << ": time=" << t_ << std::endl;
+    // if (writeError_)
+      // std::cout << "STEP " << step_ << ": time=" << t_ << std::endl;
 
     // update boundary
     boundaryHandler_(mesh_, t_);
@@ -69,9 +73,6 @@ public:
     assemblyG(mesh_, hatG_);
     assemblyE(mesh_, hatE_);
     assemblyFr(mesh_, order_, orderF_, riemanSolver_UpWinding, hatI_);
-
-    //TODO set deltaT;
-    deltaT_ = 0.001;
 
     //increase time
     ++step_;
@@ -90,39 +91,37 @@ public:
             - T_u.E_a()*T_u.F_a() - T_u.E_b()*T_u.F_b() - T_u.E_c()*T_u.F_c();
 
 
+          // if (step_%100==0)
+          //   {
           // std::cout << row  << "," << col << " lower:\n"
-                    // << "C_old:\n" << T_l.C()
-                    // << "\vG:\n" << T_l.G()
-                    // << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
-                    // << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
-                    // << "\vFr:\n" << T_l.F_a() << "\n" << T_l.F_b() << "\n" << T_l.F_c()
-                    // << "\vF:\n" << T_l.F1() << "\n" << T_l.F2()
-                    // << "\vL:\n" << T_l.L()
-                    // << "\vdc:\n" << tmp_l
-                    // << "\vM^-1:\n" << invertM(T_l.M())
-                    // << std::endl;
+          //           << "C_old:\n" << T_l.C()
+          //           << "\vG:\n" << T_l.G()
+          //           << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
+          //           << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
+          //           << "\vFr:\n" << T_l.F_a() << "\n" << T_l.F_b() << "\n" << T_l.F_c()
+          //           << "\vF:\n" << T_l.F1() << "\n" << T_l.F2()
+          //           << "\vL:\n" << T_l.L()
+          //           << "\vdc:\n" << tmp_l
+          //           << "\vM^-1:\n" << invertM(T_l.M())
+          //           << std::endl;
 
           // std::cout << row  << "," << col << " upper:\n"
-                    // << "C_old:\n" << T_u.C()
-                    // << "\vG:\n" << T_u.G()
-                    // << "\vU:\n" << T_u.U1() << "\n" << T_u.U2()
-                    // << "\vE:\n" << T_u.E_a() << "\n" << T_u.E_b() << "\n" << T_u.E_c()
-                    // << "\vFr:\n" << T_u.F_a() << "\n" << T_u.F_b() << "\n" << T_u.F_c()
-                    // << "\vF:\n" << T_u.F1() << "\n" << T_u.F2()
-                    // << "\vL:\n" << T_u.L()
-                    // << "\vdc:\n" << tmp_u
-                    // << "\vM^-1:\n" << invertM(T_u.M())
-                    // << std::endl;
+          //           << "C_old:\n" << T_u.C()
+          //           << "\vG:\n" << T_u.G()
+          //           << "\vU:\n" << T_u.U1() << "\n" << T_u.U2()
+          //           << "\vE:\n" << T_u.E_a() << "\n" << T_u.E_b() << "\n" << T_u.E_c()
+          //           << "\vFr:\n" << T_u.F_a() << "\n" << T_u.F_b() << "\n" << T_u.F_c()
+          //           << "\vF:\n" << T_u.F1() << "\n" << T_u.F2()
+          //           << "\vL:\n" << T_u.L()
+          //           << "\vdc:\n" << tmp_u
+          //           << "\vM^-1:\n" << invertM(T_u.M())
+          //           << std::endl;
+            // }
 
 
 
-
-
-          //TODO umstellen um M-1*M bei L zu sparen
           T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
           T_u.C() += deltaT_ * ( T_u.L() + invertM(T_u.M()) * tmp_u);
-          // T_l.C() += deltaT_ * ( T_l.L() /*+ invertM(T_l.M()) * tmp_l*/);
-          // T_u.C() += deltaT_ * ( T_u.L() /*+ invertM(T_u.M()) * tmp_u*/);
 
           // std::cout << "C_neu:\n" << T_l.C() << "\n" << T_u.C() << std::endl;
         }
@@ -136,7 +135,9 @@ public:
       writer_.write();
 
     // error
-    std::cout << "L2 error: " << this->l2error() << std::endl;;
+    if (writeError_)
+      // std::cout << "L2 error: " << this->l2error() << std::endl;;
+      std::cout << t_ << " " << this->l2error() << std::endl;;
 
   }
 
@@ -148,6 +149,11 @@ public:
     return l2Error(mesh_, order_, order_*2, std::bind(cExact_, _1, _2, t_));
   }
 
+  void go()
+  {
+    for ( ;step_<numSteps_;)
+      this->next();
+  }
 
   double getTime() const {return t_;}
   unsigned int getSteps() const { return step_;}
@@ -159,15 +165,17 @@ private:
   std::function<double(double, double, double)> u1_, u2_, f_;
   std::function<double(double,double)> c0_;
   std::function<double(double,double,double)> cExact_;
-  BlockMatrix hatM_;
-  std::vector<Tensor> hatG_;
-  std::vector<BlockMatrix> hatE_;
-  std::vector<double> hatI_;
+  BlockMatrix const hatM_;
+  std::vector<Tensor> const  hatG_;
+  std::vector<BlockMatrix> const hatE_;
+  std::vector<double> const hatI_;
   std::function<void(UniqueSquareGrid &, double)> boundaryHandler_;
+  unsigned int const numSteps_;
+  double const deltaT_;
   VTKwriter & writer_;
   unsigned int const writeInterval_;
+  bool const writeError_;
 
-  double deltaT_; //TODO
   double t_;
   unsigned int step_;
 };
