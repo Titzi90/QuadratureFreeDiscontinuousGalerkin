@@ -165,18 +165,22 @@ inline std::ostream& operator<< (std::ostream& os, std::vector<double> const & v
 {
   os <<  std::fixed << std::setprecision(10);
   for (auto i : v)
-    os << std::setw(13) << i << " ";
+    {
+      os << std::setw(13) << i << "  ";
+      // if (i!=0)
+      // os << i << "  ";
+    }
 
   return os << "\b\n";
 }
 
 inline std::ostream& operator<< (std::ostream& os, BlockMatrix const & m)
 {
-  os <<  std::fixed << std::setprecision(3);
+  os <<  std::fixed << std::setprecision(10);
   for (unsigned int i=0; i<m.getN(); ++i)
     {
       for (unsigned int j=0; j<m.getM();++j)
-        os << std::setw(6) << m(i,j) << " ";
+        os << std::setw(13) << m(i,j) << " ";
 
       os << "\n" ;
     }
@@ -186,14 +190,14 @@ inline std::ostream& operator<< (std::ostream& os, BlockMatrix const & m)
 
 inline std::ostream& operator<< (std::ostream& os, Tensor const & t)
 {
-  os <<  std::fixed << std::setprecision(3);
+  os <<  std::fixed << std::setprecision(10);
   for (int i=0; i<t.getN(); ++i)
   {
     os << "i = " << i <<":\n" ;
     for (int j=0; j<t.getN();++j)
     {
       for (int z=0; z<t.getN(); ++z)
-        os << std::setw(6) << t(i,j,z) << " ";
+        os << std::setw(13) << t(i,j,z) << " ";
       os << "\n" ;
     }
     os << "\v" ;
