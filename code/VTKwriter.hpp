@@ -18,6 +18,8 @@ public:
 
   void write();
 
+  std::string const & getName() const {return basename_;}
+
 private:
   std::string const basename_;
   UniqueSquareGrid const & mesh_;

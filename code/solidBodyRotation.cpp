@@ -16,7 +16,7 @@ int main(int argc, char** argv)
   int orderF = 2*order;
   int refiment = 64;
   double tEnd = 2*M_PI;
-  unsigned int numSteps = 1000;
+  unsigned int numSteps = 320;
 
   if (argc > 1)
     refiment = std::atoi(argv[1]);
@@ -55,13 +55,6 @@ int main(int argc, char** argv)
     };
 
   Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl, tEnd, numSteps, writer, 1, true, false);
-
-  std::cout << "refiment level: " << refiment
-            << ", number of Triangles: " << mesh.getColumns()*mesh.getRows()*2
-            << ", basic polynomial degree: " << order
-            << ", number of DOFs per triangle: " << numberOf2DBasefunctions(order)
-            << ", number of DOFs toal: " << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order)
-            << std::endl;
 
   stepper.go();
 
