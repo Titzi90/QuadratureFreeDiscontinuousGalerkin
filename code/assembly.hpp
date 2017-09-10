@@ -48,6 +48,7 @@ inline BlockMatrix assemblyLocalM_k (BlockMatrix hatM,
 
 inline void assemblyM (UniqueSquareGrid & mesh, BlockMatrix const & hatM)
 {
+#pragma omp parallel for collapse(2)
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {

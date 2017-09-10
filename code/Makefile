@@ -2,7 +2,7 @@
 CC  = gcc
 CPP = g++
 
-CFLAGS = -O3 -g -Wall -ansi -std=c++11
+CFLAGS = -O3 -g -Wall -ansi -std=c++11 -fopenmp
 RM = rm -f
 
 ########## VARIABLES ##########################################
@@ -11,14 +11,15 @@ OFILES_test = test.o polynomial.o Grid.o
 OFILES_assembly = assembly.o polynomial.o VTKwriter.o Grid.o
 OFILES_analyticalTest = analyticalTest.o polynomial.o VTKwriter.o Grid.o
 OFILES_analyticalConvTest = analyticalConvergenceTest.o polynomial.o VTKwriter.o Grid.o
-OFILES_solidBodyRotation = solidBodyRotation.o polynomial.o VTKwriter.o Grid.o
+OFILES_solidBodyRotation =  solidBodyRotation.o polynomial.o VTKwriter.o Grid.o
 
 ########## TARGETS ############################################
 .PHONY: all test clean
 all: ${BIN}
 
 clean:
-	$(RM) $(BIN) $(OFILES_test) $(OFILES_assembly) ${OFILES_analyticalTest} ${OFILES_analyticalConvTest}
+	$(RM) $(BIN) $(OFILES_test) $(OFILES_assembly) ${OFILES_analyticalTest} \
+				${OFILES_analyticalConvTest} ${OFILES_solidBodyRotation}
 
 test: test_compile
 	./test
