@@ -29,6 +29,10 @@ extern "C"
 #endif
 }
 
+#ifndef _GITVERSION
+#define _GITVERSION "000000"
+#endif
+
 using namespace std::placeholders;
 
 
@@ -89,7 +93,8 @@ public:
               << "Data written to " << writer_.getName() << ".vtk\n"
               << "Starting time integration from 0 to " << tEnd
               << " using time step size " << deltaT_
-              << " (" << numSteps_ << ")"
+              << " (" << numSteps_ << ")\n"
+              << "This is git version " << _GITVERSION
               << std::endl;
 
     //error

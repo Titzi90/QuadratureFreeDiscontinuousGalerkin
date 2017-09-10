@@ -16,6 +16,10 @@ LIKWIDLD_FLAGS = $(LIKWID_LIB) -llikwid -lm
 CFLAGS += $(LIKWID_FLAGS)
 LDFLAGS = $(LIKWIDLD_FLAGS)
 
+
+GITVERSION = $(shell git rev-parse --short HEAD)
+CFLAGS += -D_GITVERSION=\"$(GITVERSION)\"
+
 ########## VARIABLES ##########################################
 BIN = test assembly analyticalTest analyticalConvergenceTest solidBodyRotation
 OFILES_test = test.o polynomial.o Grid.o
