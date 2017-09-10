@@ -12,7 +12,23 @@
 #include <functional>
 #include <iostream> //TODO debuging
 
-
+// include likwid
+extern "C"
+{
+#ifdef USE_LIKWID
+#include <likwid.h>
+  // This block enables compilation of the code with and without LIKWID in place
+#else
+#define LIKWID_MARKER_INIT
+#define LIKWID_MARKER_THREADINIT
+#define LIKWID_MARKER_SWITCH
+#define LIKWID_MARKER_REGISTER(regionTag)
+#define LIKWID_MARKER_START(regionTag)
+#define LIKWID_MARKER_STOP(regionTag)
+#define LIKWID_MARKER_CLOSE
+#define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
+#endif
+}
 
 
 /******** Mass Matrix M *******************************************************/
@@ -48,7 +64,9 @@ inline BlockMatrix assemblyLocalM_k (BlockMatrix hatM,
 
 inline void assemblyM (UniqueSquareGrid & mesh, BlockMatrix const & hatM)
 {
-#pragma omp parallel for collapse(2)
+  LIKWID_MARKER_START("ASSEMBLY_M_PRECOMPUTED");
+
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -57,6 +75,8 @@ inline void assemblyM (UniqueSquareGrid & mesh, BlockMatrix const & hatM)
           Triangle & u = mesh.getUpper(row, col);
           u.M() = assemblyLocalM_k(hatM, u.getArea());
       }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_M_PRECOMPUTED");
 }
 
 
@@ -78,6 +98,8 @@ inline BlockMatrix assemblyLocalM_kQuadFree(unsigned int polynomialDegree, doubl
 
 inline void assemblyMquadFree (UniqueSquareGrid & mesh, unsigned int polynomialDegree)
 {
+  LIKWID_MARKER_START("ASSEMBLY_M_QUADFREE");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -86,6 +108,8 @@ inline void assemblyMquadFree (UniqueSquareGrid & mesh, unsigned int polynomialD
         Triangle & u = mesh.getUpper(row, col);
         u.M() = assemblyLocalM_kQuadFree(polynomialDegree, u.getArea());
       }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_M_QUADFREE");
 }
 
 
@@ -104,6 +128,8 @@ inline BlockMatrix assemblyLocalM_kGaus(unsigned int polynomialDegree, double ar
 
 inline void assemblyMGaus (UniqueSquareGrid & mesh, unsigned int polynomialDegree)
 {
+  LIKWID_MARKER_START("ASSEMBLY_M_GAUS");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -112,6 +138,8 @@ inline void assemblyMGaus (UniqueSquareGrid & mesh, unsigned int polynomialDegre
         Triangle & u = mesh.getUpper(row, col);
         u.M() = assemblyLocalM_kGaus(polynomialDegree, u.getArea());
       }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_M_GAUS");
 }
 
 
@@ -187,6 +215,8 @@ inline BlockMatrix assemblyLocalG_k (std::vector<Tensor> const & hatG,
 inline void assemblyG (UniqueSquareGrid & mesh,
                        std::vector<Tensor> const & hatG)
 {
+  LIKWID_MARKER_START("ASSEMBLY_G_PRECOMPUTED");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -195,6 +225,8 @@ inline void assemblyG (UniqueSquareGrid & mesh,
         l.G() = assemblyLocalG_k(hatG, l.U1(), l.U2(), l.getJakobian());
         u.G() = assemblyLocalG_k(hatG, u.U1(), u.U2(), u.getJakobian());
       }
+
+    LIKWID_MARKER_STOP("ASSEMBLY_G_PRECOMPUTED");
 }
 
 
@@ -233,6 +265,8 @@ inline BlockMatrix assemblyLocalG_kquadFree (unsigned int polynomialDegree,
 inline void assemblyGquadFree (UniqueSquareGrid & mesh,
                                unsigned int polynomialDegree)
 {
+  LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -241,6 +275,8 @@ inline void assemblyGquadFree (UniqueSquareGrid & mesh,
         l.G() = assemblyLocalG_kquadFree(polynomialDegree, l.U1(), l.U2(), l.getJakobian());
         u.G() = assemblyLocalG_kquadFree(polynomialDegree, u.U1(), u.U2(), u.getJakobian());
       }
+
+  LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
 }
 
 
@@ -278,6 +314,8 @@ inline BlockMatrix assemblyLocalG_kgaus (unsigned int polynomialDegree,
 inline void assemblyGgaus (UniqueSquareGrid & mesh,
                                unsigned int polynomialDegree)
 {
+  LIKWID_MARKER_START("ASSEMBLY_G_GAUS");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -286,6 +324,8 @@ inline void assemblyGgaus (UniqueSquareGrid & mesh,
         l.G() = assemblyLocalG_kgaus(polynomialDegree, l.U1(), l.U2(), l.getJakobian());
         u.G() = assemblyLocalG_kgaus(polynomialDegree, u.U1(), u.U2(), u.getJakobian());
       }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_G_GAUS");
 }
 
 
@@ -353,6 +393,8 @@ inline std::vector<BlockMatrix> assemblyLocalE_k (std::vector<BlockMatrix> hatE,
 inline void assemblyE (UniqueSquareGrid & mesh,
                        std::vector<BlockMatrix> const & hatE)
 {
+  LIKWID_MARKER_START("ASSEMBLY_G_PRECOMPUTED");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -369,6 +411,8 @@ inline void assemblyE (UniqueSquareGrid & mesh,
       u.E_b() = E_u[1];
       u.E_c() = E_u[2];
     }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_G_PRECOMPUTED");
 }
 
 
@@ -408,6 +452,8 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
                                unsigned int polynomialDegree,
                                unsigned int polynomialDegreeF)
 {
+  LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -426,6 +472,8 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
       u.E_b() = E_u[1];
       u.E_c() = E_u[2];
     }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_G_QUADFREE");
 }
 
 
@@ -459,6 +507,8 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
                        RiemanSolver const & riemanSolver,
                        std::vector<double> const & hatI)
 {
+  LIKWID_MARKER_START("ASSEMBLY_Fr");
+
   for ( unsigned int row=0; row<mesh.getRows(); ++row)
     for ( unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -503,6 +553,8 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
                                2, 1, hatI);
       }
     }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_Fr");
 }
 
 /**
@@ -604,6 +656,8 @@ inline void assamblyL (UniqueSquareGrid & mesh,
                        unsigned int polynomialDegree,
                        std::function<double(double,double)> const & f)
 {
+  LIKWID_MARKER_START("ASSEMBLY_L");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -615,6 +669,8 @@ inline void assamblyL (UniqueSquareGrid & mesh,
         l.L() = assemblyLocalL_k(polynomialDegree, f, l.getJakobian(), l.getA());
         u.L() = assemblyLocalL_k(polynomialDegree, f, u.getJakobian(), u.getA());
       }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_L");
 }
 
 
@@ -628,6 +684,8 @@ inline void assamblyU (UniqueSquareGrid & mesh,
                        std::function<double(double,double)> const & u1,
                        std::function<double(double,double)> const & u2)
 {
+  LIKWID_MARKER_START("ASSEMBLY_U");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -639,6 +697,8 @@ inline void assamblyU (UniqueSquareGrid & mesh,
         u.U1() = l2Projection(polynomialDegree, u1, u.getJakobian(), u.getA());
         u.U2() = l2Projection(polynomialDegree, u2, u.getJakobian(), u.getA());
     }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_U");
 }
 
 
@@ -651,6 +711,8 @@ inline void assamblyC (UniqueSquareGrid & mesh,
                        unsigned int polynomialDegree,
                        std::function<double(double,double)> const & c)
 {
+  LIKWID_MARKER_START("ASSEMBLY_C");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -660,6 +722,8 @@ inline void assamblyC (UniqueSquareGrid & mesh,
         l.C() = l2Projection(polynomialDegree, c, l.getJakobian(), l.getA());
         u.C() = l2Projection(polynomialDegree, c, u.getJakobian(), u.getA());
       }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_C");
 }
 
 /******** Vectors representing the Flux F ***************************************/
@@ -672,6 +736,8 @@ inline void assamblyF (UniqueSquareGrid & mesh,
                        std::function<std::vector< std::vector<double> >
                          (Triangle const &, unsigned int, unsigned int)> f)
 {
+  LIKWID_MARKER_START("ASSEMBLY_F");
+
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -685,6 +751,8 @@ inline void assamblyF (UniqueSquareGrid & mesh,
         u.F1() = F_u[0];
         u.F2() = F_u[1];
       }
+
+  LIKWID_MARKER_STOP("ASSEMBLY_F");
 }
 
 inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const & t_k,
@@ -715,6 +783,7 @@ enum class Boundary {left, right, top, bottom};
  */
 inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
 {
+  LIKWID_MARKER_START("BOUNDARY_PERIODIC");
   switch (b)
     {
     case Boundary::left :
@@ -754,6 +823,8 @@ inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
         }
       break;
     }
+
+  LIKWID_MARKER_STOP("BOUNDARY_PERIODIC");
 }
 
 inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
@@ -762,6 +833,8 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
                                   std::function<double(double,double,double)> const & c,
                                   double time)
 {
+  LIKWID_MARKER_START("BOUNDARY_DIRICLET");
+
   using namespace std::placeholders;
   switch (b)
     {
@@ -822,6 +895,8 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
         }
       break;
     }
+
+  LIKWID_MARKER_STOP("BOUNDARY_DIRICLET");
 }
 
 

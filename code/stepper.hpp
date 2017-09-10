@@ -11,6 +11,24 @@
 #include <iostream>
 #include <limits>
 
+// include likwid
+extern "C"
+{
+#ifdef USE_LIKWID
+#include <likwid.h>
+  // This block enables compilation of the code with and without LIKWID in place
+#else
+#define LIKWID_MARKER_INIT
+#define LIKWID_MARKER_THREADINIT
+#define LIKWID_MARKER_SWITCH
+#define LIKWID_MARKER_REGISTER(regionTag)
+#define LIKWID_MARKER_START(regionTag)
+#define LIKWID_MARKER_STOP(regionTag)
+#define LIKWID_MARKER_CLOSE
+#define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
+#endif
+}
+
 using namespace std::placeholders;
 
 
@@ -39,33 +57,51 @@ public:
      writer_(writer), writeInterval_(writeInterval), writeError_(writeError),
      t_(0.), step_(0)
   {
-    // set initial data
-    assamblyC(mesh_, order_, c0_);
 
-    // assembly constant data: mass matrix and rhs
-    assemblyM(mesh_, hatM_);            // mass matrix:W
+    // initialize likwid
+    LIKWID_MARKER_INIT;
 
-    // set initial U and F
-    assamblyU(mesh_, order_, std::bind(u1_, _1, _2, t_), std::bind(u2_, _1, _2, t_));
-    assamblyF(mesh_, order_, orderF_, assamblyLocalLinearF);
+#pragma omp parallel
+    {
+      LIKWID_MARKER_THREADINIT;
+    } // Implicit barrier after thread init
 
-    // write initial data
-    if (writeInitialData)
-      writer_.write();
+#pragma omp parallel
+    {
+      // set initial data
+      assamblyC(mesh_, order_, c0_);
 
-    std::cout << "Computing with basic polynomial order " << order_
-              << " (" << numberOf2DBasefunctions(order_) <<" local DOFs) on "
-              << mesh_.getRows()*mesh_.getColumns()*2 << " triangles ("
-              // << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order) << " DOFs total)\n"
-              << "refiment level: " << mesh_.getColumns() <<")\n"
-              << "Data written to " << writer_.getName() << ".vtk\n"
-              << "Starting time integration from 0 to " << tEnd
-              << " using time step size " << deltaT_
-              << " (" << numSteps_ << ")"
-              << std::endl;
+      // assembly constant data: mass matrix and rhs
+      assemblyM(mesh_, hatM_);            // mass matrix:W
 
-    //error
-    std::cout << "initial L2 error: " << this->l2error() << std::endl;
+      // set initial U and F
+      assamblyU(mesh_, order_, std::bind(u1_, _1, _2, t_), std::bind(u2_, _1, _2, t_));
+      assamblyF(mesh_, order_, orderF_, assamblyLocalLinearF);
+
+      // write initial data
+      if (writeInitialData)
+        writer_.write();
+
+      std::cout << "Computing with basic polynomial order " << order_
+                << " (" << numberOf2DBasefunctions(order_) <<" local DOFs) on "
+                << mesh_.getRows()*mesh_.getColumns()*2 << " triangles ("
+             // << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order) << " DOFs total)\n"
+                << "refiment level: " << mesh_.getColumns() <<")\n"
+                << "Data written to " << writer_.getName() << ".vtk\n"
+                << "Starting time integration from 0 to " << tEnd
+                << " using time step size " << deltaT_
+                << " (" << numSteps_ << ")"
+                << std::endl;
+
+      //error
+      std::cout << "initial L2 error: " << this->l2error() << std::endl;
+    }
+  }
+
+  // close likwid
+  ~Stepper()
+  {
+    LIKWID_MARKER_CLOSE;
   }
 
   /**

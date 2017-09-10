@@ -17,7 +17,9 @@ int main(int argc, char** argv)
   unsigned int numSteps = 1000;
 
   if (argc > 1)
-    refiment = std::atoi(argv[1]);
+    numSteps = std::atoi(argv[1]);
+  if (argc > 2)
+    refiment = std::atoi(argv[2]);
 
   using std::placeholders::_1;
   using std::placeholders::_2;

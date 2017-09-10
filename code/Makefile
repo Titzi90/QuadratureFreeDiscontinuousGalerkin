@@ -1,9 +1,19 @@
 ########## COMPILER and FLAGS #################################
-CC  = gcc
-CPP = g++
+CC  = icc
+CPP = icpc
 
-CFLAGS = -O3 -g -Wall -ansi -std=c++11 -fopenmp
+CFLAGS = -O3 -g -Wall -ansi -std=c++11 -xhost -fopenmp
 RM = rm -f
+
+# If you want to make use of the likwid profiler
+# uncommend the following two lines
+# the evvirement variables LIKWID_LIB and LIKWID_INC has to be set
+# on the rrze cluster this variables are already set
+LIKWID_FLAGS  = -DUSE_LIKWID $(LIKWID_INC) -DLIKWID_PERFMON
+LIKWIDLD_FLAGS = $(LIKWID_LIB) -llikwid -lm
+
+CFLAGS += $(LIKWID_FLAGS)
+LDFLAGS = $(LIKWIDLD_FLAGS)
 
 ########## VARIABLES ##########################################
 BIN = test assembly analyticalTest analyticalConvergenceTest solidBodyRotation
