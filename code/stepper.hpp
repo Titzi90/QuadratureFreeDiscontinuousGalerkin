@@ -11,6 +11,24 @@
 #include <iostream>
 #include <limits>
 
+// include likwid
+extern "C"
+{
+#ifdef USE_LIKWID
+#include <likwid.h>
+  // This block enables compilation of the code with and without LIKWID in place
+#else
+#define LIKWID_MARKER_INIT
+#define LIKWID_MARKER_THREADINIT
+#define LIKWID_MARKER_SWITCH
+#define LIKWID_MARKER_REGISTER(regionTag)
+#define LIKWID_MARKER_START(regionTag)
+#define LIKWID_MARKER_STOP(regionTag)
+#define LIKWID_MARKER_CLOSE
+#define LIKWID_MARKER_GET(regionTag, nevents, events, time, count)
+#endif
+}
+
 using namespace std::placeholders;
 
 
@@ -39,6 +57,16 @@ public:
      writer_(writer), writeInterval_(writeInterval), writeError_(writeError),
      t_(0.), step_(0)
   {
+
+    // initialize likwid
+    LIKWID_MARKER_INIT;
+
+// #pragma omp parallel  TODO vorbereitung für omp
+    // {
+      LIKWID_MARKER_THREADINIT;
+    // }
+
+
     // set initial data
     assamblyC(mesh_, order_, c0_);
 
@@ -66,6 +94,12 @@ public:
 
     //error
     std::cout << "initial L2 error: " << this->l2error() << std::endl;
+  }
+
+  // close likwid
+  ~Stepper()
+  {
+    LIKWID_MARKER_CLOSE;
   }
 
   /**
