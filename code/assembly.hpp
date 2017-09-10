@@ -100,6 +100,7 @@ inline void assemblyMquadFree (UniqueSquareGrid & mesh, unsigned int polynomialD
 {
   LIKWID_MARKER_START("ASSEMBLY_M_QUADFREE");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -130,6 +131,7 @@ inline void assemblyMGaus (UniqueSquareGrid & mesh, unsigned int polynomialDegre
 {
   LIKWID_MARKER_START("ASSEMBLY_M_GAUS");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -217,6 +219,7 @@ inline void assemblyG (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_G_PRECOMPUTED");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -267,6 +270,7 @@ inline void assemblyGquadFree (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -316,6 +320,7 @@ inline void assemblyGgaus (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_G_GAUS");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -395,6 +400,7 @@ inline void assemblyE (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_G_PRECOMPUTED");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -454,6 +460,7 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -509,6 +516,7 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_Fr");
 
+#pragma omp for
   for ( unsigned int row=0; row<mesh.getRows(); ++row)
     for ( unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -658,6 +666,7 @@ inline void assamblyL (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_L");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -686,6 +695,7 @@ inline void assamblyU (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_U");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -713,6 +723,7 @@ inline void assamblyC (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_C");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -738,6 +749,7 @@ inline void assamblyF (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_F");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -787,6 +799,7 @@ inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
   switch (b)
     {
     case Boundary::left :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
           mesh.getUpper(i, -1).U1() = mesh.getUpper(i,mesh.getColumns()-1).U1();
@@ -796,6 +809,7 @@ inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
         }
       break;
     case Boundary::right :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
           mesh.getLower(i, mesh.getColumns()).U1() = mesh.getLower(i, 0).U1();
@@ -805,6 +819,7 @@ inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
         }
       break;
     case Boundary::bottom :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           mesh.getUpper(-1, i).U1() = mesh.getUpper(mesh.getRows()-1, i).U1();
@@ -814,6 +829,7 @@ inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
         }
       break;
     case Boundary::top :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           mesh.getLower(mesh.getRows(), i).U1() = mesh.getLower(0, i).U1();
@@ -839,6 +855,7 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
   switch (b)
     {
     case Boundary::left :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
           Triangle & t = mesh.getUpper(i, -1);
@@ -853,6 +870,7 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
         }
       break;
     case Boundary::right :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
           Triangle & t = mesh.getLower(i, mesh.getColumns());
@@ -867,6 +885,7 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
         }
       break;
     case Boundary::bottom :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           Triangle & t = mesh.getUpper(-1, i);
@@ -881,6 +900,7 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
         }
       break;
     case Boundary::top :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           Triangle & t = mesh.getLower(mesh.getRows(), i);
