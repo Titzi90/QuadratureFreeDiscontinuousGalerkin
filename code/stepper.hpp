@@ -53,6 +53,17 @@ public:
     if (writeInitialData)
       writer_.write();
 
+    std::cout << "Computing with basic polynomial order " << order_
+              << " (" << numberOf2DBasefunctions(order_) <<" local DOFs) on "
+              << mesh_.getRows()*mesh_.getColumns()*2 << " triangles ("
+              // << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order) << " DOFs total)\n"
+              << "refiment level: " << mesh_.getColumns() <<")\n"
+              << "Data written to " << writer_.getName() << ".vtk\n"
+              << "Starting time integration from 0 to " << tEnd
+              << " using time step size " << deltaT_
+              << " (" << numSteps_ << ")"
+              << std::endl;
+
     //error
     std::cout << "initial L2 error: " << this->l2error() << std::endl;
   }
@@ -70,7 +81,9 @@ public:
 
     // Assembly matrices and vectors for computation
     assamblyL(mesh_, order_, std::bind(f_, _1, _2, t_));          // RHS vector
+    // assemblyGquadFree(mesh_, order_);
     assemblyG(mesh_, hatG_);
+    // assemblyEquadFree(mesh_, order_, orderF_);
     assemblyE(mesh_, hatE_);
     assemblyFr(mesh_, order_, orderF_, riemanSolver_UpWinding, hatI_);
 

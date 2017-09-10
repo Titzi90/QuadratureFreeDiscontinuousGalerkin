@@ -36,8 +36,10 @@ int main()
   setBoundary_Periodic(mesh, Boundary::left);
   setBoundary_Periodic(mesh, Boundary::right);
 
-  assemblyM(mesh, hatM);
-  assemblyG(mesh, hatG);
+  // assemblyM(mesh, hatM);
+  // assemblyG(mesh, hatG);
+  assemblyMGaus(mesh, order);
+  assemblyGgaus(mesh, order);
   assemblyE(mesh, hatE);
   assemblyFr(mesh, order, order*2, riemanSolver_UpWinding, hatI);
   assamblyL(mesh, order, f);          // RHS vector
