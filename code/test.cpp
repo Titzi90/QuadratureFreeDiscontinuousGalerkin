@@ -271,10 +271,10 @@ int assamblyTest()
 
   UniqueSquareGrid mesh(refinment);
 
-  auto u1 = [](double x, double y)->double{ return 1.; };
-  auto u2 = [](double x, double y)->double{ return 1.; };
-  auto f  = [](double x, double y)->double{ return 0.; };
-  auto c  = [](double x, double y)->double{ return 1.; };
+  auto u1 = [](double , double )->double{ return 1.; };
+  auto u2 = [](double , double )->double{ return 1.; };
+  auto f  = [](double , double )->double{ return 0.; };
+  auto c  = [](double , double )->double{ return 1.; };
 
   assamblyC(mesh, order, c);          // gesuchte Größe c
   assamblyU(mesh, order, u1, u2);     // velocity field U
@@ -289,8 +289,22 @@ int assamblyTest()
   auto hatE (assemblyHatE(order, order*2));
   auto hatI (getHatI(2*order));
 
+  /*
   assemblyM(mesh, hatM);
   assemblyG(mesh, hatG);
+  assemblyE(mesh, hatE);
+  assemblyFr(mesh, order, order*2, riemanSolver_UpWinding, hatI);
+  assamblyL(mesh, order, f);          // RHS vector
+  */
+  /*
+  assemblyMquadFree(mesh, order);
+  assemblyGquadFree(mesh, order);
+  assemblyEquadFree(mesh, order, order*2);
+  assemblyFr(mesh, order, order*2, riemanSolver_UpWinding, hatI);
+  assamblyL(mesh, order, f);          // RHS vector
+  */
+  assemblyMGaus(mesh, order);
+  assemblyGgaus(mesh, order);
   assemblyE(mesh, hatE);
   assemblyFr(mesh, order, order*2, riemanSolver_UpWinding, hatI);
   assamblyL(mesh, order, f);          // RHS vector
