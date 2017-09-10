@@ -30,6 +30,10 @@ extern "C"
 #endif
 }
 
+#ifndef _GITVERSION
+#define _GITVERSION "000000"
+#endif
+
 using namespace std::placeholders;
 
 
@@ -109,6 +113,7 @@ public:
                   << " (" << numSteps_ << ")\n"
                   << omp_get_num_threads() << " OpenMP treads are used (chunk size " << chunkSize << ") "
                   << "with " << schedName << " scheduler."
+                  << "This is git version " << _GITVERSION
                   << std::endl;
 
         //error
