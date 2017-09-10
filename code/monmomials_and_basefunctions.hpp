@@ -256,10 +256,10 @@ inline double integradeOverRefEdge(Polynomial1D const & pol)
  * returns value + sum(weight * f(q1, q2))
  * helper function for Gaus integration
  */
-template<class InputIt1, class InputIt2, class InputIt3, class T1, class T2, class T3>
+template<class InputIt1, class InputIt2, class InputIt3, class T1, typename Function>
 T1 weighted_sum(InputIt1 weight_first, InputIt1 weight_last,
                 InputIt2 q1, InputIt3 q2,
-                std::function<T1(T2,T3)> f,
+                Function f,
                 T1 value)
 {
   while (weight_first != weight_last) {
@@ -286,7 +286,8 @@ inline Polynomial2D reconstructFunction2D (unsigned int polynomialDegree, std::v
  * unsing gausion quadrature rule to integrate a function f over the reference triangle
  * is exact for polynomials f of order 'order'
  */
-inline double integradeOverRefTriangle_gaus(std::function<double(double,double)> f, int order)
+template<typename Function>
+ double integradeOverRefTriangle_gaus(Function f, int order)
 {
   using std::begin;
   using std::end;
@@ -335,7 +336,7 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
                                              double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
                                              return pol::phi[i](x1_hat,x2_hat) * f(x1,x2);
                                            },
-                                           polynomialDegree);
+                                           2*polynomialDegree);
     }
 
   return F;
