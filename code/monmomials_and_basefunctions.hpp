@@ -177,6 +177,7 @@ inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polyno
 
 /**
  * Transformation Matrix from 2D Polynomial to 2D Monomial base space
+ * transposed (TODO nohcmal prüfen)
  */
 inline BlockMatrix getPolynomialMapping (unsigned int polynomialDegree)
 {
@@ -185,43 +186,51 @@ inline BlockMatrix getPolynomialMapping (unsigned int polynomialDegree)
   switch(polynomialDegree)
     {
     case 0:
-      T = BlockMatrix(1);
-      T(0,0) = 1./sqrt(2);
-      break;
+      T = BlockMatrix(1);  break;
     case 1:
-      T = BlockMatrix(3);
-      T(0,0) = 1./sqrt(2);
-      T(0,1) = 1./(3.*sqrt(2));
-      T(0,2) = 1./(3.*sqrt(2));
-      T(1,1) = -1./6.;
-      T(1,2) = 1./12.;
-      T(2,2) = -1./(4.*sqrt(3));
-      break;
+      T = BlockMatrix(3);  break;
     case 2:
-      T = BlockMatrix(6);
-      T(0,0) = 1./sqrt(2);
+      T = BlockMatrix(6);  break;
+    case 3:
+      T = BlockMatrix(10); break;
+    case 4:
+      T = BlockMatrix(15); break;
+    default:
+      std::cerr << "maping from monomial into hirachical space for given order not implemented" << std::endl;
+      assert(false);
+    }
+
+  switch(polynomialDegree)
+    {
+    case 4:
+
+    case 3:
+
+    case 2:
+      T(0,3) = sqrt(2)/12.;
+      T(0,4) = sqrt(2)/24.;
+      T(0,5) = sqrt(2)/12.;
+      T(1,3) = -2./15;
+      T(1,4) = -1./60;
+      T(1,5) = 1./15;
+      T(2,4) = -sqrt(3)/60.;
+      T(2,5) = -sqrt(3)/15.;
+      T(3,3) = sqrt(6)/60.;
+      T(3,4) = -sqrt(6)/120.; //hier war ein vorzeichen fehler
+      T(3,5) = sqrt(6)/180.;
+      T(4,4) = sqrt(3)/120.;
+      T(4,5) = -sqrt(3)/45.;
+      T(5,4) = sqrt(5)/120.;
+    case 1:
       T(0,1) = 1./(3.*sqrt(2));
       T(0,2) = 1./(3.*sqrt(2));
-      T(0,3) = sqrt(2)/12.;
-      T(0,5) = sqrt(2)/12.;
-      T(0,4) = sqrt(2)/24.;
       T(1,1) = -1./6.;
       T(1,2) = 1./12.;
-      T(1,3) = -2./15;
-      T(1,5) = 1./15;
-      T(1,4) = -1./60;
       T(2,2) = -1./(4.*sqrt(3));
-      T(2,5) = -sqrt(3)/15.;
-      T(2,4) = -sqrt(3)/60.;
-      T(3,3) = sqrt(6)/60.;
-      T(3,5) = sqrt(6)/180.;
-      T(3,4) = sqrt(6)/120.;
-      T(4,5) = -sqrt(3)/45.;
-      T(4,4) = sqrt(3)/120.;
-      T(5,4) = sqrt(5)/120.;
-    default:
-      assert(-1);
+    case 0:
+      T(0,0) = 1./sqrt(2);
     }
+
 
   return T;
 }
@@ -343,21 +352,27 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
 }
 
 /**
- * f = F^T*B = sum{F_j * B_j}
- * int{b_i * f} = sum{int{F_j * B_j * B_i} }= sum {F_j * int{δ_{ij}} } = F_i
+ * trim polynomial to lower order
+ * make use of herachical base function to project polynomial in lower sapce
+ + f_h apoximate f
+ * int{f_h \phi_i} = int{f \phi_i}  -> both f and f_h are polynomials in basis expansion (differnet order)
+ * F_h int{B_h \phi_i} = F int{B \phi_i}  with i \in {1,..N_h} -> phi_i aus ziel raum
+ * F_h M(=I)   =  F \hat{M}        -> M ist I (ortogonale basisvectoren)
+ * and \hat{M} ist I_h mit 0 spalten hinten dran (= unten abscgnittenes "göseres" I)
+ * -> F unten abschneiden
  */
 inline std::vector<double> l2Projection (unsigned int polynomialDegree,
-                                         Polynomial2D const & f)
+                                         std::vector<double> const & pol)
 {
-  std::cout << "l2Projetion: " << polynomialDegree << std::endl;
   unsigned int dof (numberOf2DBasefunctions(polynomialDegree));
+
+  assert(pol.size() >= dof);
 
   std::vector<double> F;
   F.reserve(dof);
 
   for (unsigned int i=0; i<dof; ++i)
-    F.push_back(integradeOverRefTriangle(pol::phi[i] * f));
-  //TODO poly hier ist natürlich nochmal ein gard höher
+    F.push_back(pol[i]);
 
   return F;
 }
