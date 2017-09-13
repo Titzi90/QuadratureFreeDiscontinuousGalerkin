@@ -398,7 +398,7 @@ inline std::vector<BlockMatrix> assemblyLocalE_k (std::vector<BlockMatrix> hatE,
 inline void assemblyE (UniqueSquareGrid & mesh,
                        std::vector<BlockMatrix> const & hatE)
 {
-  LIKWID_MARKER_START("ASSEMBLY_G_PRECOMPUTED");
+  LIKWID_MARKER_START("ASSEMBLY_E_PRECOMPUTED");
 
 #pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
@@ -418,7 +418,7 @@ inline void assemblyE (UniqueSquareGrid & mesh,
       u.E_c() = E_u[2];
     }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_G_PRECOMPUTED");
+  LIKWID_MARKER_STOP("ASSEMBLY_E_PRECOMPUTED");
 }
 
 
@@ -458,7 +458,7 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
                                unsigned int polynomialDegree,
                                unsigned int polynomialDegreeF)
 {
-  LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
+  LIKWID_MARKER_START("ASSEMBLY_E_QUADFREE");
 
 #pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
@@ -480,11 +480,8 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
       u.E_c() = E_u[2];
     }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_G_QUADFREE");
+  LIKWID_MARKER_STOP("ASSEMBLY_E_QUADFREE");
 }
-
-
-
 
 
 
@@ -771,8 +768,6 @@ inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const &
                                                                 unsigned int targetPolynomialDegree,
                                                                 unsigned int polynomialDegree)
 {
-  //TODO hier mit targetDegree etwas rumspeilen
-
   auto c_pol ( reconstructFunction2D(polynomialDegree, t_k.C()) );
   auto u1_pol ( reconstructFunction2D(polynomialDegree, t_k.U1()) );
   auto u2_pol ( reconstructFunction2D(polynomialDegree, t_k.U2()) );
@@ -780,14 +775,15 @@ inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const &
   auto F1_pol = c_pol * u1_pol;
   auto F2_pol = c_pol * u2_pol;
 
-
-  BlockMatrix T = getPolynomialMapping(targetPolynomialDegree);
+  BlockMatrix T = getPolynomialMapping(polynomialDegree * 2);
 
   auto F1 (T * F1_pol);
   auto F2 (T * F2_pol);
 
-  return {F1, F2};
-}
+  //TODO hier wird zu viel koiert
+  return {l2Projection(targetPolynomialDegree, F1), l2Projection(targetPolynomialDegree,F2)};
+
+};
 
 enum class Boundary {left, right, top, bottom};
 /**
