@@ -53,8 +53,9 @@ public:
           std::function<double(double,double)> c0, std::function<double(double,double, double)> cExact,
           std::function<void(UniqueSquareGrid &, double)> boundaryHandler,
           double tEnd, unsigned int numSteps,
-          VTKwriter & writer, unsigned int writeInterval=std::numeric_limits<unsigned int>::max(),
-          bool writeInitialData=false, bool writeError=true)
+          VTKwriter & writer, bool writeError=false,
+          unsigned int writeInterval=std::numeric_limits<unsigned int>::max(),
+          bool writeInitialData=false)
     :mesh_(mesh), order_(order), orderF_(orderF), u1_(u1), u2_(u2), f_(f), c0_(c0), cExact_(cExact),
      hatM_(assemblyHatM(order_)), hatG_(assemblyHatG(order_)), hatE_(assemblyHatE(order_, orderF_)),
      hatI_(getHatI(orderF_)), boundaryHandler_(boundaryHandler),
@@ -112,7 +113,7 @@ public:
                   << " using time step size " << deltaT_
                   << " (" << numSteps_ << ")\n"
                   << omp_get_num_threads() << " OpenMP treads are used (chunk size " << chunkSize << ") "
-                  << "with " << schedName << " scheduler."
+                  << "with " << schedName << " scheduler.\n"
                   << "This is git version " << _GITVERSION
                   << std::endl;
 
@@ -145,10 +146,11 @@ public:
 
       // Assembly matrices and vectors for computation
       assamblyL(mesh_, order_, std::bind(f_, _1, _2, t_));          // RHS vector
-      // assemblyGquadFree(mesh_, order_);
       assemblyG(mesh_, hatG_);
-      // assemblyEquadFree(mesh_, order_, orderF_);
+      // assemblyGquadFree(mesh_, order_);
+      // assemblyGgaus(mesh_, order_);
       assemblyE(mesh_, hatE_);
+      assemblyEquadFree(mesh_, order_, orderF_);
       assemblyFr(mesh_, order_, orderF_, riemanSolver_UpWinding, hatI_);
 
       // update c
@@ -207,7 +209,6 @@ public:
 
     // error
     if (writeError_)
-      // std::cout << "L2 error: " << this->l2error() << std::endl;;
       std::cout << t_ << " " << this->l2error() << std::endl;;
 
   }
