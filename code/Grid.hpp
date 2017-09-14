@@ -135,11 +135,12 @@ public:
   std::vector<double> const & U1() const { return U2_; }
   std::vector<double> const & U2() const { return U1_; }
   std::vector<double> const & L() const { return L_; }
-  std::vector<double> const & F1() const { return F1_; }
-  std::vector<double> const & F2() const { return F2_; }
-  std::vector<double> const & F_a() const { return Fr_a_; }
-  std::vector<double> const & F_b() const { return Fr_b_; }
-  std::vector<double> const & F_c() const { return Fr_c_; }
+  std::vector<double> const & Fn_a() const { return Fn_a_; }
+  std::vector<double> const & Fn_b() const { return Fn_b_; }
+  std::vector<double> const & Fn_c() const { return Fn_c_; }
+  std::vector<double> const & Fr_a() const { return Fr_a_; }
+  std::vector<double> const & Fr_b() const { return Fr_b_; }
+  std::vector<double> const & Fr_c() const { return Fr_c_; }
 
   BlockMatrix & M() { return M_; }
   BlockMatrix & G() { return G_; }
@@ -150,11 +151,12 @@ public:
   std::vector<double> & U1() { return U2_; }
   std::vector<double> & U2() { return U1_; }
   std::vector<double> & L() { return L_; }
-  std::vector<double> & F1() { return F1_; }
-  std::vector<double> & F2() { return F2_; }
-  std::vector<double> & F_a() { return Fr_a_; }
-  std::vector<double> & F_b() { return Fr_b_; }
-  std::vector<double> & F_c() { return Fr_c_; }
+  std::vector<double> & Fn_a() { return Fn_a_; }
+  std::vector<double> & Fn_b() { return Fn_b_; }
+  std::vector<double> & Fn_c() { return Fn_c_; }
+  std::vector<double> & Fr_a() { return Fr_a_; }
+  std::vector<double> & Fr_b() { return Fr_b_; }
+  std::vector<double> & Fr_c() { return Fr_c_; }
 
 private:
   double length1_, length2_, length3_, area_ ;       // TODO hier könnte man 1.5 double sparen
@@ -162,7 +164,7 @@ private:
   Vector normale1_, normale2_, normale3_;          // TODO auch hier muss nur 1.5 normalen gespeichert werden
   Jakobian B_;
   BlockMatrix M_, G_, E_a_, E_b_, E_c_;
-  std::vector<double> C_, U1_, U2_, L_, F1_, F2_, Fr_a_, Fr_b_, Fr_c_;
+  std::vector<double> C_, U1_, U2_, L_, Fn_a_, Fn_b_, Fn_c_, Fr_a_, Fr_b_, Fr_c_;
 };
 
 

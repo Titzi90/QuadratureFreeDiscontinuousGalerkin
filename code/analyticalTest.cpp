@@ -15,10 +15,12 @@ int main(int argc, char** argv)
   int orderF = 2*order;
   int refiment = 64;
   double tEnd = 1;
-  unsigned int numSteps = 100000;
+  unsigned int numSteps = tEnd * 1000;
 
   if (argc > 1)
-    refiment = std::atoi(argv[1]);
+    numSteps = std::atoi(argv[1]);
+  if (argc > 2)
+    refiment = std::atoi(argv[2]);
 
   auto u1 = [](double, double, double){return 1;};
   auto u2 = [](double, double, double){return 0.0;};
@@ -43,16 +45,12 @@ int main(int argc, char** argv)
       setBoundary_Diriclet(mesh, Boundary::right, order, orderF, cExact, time);
     };
 
-  Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl, tEnd, numSteps, writer, numSteps/100, true, true);
-
-  std::cout << "refiment level: " << refiment
-            << ", number of Triangles: " << mesh.getColumns()*mesh.getRows()*2
-            << ", basic polynomial degree: " << order
-            << ", number of DOFs per triangle: " << numberOf2DBasefunctions(order)
-            << ", number of DOFs toal: " << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order)
-            << std::endl;
+  Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
+                   tEnd, numSteps, writer, true ); //, numSteps/100, true);
 
   stepper.go();
+  // for (int i=0; i<5; ++i)
+  //   stepper.next();
 
   std::cout << "L2 Error: " << stepper.l2error() << std::endl;
 

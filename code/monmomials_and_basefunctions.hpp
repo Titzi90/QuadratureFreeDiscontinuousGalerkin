@@ -31,6 +31,11 @@ namespace pol
   Polynomial1D const s1 = Polynomial1D(1,1.);
   Polynomial1D const s2 = Polynomial1D(2,1.);
   Polynomial1D const s3 = Polynomial1D(3,1.);
+  Polynomial1D const s4 = Polynomial1D(4,1.);
+  Polynomial1D const s5 = Polynomial1D(5,1.);
+  Polynomial1D const s6 = Polynomial1D(6,1.);
+  Polynomial1D const s7 = Polynomial1D(7,1.);
+  Polynomial1D const s8 = Polynomial1D(8,1.);
 
   //monomials 2D
   // Order 0
@@ -113,12 +118,15 @@ namespace pol
 
   // 1D base functions
   Polynomial1D const phi1D [] = {
-    // Order 0
     s0,
-    // Order 1
     sqrt(3) * (1-2*s1),
-    // Order 2
-    sqrt(5) * ( (6 * s1 - 6) * s1 + 1 )
+    sqrt(5) * ( (6 * s1 - 6) * s1 + 1 ),
+    20*sqrt(7)*s3 - 30*sqrt(7)*s2 + 12*sqrt(7)*s1 - sqrt(7),
+    210*s4 - 420*s3 + 270*s2 - 60*s1 + 3,
+    252*sqrt(11)*s5 - 630*sqrt(11)*s4 + 560*sqrt(11)*s3 - 210*sqrt(11)*s2 + 30*sqrt(11)*s1 - sqrt(11),
+    924*sqrt(13)*s6 - 2772*sqrt(13)*s5 + 3150*sqrt(13)*s4 - 1680*sqrt(13)*s3 + 420*sqrt(13)*s2 - 42*sqrt(13)*s1 + sqrt(13),
+    3432*sqrt(15)*s7 - 12012*sqrt(15)*s6 + 16632*sqrt(15)*s5 - 11550*sqrt(15)*s4 + 4200*sqrt(15)*s3 - 756*sqrt(15)*s2 + 56*sqrt(15)*s1 - sqrt(15),
+    12870*sqrt(17)*s8 - 51480*sqrt(17)*s7 + 84084*sqrt(17)*s6 - 72072*sqrt(17)*s5 + 34650*sqrt(17)*s4 - 9240*sqrt(17)*s3 + 1260*sqrt(17)*s2 - 72*sqrt(17)*s1 + sqrt(17)
   };
 }  // end namespace pol
 
@@ -179,7 +187,7 @@ inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polyno
  * Transformation Matrix from 2D Polynomial to 2D Monomial base space
  * transposed (TODO nohcmal prüfen)
  */
-inline BlockMatrix getPolynomialMapping (unsigned int polynomialDegree)
+inline BlockMatrix get2DPolynomialMapping (unsigned int polynomialDegree)
 {
   using std::sqrt;
   BlockMatrix T;
@@ -235,6 +243,77 @@ inline BlockMatrix getPolynomialMapping (unsigned int polynomialDegree)
   return T;
 }
 
+//TODO
+inline BlockMatrix get1DPolynomialMapping (unsigned int polynomialDegree)
+{
+  using std::sqrt;
+  if(polynomialDegree>8)
+    {
+      std::cerr << "maping from monomial into hirachical space for given order not implemented" << std::endl;
+      assert(false);
+    }
+
+  BlockMatrix T(polynomialDegree+1);
+  switch(polynomialDegree)
+    {
+    case 8:
+      T(0,8) = 1./9.;
+      T(1,8) = -4.*sqrt(3)/45.;
+      T(2,8) = 28.*sqrt(5)/495.;
+      T(3,8) = 14.*sqrt(7)/495.;
+      T(4,8) = 14./429.;
+      T(5,8) = 4.*sqrt(11)/1287.;
+      T(6,8) = 4.*sqrt(13)/6435.;
+      T(7,8) = sqrt(15)/12870.;
+      T(8,8) = sqrt(17)/218790.;
+    case 7:
+      T(0,7) = 1./8.;
+      T(1,7) = -7.*sqrt(3)/72.;
+      T(2,7) = 7.*sqrt(5)/120.;
+      T(3,7) = 7.*sqrt(7)/264.;
+      T(4,7) = 7./264.;
+      T(5,7) = 7.*sqrt(11)/3432.;
+      T(6,7) = sqrt(13)/3432.;
+      T(7,7) = sqrt(15)/51480.;
+    case 6:
+      T(0,6) = 1./7.;
+      T(1,6) = -3.*sqrt(3)/28.;
+      T(2,6) = 5.*sqrt(5)/84.;
+      T(3,6) = sqrt(7)/42.;
+      T(4,6) = 3./154.;
+      T(5,6) = sqrt(11)/924.;
+      T(6,6) = sqrt(13)/12012.;
+    case 5:
+      T(0,5) = 1./6.;
+      T(1,5) = -5.*sqrt(3)/42.;
+      T(2,5) = 5.*sqrt(5)/84.;
+      T(3,5) = 5.*sqrt(7)/252.;
+      T(4,5) = 1./84.;
+      T(5,5) = sqrt(11)/2772.;
+    case 4:
+      T(0,4) = 1./5.;
+      T(1,4) = -2.*sqrt(3)/15.;
+      T(2,4) = 2.*sqrt(5)/35.;
+      T(3,4) = sqrt(7)/70.;
+      T(4,4) = 1./210.;
+    case 3:
+      T(0,3) = 1./4.;
+      T(1,3) = -3.*sqrt(3)/20.;
+      T(2,3) = sqrt(5)/20.;
+      T(3,3) = sqrt(7)/140.;
+    case 2:
+      T(0,2) = 1./3.;
+      T(1,2) = -sqrt(3)/6.;
+      T(2,2) = sqrt(5)/30.;
+    case 1:
+      T(0,1) = 1./2.;
+      T(1,1) = -sqrt(3)/6.;
+    case 0:
+      T(0,0) = 1.;
+    }
+
+  return T;
+}
 
 
 
@@ -279,6 +358,19 @@ T1 weighted_sum(InputIt1 weight_first, InputIt1 weight_last,
   }
   return value;
 }
+template<class InputIt1, class InputIt2, class T1, typename Function>
+T1 weighted_sum(InputIt1 weight_first, InputIt1 weight_last,
+                InputIt2 q,
+                Function f,
+                T1 value)
+{
+  while (weight_first != weight_last) {
+    value += *weight_first * f(*q);
+    ++weight_first;
+    ++q;
+  }
+  return value;
+}
 
 inline Polynomial1D reconstructFunction1D (unsigned int polynomialDegree, std::vector<double> coeficents)
 {
@@ -296,7 +388,7 @@ inline Polynomial2D reconstructFunction2D (unsigned int polynomialDegree, std::v
  * is exact for polynomials f of order 'order'
  */
 template<typename Function>
- double integradeOverRefTriangle_gaus(Function f, int order)
+double integradeOverRefTriangle_gaus(Function f, int order)
 {
   using std::begin;
   using std::end;
@@ -321,6 +413,44 @@ template<typename Function>
   return weighted_sum(begin(w), end(w), begin(x1), begin(x2), f, 0.);
 }
 
+template<typename Function>
+double integradeOverRefEdge_gaus(Function f, int order)
+{
+  using std::begin;
+  using std::end;
+  using std::sqrt;
+
+  std::vector<double> w, x;
+
+  switch(order){
+  case 0:
+  case 1:
+    x = {0};
+    w = {2};
+    break;
+  case 2:
+    x = {-1./sqrt(3), 1./sqrt(3)};
+    w = {1. , 1.};
+    break;
+  case 3:
+    x = {-sqrt(3./5.), 0., sqrt(3./5.)};
+    w = {5./9., 8./9., 5./9.};
+  case 4:
+    x = {-sqrt(3./7.+2./7.*sqrt(6./5.)), -sqrt(3./7.-2./7.*sqrt(6./5.)),
+          sqrt(3./7.-2./7.*sqrt(6./5.)),  sqrt(3./7.+2./7.*sqrt(6./5.)) };
+    w = {(18.-sqrt(30.))/36., (18.+sqrt(30.))/36.,
+         (18.+sqrt(30.))/36., (18.-sqrt(30.))/36. };
+  default:
+    std::cerr << "gaus integration for given order is not implemented!" << std::endl;
+    return -1;
+    }
+  // map gaus quad role to interfal (0,1) (ref edge)
+  x = (x+1)*0.5;
+  w = w*0.5;
+
+  return weighted_sum(begin(w), end(w), begin(x), f, 0.);
+}
+
 /**
  * use L2-Projection to represent a continues function f to the discreet polynomial space on element T_k
  */
@@ -331,22 +461,71 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
 {
   unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
 
-  std::vector<double> F (dof);
+  std::vector<double> F;
+  F.reserve(dof);
 
   // hatM(i,:) F_k(i) = int_hatT {phi(i)*f(x)} d hatx
   // x = T_k(x^) = B_k * x^ + a_k
   // here hatM == I
   // =>  F_k(i) = int_hatT { phi(i)*f(t_k(x^)) } = int_hatT { phi(i) * f(B_k*x^+a_k) }
   for (unsigned int i=0; i<dof; ++i)
-    {
-      F[i] = integradeOverRefTriangle_gaus([&f, i, &B_k, &A_k](double x1_hat, double x2_hat)
-                                           {
-                                             double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
-                                             double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
-                                             return pol::phi[i](x1_hat,x2_hat) * f(x1,x2);
-                                           },
-                                           2*polynomialDegree);
-    }
+    F.push_back(integradeOverRefTriangle_gaus([&f, i, &B_k, &A_k](double x1_hat, double x2_hat)
+                                              {
+                                                double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                return pol::phi[i](x1_hat,x2_hat) * f(x1,x2);
+                                              },
+                                              2*polynomialDegree)
+                );
+
+  return F;
+}
+/**
+ * l2Projection onto edge
+ */
+inline std::vector<double> l2Projection_edge (unsigned int polynomialDegree,
+                                              std::function<double(double,double)> const & f,
+                                              Jakobian const & B_k,
+                                              Point const & A_k,
+                                              int edgeID)
+{
+  unsigned int dof = numberOf1DBasefunctions(polynomialDegree);
+  std::vector<double> F;
+  F.reserve(dof);
+
+  for (unsigned int i=0; i<dof; ++i)
+    F.push_back(integradeOverRefEdge_gaus([&f, i, &B_k, &A_k, edgeID](double x_bar)
+                                          {
+                                            double x_hat, y_hat;
+                                            // gama_e: refEdge(1D) -> refElement(2D)
+                                            switch(edgeID)
+                                              {
+                                              case 0: // edge a
+                                                x_hat = 1-x_bar;
+                                                y_hat = x_bar;
+                                                break;
+                                              case 1: // edge b
+                                                x_hat = 0;
+                                                y_hat = 1-x_bar;
+                                                break;
+                                              case 2: // edge c
+                                                x_hat = x_bar;
+                                                y_hat = 0;
+                                                break;
+                                              }
+
+                                            // F_k: refElemnt -> phyikal Elemnt
+                                            double x1 = B_k[0][0]*x_hat + B_k[0][1]*y_hat + A_k.x;
+                                            double x2 = B_k[1][0]*x_hat + B_k[1][1]*y_hat + A_k.y;
+
+                                            // evaluate function
+                                            return pol::phi1D[i](x_bar) * f(x1,x2);
+                                          },
+                                          2*polynomialDegree)
+
+                );
+
+
 
   return F;
 }
@@ -361,10 +540,10 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
  * and \hat{M} ist I_h mit 0 spalten hinten dran (= unten abscgnittenes "göseres" I)
  * -> F unten abschneiden
  */
-inline std::vector<double> l2Projection (unsigned int polynomialDegree,
-                                         std::vector<double> const & pol)
+inline std::vector<double> trim1D (std::vector<double> const & pol,
+                                   unsigned int polynomialDegree)
 {
-  unsigned int dof (numberOf2DBasefunctions(polynomialDegree));
+  unsigned int dof (numberOf1DBasefunctions(polynomialDegree));
 
   assert(pol.size() >= dof);
 

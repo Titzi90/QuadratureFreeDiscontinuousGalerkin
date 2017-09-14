@@ -150,7 +150,7 @@ public:
       // assemblyGquadFree(mesh_, order_);
       // assemblyGgaus(mesh_, order_);
       assemblyE(mesh_, hatE_);
-      assemblyEquadFree(mesh_, order_, orderF_);
+      // assemblyEquadFree(mesh_, order_, orderF_);
       assemblyFr(mesh_, order_, orderF_, riemanSolver_UpWinding, hatI_);
 
       // update c
@@ -162,9 +162,9 @@ public:
             auto & T_u = mesh_.getUpper(row, col);
 
             std::vector<double> tmp_l = T_l.G()*T_l.C()
-              - T_l.E_a()*T_l.F_a() - T_l.E_b()*T_l.F_b() - T_l.E_c()*T_l.F_c();
+              - T_l.E_a()*T_l.Fr_a() - T_l.E_b()*T_l.Fr_b() - T_l.E_c()*T_l.Fr_c();
             std::vector<double> tmp_u = T_u.G()*T_u.C()
-              - T_u.E_a()*T_u.F_a() - T_u.E_b()*T_u.F_b() - T_u.E_c()*T_u.F_c();
+              - T_u.E_a()*T_u.Fr_a() - T_u.E_b()*T_u.Fr_b() - T_u.E_c()*T_u.Fr_c();
 
             T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
             T_u.C() += deltaT_ * ( T_u.L() + invertM(T_u.M()) * tmp_u);
@@ -176,8 +176,8 @@ public:
             //           << "\vG:\n" << T_l.G()
             //           << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
             //           << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
-            //           << "\vFr:\n" << T_l.F_a() << "\n" << T_l.F_b() << "\n" << T_l.F_c()
-            //           << "\vF:\n" << T_l.F1() << "\n" << T_l.F2()
+            //           // << "\vF:\na: " << T_l.Fn_a() << "\nb: " << T_l.Fn_b() << "\nc: " << T_l.Fn_c()
+            //           << "\vFr:\na: " << T_l.Fr_a() << "\nb: " << T_l.Fr_b() << "\nc: " << T_l.Fr_c()
             //           << "\vL:\n" << T_l.L()
             //           << "\vdc:\n" << tmp_l
             //           << "\vM^-1:\n" << invertM(T_l.M())
@@ -188,8 +188,8 @@ public:
             //           << "\vG:\n" << T_u.G()
             //           << "\vU:\n" << T_u.U1() << "\n" << T_u.U2()
             //           << "\vE:\n" << T_u.E_a() << "\n" << T_u.E_b() << "\n" << T_u.E_c()
-            //           << "\vFr:\n" << T_u.F_a() << "\n" << T_u.F_b() << "\n" << T_u.F_c()
-            //           << "\vF:\n" << T_u.F1() << "\n" << T_u.F2()
+            //           // << "\vF:\na: " << T_u.Fn_a() << "\nb: " << T_u.Fn_b() << "\nc: " << T_u.Fn_c()
+            //           << "\vFr:\na: " << T_u.Fr_a() << "\nb: " << T_u.Fr_b() << "\nc: " << T_u.Fr_c()
             //           << "\vL:\n" << T_u.L()
             //           << "\vdc:\n" << tmp_u
             //           << "\vM^-1:\n" << invertM(T_u.M())

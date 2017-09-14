@@ -106,10 +106,15 @@ inline std::vector<double> operator* (BlockMatrix const & A, std::vector<double>
   return matVecMul(A,b);
 }
 
+inline std::vector<double> operator*(BlockMatrix const & M, Polynomial1D const & pol)
+{
+  return matVecMul(M,serialize(pol));
+}
 inline std::vector<double> operator*(BlockMatrix const & M, Polynomial2D const & pol)
 {
   return matVecMul(M,serialize(pol));
 }
+
 
 inline std::vector<double> operator* (double c, std::vector<double> const & v)
 {
@@ -121,6 +126,16 @@ inline std::vector<double> operator* (double c, std::vector<double> const & v)
   return res;
 }
 
+inline std::vector<double> operator+ (std::vector<double> const & lhs, double rhs)
+{
+  std::vector<double> res;
+  res.reserve(lhs.size());
+
+  std::transform(lhs.begin(), lhs.end(), std::back_inserter(res), [rhs](double l)
+                 {return l+rhs;});
+
+  return res;
+}
 inline std::vector<double> operator+ (std::vector<double> const & lhs, std::vector<double> const & rhs)
 {
   assert(lhs.size() == rhs.size());

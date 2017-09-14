@@ -145,20 +145,27 @@ std::ostream& printU(UniqueSquareGrid const & mesh, std::ostream& os)
 
  std::ostream& printF(UniqueSquareGrid const & mesh, std::ostream& os)
 {
-  os << "F1:\n";
+  os << "Fn_a:\n";
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getLower(row, col).F1();
+      os << mesh.getLower(row, col).Fn_a();
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getUpper(row, col).F1();
-  os << "\vF2:\n";
+      os << mesh.getUpper(row, col).Fn_a();
+  os << "\vFn_b:\n";
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getLower(row, col).F2();
+      os << mesh.getLower(row, col).Fn_b();
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getUpper(row, col).F2();
+      os << mesh.getUpper(row, col).Fn_b();
+  os << "\vFn_c:\n";
+  for (unsigned int row=0; row<mesh.getRows(); ++row)
+    for (unsigned int col=0; col<mesh.getColumns(); ++col)
+      os << mesh.getLower(row, col).Fn_c();
+  for (unsigned int row=0; row<mesh.getRows(); ++row)
+    for (unsigned int col=0; col<mesh.getColumns(); ++col)
+      os << mesh.getUpper(row, col).Fn_c();
 
   return os;
 }
@@ -236,26 +243,26 @@ std::ostream& printU(UniqueSquareGrid const & mesh, std::ostream& os)
   os << "Fra:\n";
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getLower(row, col).F_a();
+      os << mesh.getLower(row, col).Fr_a();
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getUpper(row, col).F_a();
+      os << mesh.getUpper(row, col).Fr_a();
 
   os << "\vFrb:\n";
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getLower(row, col).F_b();
+      os << mesh.getLower(row, col).Fr_b();
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getUpper(row, col).F_b();
+      os << mesh.getUpper(row, col).Fr_b();
 
   os << "\vFrc:\n";
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getLower(row, col).F_c();
+      os << mesh.getLower(row, col).Fr_c();
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      os << mesh.getUpper(row, col).F_c();
+      os << mesh.getUpper(row, col).Fr_c();
 
   return os;
 }

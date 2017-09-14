@@ -56,6 +56,8 @@ public:
     return val;
   }
 
+  std::vector<double> const & getCoeficentVector() const {return coeficents_;}
+
 
 private:
   unsigned int order_;
@@ -126,6 +128,10 @@ private:
   friend auto end(Polynomial2D const & pol)  ->decltype(const_cast<const std::vector<double>&>(coeficents_).end());
 };
 
+inline std::vector<double> const & serialize(Polynomial1D const & pol)
+{
+  return pol.getCoeficentVector();
+}
 inline std::vector<double> serialize(Polynomial2D const & pol)
 {
   //TODO testen
