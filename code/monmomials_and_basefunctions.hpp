@@ -450,6 +450,27 @@ double integradeOverRefTriangle_gaus(Function f, int order)
     x1 = {1./3 ,       a1, 1.-2.*a1,     a1,       a2, 1.-2.*a2,     a2};
     x2 = {1./3 , 1.-2.*a1,       a1,     a1, 1.-2.*a2,       a2,     a2};
     break;
+  case 6:
+    w  = {0.025422453185103, 0.025422453185103, 0.025422453185103,
+          0.058393137863189, 0.058393137863189, 0.058393137863189,
+          0.041425537809187, 0.041425537809187, 0.041425537809187,
+          0.041425537809187, 0.041425537809187, 0.041425537809187};
+    x1 = {0.063089014491502, 0.873821971016996, 0.063089014491502,
+          0.249286745170910, 0.501426509658179, 0.249286745170910,
+          0.310352451033785, 0.053145049844816, 0.636502499121399,
+          0.053145049844816, 0.636502499121399, 0.310352451033785};
+    x2 = {0.063089014491502, 0.063089014491502, 0.873821971016996,
+          0.249286745170910, 0.249286745170910, 0.501426509658179,
+          0.053145049844816, 0.310352451033785, 0.053145049844816,
+          0.636502499121399, 0.310352451033785, 0.636502499121399};
+    break;
+    // komisches werte aus matlab
+  case 7:
+
+    break;
+  case 8:
+
+    break;
   default:
     std::cerr << "2d gaus integration for given order(" << order << ") is not implemented!" << std::endl;
     return -1;
@@ -559,8 +580,8 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
                                                 double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
                                                 return pol::phi[i](x1_hat,x2_hat) * f(x1,x2);
                                               },
-                                              // 2*polynomialDegree)
-                                              polynomialDegree) //TODO Balti fragen
+                                              2*polynomialDegree)
+                                              // polynomialDegree) //TODO Balti fragen
                 );
 
   return F;

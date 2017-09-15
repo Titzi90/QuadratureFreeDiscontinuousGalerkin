@@ -11,9 +11,9 @@
 
 int main(int argc, char** argv)
 {
-  int order = 1;
+  int order = 3;
   int orderF = 2*order;
-  int refiment = 64;
+int refiment = 64;
   double tEnd = 1;
   unsigned int numSteps = tEnd * 1000;
 
@@ -24,8 +24,16 @@ int main(int argc, char** argv)
 
   auto u1 = [](double, double, double){return 1;};
   auto u2 = [](double, double, double){return 0.0;};
-  auto f  = [](double, double, double){return 0;};
-  auto cExact = [](double, double, double){return 1;};
+  // constant
+  // auto f  = [](double, double, double){return 0;};
+  // auto cExact = [](double, double, double){return 1;};
+  // linear
+  auto f  = [](double, double, double){return 1;};
+  auto cExact = [](double x, double, double){return x;};
+  // quadratic
+  // auto f  = [](double x, double, double){return 8*x-4;};
+  // auto cExact = [](double x, double, double){return (2*x-1)*(2*x-1);};
+  // time dependent
   // auto f  = [](double, double, double t){return -std::exp(-t);};
   // auto cExact = [](double, double, double t){return std::exp(-t);};
   auto c0 = std::bind(cExact, _1, _2, 0);
@@ -48,9 +56,9 @@ int main(int argc, char** argv)
   Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
                    tEnd, numSteps, writer, true ); //, numSteps/100, true);
 
-  stepper.go();
-  // for (int i=0; i<5; ++i)
-  //   stepper.next();
+  // stepper.go();
+  // for (int i=0; i<1; ++i)
+    stepper.next();
 
   std::cout << "L2 Error: " << stepper.l2error() << std::endl;
 

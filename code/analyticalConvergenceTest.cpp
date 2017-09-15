@@ -10,11 +10,12 @@
 
 int main(int argc, char** argv)
 {
-  int order = 1;
-  int orderF = 2*order;
+  int order = 0;
+  int orderF = order;
+  // int orderF = 2*order;
   int refiment = 64;
   double tEnd = 1;
-  unsigned int numSteps = 1000;
+  unsigned int numSteps = tEnd * 1000;
 
   if (argc > 1)
     numSteps = std::atoi(argv[1]);
@@ -44,9 +45,11 @@ int main(int argc, char** argv)
       setBoundary_Diriclet(mesh, Boundary::right, order, orderF, cExact, t);
     };
 
-  Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl, tEnd, numSteps, writer, numSteps/100, true, true);
+  Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
+                   tEnd, numSteps, writer, true);
 
   stepper.go();
+  // stepper.next();
 
   std::cout << "L2 Error: " << stepper.l2error() << std::endl;
   return 0;
