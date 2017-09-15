@@ -168,8 +168,8 @@ public:
               - T_u.E_a()*T_u.Fr_a() - T_u.E_b()*T_u.Fr_b() - T_u.E_c()*T_u.Fr_c();
 
 
-            std::cout << row  << "," << col << " lower:\n"
-                      << "C_old:\n" << T_l.C()
+            // std::cout << row  << "," << col << " lower:\n"
+            //           << "C_old:\n" << T_l.C()
             //           << "\vG:\n" << T_l.G()
             //           << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
             //           << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
@@ -178,10 +178,10 @@ public:
             //           << "\vL:\n" << T_l.L()
             //           << "\vdc:\n" << tmp_l
             //           << "\vM^-1:\n" << invertM(T_l.M())
-                      << std::endl;
+                      // << std::endl;
 
-            std::cout << row  << "," << col << " upper:\n"
-                      << "C_old:\n" << T_u.C()
+            // std::cout << row  << "," << col << " upper:\n"
+            //           << "C_old:\n" << T_u.C()
             //           << "\vG:\n" << T_u.G()
             //           << "\vU:\n" << T_u.U1() << "\n" << T_u.U2()
             //           << "\vE:\n" << T_u.E_a() << "\n" << T_u.E_b() << "\n" << T_u.E_c()
@@ -190,7 +190,7 @@ public:
             //           << "\vL:\n" << T_u.L()
             //           << "\vdc:\n" << tmp_u
             //           << "\vM^-1:\n" << invertM(T_u.M())
-                      << std::endl;
+                      // << std::endl;
 
             T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
             T_u.C() += deltaT_ * ( T_u.L() + invertM(T_u.M()) * tmp_u);
