@@ -68,6 +68,6 @@ polynomial.o: polynomial.cpp polynomial.hpp monmomials_and_basefunctions.hpp
 assembly.o: assembly.hpp assembly.cpp polynomial.hpp monmomials_and_basefunctions.hpp Grid.hpp DataTypes.hpp
 VTKwriter.o: VTKwriter.cpp VTKwriter.hpp Grid.hpp DataTypes.hpp
 analyticalTest.o: analyticalTest.cpp stepper.hpp Grid.hpp VTKwriter.hpp assembly.hpp DataTypes.hpp
-analyticalConvergenceTest.o: analyticalConvergenceTest.cpp stepper.hpp Grid.hpp VTKwriter.hpp assembly.hpp DataTypes.hpp
+analyticalConvergenceTest.o: analyticalConvergenceTest.cpp stepper.hpp Grid.hpp VTKwriter.hpp assembly.hpp DataTypes.hpp monmomials_and_basefunctions.hpp
 solidBodyRotation.o: solidBodyRotation.cpp stepper.hpp Grid.hpp VTKwriter.hpp assembly.hpp DataTypes.hpp
-Grid.o: Grid.hpp DataTypes.hpp
+Grid.o: Grid.hpp DataTypes.hpp monmomials_and_basefunctions.hpp

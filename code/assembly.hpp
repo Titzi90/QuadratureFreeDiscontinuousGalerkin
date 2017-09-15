@@ -114,35 +114,35 @@ inline void assemblyMquadFree (UniqueSquareGrid & mesh, unsigned int polynomialD
 }
 
 
-inline BlockMatrix assemblyLocalM_kGaus(unsigned int polynomialDegree, double area_k)
-{
-  unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
-  BlockMatrix M_k (dof);
+// inline BlockMatrix assemblyLocalM_kGaus(unsigned int polynomialDegree, double area_k)
+// {
+//   unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
+//   BlockMatrix M_k (dof);
 
-  for (unsigned int i=0; i<dof; ++i)
-    for (unsigned int j=0; j<dof; ++j)
-      M_k(i,j) = 2. * area_k * integradeOverRefTriangle_gaus(pol::phi[i]*pol::phi[j], 2*polynomialDegree);
+//   for (unsigned int i=0; i<dof; ++i)
+//     for (unsigned int j=0; j<dof; ++j)
+//       M_k(i,j) = 2. * area_k * integradeOverRefTriangle_gaus(pol::phi[i]*pol::phi[j], 2*polynomialDegree);
 
-  return M_k;
-}
+//   return M_k;
+// }
 
 
-inline void assemblyMGaus (UniqueSquareGrid & mesh, unsigned int polynomialDegree)
-{
-  LIKWID_MARKER_START("ASSEMBLY_M_GAUS");
+// inline void assemblyMGaus (UniqueSquareGrid & mesh, unsigned int polynomialDegree)
+// {
+//   LIKWID_MARKER_START("ASSEMBLY_M_GAUS");
 
-#pragma omp for
-  for (unsigned int row=0; row<mesh.getRows(); ++row)
-    for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      {
-        Triangle & l = mesh.getLower(row, col);
-        l.M() = assemblyLocalM_kGaus(polynomialDegree, l.getArea());
-        Triangle & u = mesh.getUpper(row, col);
-        u.M() = assemblyLocalM_kGaus(polynomialDegree, u.getArea());
-      }
+// #pragma omp for
+//   for (unsigned int row=0; row<mesh.getRows(); ++row)
+//     for (unsigned int col=0; col<mesh.getColumns(); ++col)
+//       {
+//         Triangle & l = mesh.getLower(row, col);
+//         l.M() = assemblyLocalM_kGaus(polynomialDegree, l.getArea());
+//         Triangle & u = mesh.getUpper(row, col);
+//         u.M() = assemblyLocalM_kGaus(polynomialDegree, u.getArea());
+//       }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_M_GAUS");
-}
+//   LIKWID_MARKER_STOP("ASSEMBLY_M_GAUS");
+// }
 
 
 
@@ -284,54 +284,54 @@ inline void assemblyGquadFree (UniqueSquareGrid & mesh,
 }
 
 
-inline BlockMatrix assemblyLocalG_kgaus (unsigned int polynomialDegree,
-                                             std::vector<double> const & u1_k,
-                                             std::vector<double> const & u2_k,
-                                             Jakobian const & B_k)
-{
-  unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
+// inline BlockMatrix assemblyLocalG_kgaus (unsigned int polynomialDegree,
+//                                              std::vector<double> const & u1_k,
+//                                              std::vector<double> const & u2_k,
+//                                              Jakobian const & B_k)
+// {
+//   unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
 
-  BlockMatrix G_k (dof);
+//   BlockMatrix G_k (dof);
 
-  for (unsigned int i=0; i<dof; ++i)
-    for (unsigned int j=0; j<dof; ++j)
-      {
-        // G = G1*u1 + G2*u2
-        // with G1 = sum_l {  B_{2,2}*hatG1_l - B_{2,1}*hatG2_l }
-        // and  G2 = sum_l { -B_{1,2}*hatG1_l + B_{1,1}*hatG2_l }
-        double g1 = 0.;
-        double g2 = 0.;
-        for (unsigned int l=0; l<dof; ++l)
-          {
-            //TODO order ist sehr ungenau
-            double hatG1 = integradeOverRefTriangle_gaus(pol::dXphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
-            double hatG2 = integradeOverRefTriangle_gaus(pol::dYphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
-            g1 += u1_k[l] * ( B_k[1][1]*hatG1 - B_k[1][0]*hatG2);
-            g2 += u2_k[l] * (-B_k[0][1]*hatG1 + B_k[0][0]*hatG2);
-          }
-        G_k(i,j) = g1 + g2;
-      }
+//   for (unsigned int i=0; i<dof; ++i)
+//     for (unsigned int j=0; j<dof; ++j)
+//       {
+//         // G = G1*u1 + G2*u2
+//         // with G1 = sum_l {  B_{2,2}*hatG1_l - B_{2,1}*hatG2_l }
+//         // and  G2 = sum_l { -B_{1,2}*hatG1_l + B_{1,1}*hatG2_l }
+//         double g1 = 0.;
+//         double g2 = 0.;
+//         for (unsigned int l=0; l<dof; ++l)
+//           {
+//             //TODO order ist sehr ungenau
+//             double hatG1 = integradeOverRefTriangle_gaus(pol::dXphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
+//             double hatG2 = integradeOverRefTriangle_gaus(pol::dYphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
+//             g1 += u1_k[l] * ( B_k[1][1]*hatG1 - B_k[1][0]*hatG2);
+//             g2 += u2_k[l] * (-B_k[0][1]*hatG1 + B_k[0][0]*hatG2);
+//           }
+//         G_k(i,j) = g1 + g2;
+//       }
 
-  return G_k;
-}
+//   return G_k;
+// }
 
-inline void assemblyGgaus (UniqueSquareGrid & mesh,
-                               unsigned int polynomialDegree)
-{
-  LIKWID_MARKER_START("ASSEMBLY_G_GAUS");
+// inline void assemblyGgaus (UniqueSquareGrid & mesh,
+//                                unsigned int polynomialDegree)
+// {
+//   LIKWID_MARKER_START("ASSEMBLY_G_GAUS");
 
-#pragma omp for
-  for (unsigned int row=0; row<mesh.getRows(); ++row)
-    for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      {
-        Triangle & l = mesh.getLower(row, col);
-        Triangle & u = mesh.getUpper(row, col);
-        l.G() = assemblyLocalG_kgaus(polynomialDegree, l.U1(), l.U2(), l.getJakobian());
-        u.G() = assemblyLocalG_kgaus(polynomialDegree, u.U1(), u.U2(), u.getJakobian());
-      }
+// #pragma omp for
+//   for (unsigned int row=0; row<mesh.getRows(); ++row)
+//     for (unsigned int col=0; col<mesh.getColumns(); ++col)
+//       {
+//         Triangle & l = mesh.getLower(row, col);
+//         Triangle & u = mesh.getUpper(row, col);
+//         l.G() = assemblyLocalG_kgaus(polynomialDegree, l.U1(), l.U2(), l.getJakobian());
+//         u.G() = assemblyLocalG_kgaus(polynomialDegree, u.U1(), u.U2(), u.getJakobian());
+//       }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_G_GAUS");
-}
+//   LIKWID_MARKER_STOP("ASSEMBLY_G_GAUS");
+// }
 
 
 /******** Edge integral Matrix part E *****************************************/
@@ -351,7 +351,7 @@ inline std::vector<BlockMatrix> assemblyHatE (unsigned int polynomialDegree,
   BlockMatrix E2(dof2D, dofF);
   BlockMatrix E3(dof2D, dofF);
 
-  // E = (T*B)*b^t
+  // E = (T*B)*b'
   for (unsigned int i=0; i<dof2D; ++i)
     {
       Polynomial1D tmp1 (polynomialDegree);

@@ -104,7 +104,8 @@ public:
           }
 
         std::cout << "Computing with basic polynomial order " << order_
-                  << " (" << numberOf2DBasefunctions(order_) <<" local DOFs) on "
+                  << " (" << numberOf2DBasefunctions(order_) <<" local DOFs) "
+                  << "and numerical flux aproximation of order "  << orderF_ << " on "
                   << mesh_.getRows()*mesh_.getColumns()*2 << " triangles ("
                // << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order) << " DOFs total)\n"
                   << "refiment level: " << mesh_.getColumns() <<")\n"
@@ -166,11 +167,7 @@ public:
             std::vector<double> tmp_u = T_u.G()*T_u.C()
               - T_u.E_a()*T_u.Fr_a() - T_u.E_b()*T_u.Fr_b() - T_u.E_c()*T_u.Fr_c();
 
-            T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
-            T_u.C() += deltaT_ * ( T_u.L() + invertM(T_u.M()) * tmp_u);
 
-            // if (step_%100==0)
-            //   {
             // std::cout << row  << "," << col << " lower:\n"
             //           << "C_old:\n" << T_l.C()
             //           << "\vG:\n" << T_l.G()
@@ -194,7 +191,10 @@ public:
             //           << "\vdc:\n" << tmp_u
             //           << "\vM^-1:\n" << invertM(T_u.M())
             //           << std::endl;
-            // }
+
+            T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
+            T_u.C() += deltaT_ * ( T_u.L() + invertM(T_u.M()) * tmp_u);
+
             // std::cout << "C_neu:\n" << T_l.C() << "\n" << T_u.C() << std::endl;
           }
 
@@ -218,7 +218,7 @@ public:
    */
   double l2error()
   {
-    return l2Error(mesh_, order_, order_*2, std::bind(cExact_, _1, _2, t_));
+    return l2Error(mesh_, order_, order_+1, std::bind(cExact_, _1, _2, t_));
   }
 
   void go()

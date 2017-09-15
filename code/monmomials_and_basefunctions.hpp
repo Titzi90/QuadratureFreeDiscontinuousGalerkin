@@ -13,12 +13,12 @@
  */
 inline unsigned int numberOf2DBasefunctions(unsigned int polynomialDegree)
 {
-  assert(polynomialDegree <= 3); // not implemented
+  assert(polynomialDegree <= 4); // not implemented
   return (polynomialDegree+1)*(polynomialDegree+2)/2;
 }
 inline unsigned int numberOf1DBasefunctions(int polynomialDegree)
 {
-  assert(polynomialDegree <= 2); // not implemented
+  assert(polynomialDegree <= 8); // not implemented
   return polynomialDegree+1;
 }
 
@@ -52,15 +52,42 @@ namespace pol
   Polynomial2D const x2y = Polynomial2D(2,1,1.);
   Polynomial2D const xy2 = Polynomial2D(1,2,1.);
   Polynomial2D const y3  = Polynomial2D(0,3,1.);
+  // Order 4
+  Polynomial2D const x4  = Polynomial2D(4,0,1.);
+  Polynomial2D const x3y1= Polynomial2D(3,1,1.);
+  Polynomial2D const x2y2= Polynomial2D(2,2,1.);
+  Polynomial2D const x1y3= Polynomial2D(1,3,1.);
+  Polynomial2D const   y4= Polynomial2D(0,4,1.);
+
 
   // integral over reference triangle
-  double const monomialIntegralsRefTriangle[4][4] = {{ 1./2,  1./6 , 1./12, 1./20},
-                                                     { 1./6,  1./24, 1./60, 0    },
-                                                     { 1./12, 1./60, 0    , 0    },
-                                                     { 1./20, 0    , 0    , 0    }};
+  /*
+  double const monomialIntegralsRefTriangle[5][5] = {{ 1./2,  1./6  , 1./12 , 1./20 , 1./30},
+                                                     { 1./6,  1./24 , 1./60 , 1./120, 0    },
+                                                     { 1./12, 1./60 , 1./180, 0     , 0    },
+                                                     { 1./20, 1./120, 0     , 0     , 0    },
+                                                     { 1./30, 0     , 0     , 0     , 0    }};
+  */
+  double const monomialIntegralsRefTriangle[12][12] =
+    {{ 1./2, 1./6, 1./12, 1./20, 1./30, 1./42, 1./56, 1./72, 1./90, 1./110, 1./132, 1./156, },
+     { 1./6, 1./24, 1./60, 1./120, 1./210, 1./336, 1./504, 1./720, 1./990, 1./1320, 1./1716, 0, },
+     { 1./12, 1./60, 1./180, 1./420, 1./840, 1./1512, 1./2520, 1./3960, 1./5940, 1./8580, 0, 0, },
+     { 1./20, 1./120, 1./420, 1./1120, 1./2520, 1./5040, 1./9240, 1./15840, 1./25740, 0, 0, 0, },
+     { 1./30, 1./210, 1./840, 1./2520, 1./6300, 1./13860, 1./27720, 1./51480, 0, 0, 0, 0, },
+     { 1./42, 1./336, 1./1512, 1./5040, 1./13860, 1./33264, 1./72072, 0, 0, 0, 0, 0, },
+     { 1./56, 1./504, 1./2520, 1./9240, 1./27720, 1./72072, 0, 0, 0, 0, 0, 0, },
+     { 1./72, 1./720, 1./3960, 1./15840, 1./51480, 0, 0, 0, 0, 0, 0, 0, },
+     { 1./90, 1./990, 1./5940, 1./25740, 0, 0, 0, 0, 0, 0, 0, 0, },
+     { 1./110, 1./1320, 1./8580, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
+     { 1./132, 1./1716, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },
+     { 1./156, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, }
+    };
+
+
 
   // integral over reference edge
-  double const monomialIntegralsRefEdge[4] = {1., 1./2., 1./3., 1./4.};
+  double const monomialIntegralsRefEdge[13] = {1., 1./2., 1./3., 1./4., 1./5, 1./6, 1./7, 1./8, 1./9,
+                                               1./10, 1./11, 1./12, 1./13};
 
   // 2D base Functions
   Polynomial2D const phi [] = {
@@ -77,7 +104,16 @@ namespace pol
     (2*sqrt(2))*(x*(x*(35*x - 45) + 15) - 1),
     (2*sqrt(6))*(x*(x*(21*x -33) + 13) + y*(x*(42*x -24) + 2) -1),
     (2*sqrt(10))*(x*(x*(7*x - 15) + 9) + y*(x*(42*x - 48) + y*(42*x - 6) +6) - 1),
-    (2*sqrt(14))*(x*(x*(x - 3) + 3) + y*(x*(12*x - 24) +y*(30*x + 20*y -30) + 12) -1)
+    (2*sqrt(14))*(x*(x*(x - 3) + 3) + y*(x*(12*x - 24) +y*(30*x + 20*y -30) + 12) -1),
+    // Order 4
+    sqrt(10)*(1+(-24+(126+(-224+126*x)*x)*x)*x),
+    sqrt(30)*(1+(-22+(105+(-168+84*x)*x)*x)*x+(-2+(42+(-168+168*x)*x)*x)*y),
+    5*sqrt(2)*(1+(-18+(69+(-88+36*x)*x)*x)*x+(-6+(102+(-312+216*x)*x)*x
+                                              +(6+(-96+216*x)*x)*y)*y),
+    sqrt(70)*(1+(-12+(30+(-28+9*x)*x)*x)*x+(-12+(132+(-228+108*x)*x)*x
+                                            +(30+(-300+270*x)*x+(-20+180*x)*y)*y)*y),
+    3*sqrt(10)*(1+(-4+(6+(-4+x)*x)*x)*x+(-20+(60+(-60+20*x)*x)*x
+                                         +(90+(-180+90*x)*x+(-140+140*x+70*y)*y)*y)*y)
   };
 
   // X derivatives of 2D base functions
@@ -96,6 +132,12 @@ namespace pol
     derive( phi[7], Variable::X ),
     derive( phi[8], Variable::X ),
     derive( phi[9], Variable::X ),
+    // Order 4
+    derive( phi[10], Variable::X ),
+    derive( phi[11], Variable::X ),
+    derive( phi[12], Variable::X ),
+    derive( phi[13], Variable::X ),
+    derive( phi[14], Variable::X )
   };
 
   // Y derivatives of 2D base functions
@@ -114,6 +156,12 @@ namespace pol
     derive( phi[7], Variable::Y ),
     derive( phi[8], Variable::Y ),
     derive( phi[9], Variable::Y ),
+    // Order 4
+    derive( phi[10], Variable::Y ),
+    derive( phi[11], Variable::Y ),
+    derive( phi[12], Variable::Y ),
+    derive( phi[13], Variable::Y ),
+    derive( phi[14], Variable::Y )
   };
 
   // 1D base functions
@@ -148,18 +196,54 @@ inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polyno
   using std::sqrt;
   switch(polynomialDegree)
     {
+    case 4:
+      t1(0,10) = sqrt(10)/5;  t1(1,10) = sqrt(30)/5;  t1(2,10) = sqrt(2);  t1(3,10) = -sqrt(70)/5;  t1(4,10) = 3.*sqrt(10)/5;
+      t1(0,11) = sqrt(30)/5;  t1(1,11) = sqrt(10)/2;  t1(2,11) = sqrt(6)/2;  t1(4,11) = -2.*sqrt(30)/5;
+      t1(0,12) = sqrt(2);  t1(1,12) = sqrt(6)/2;  t1(2,12) = -3.*sqrt(10)/14;  t1(3,12) = 4.*sqrt(14)/7;  t1(4,12) = 6.*sqrt(2)/7;
+      t1(0,13) = sqrt(70)/5;  t1(2,13) = -4.*sqrt(14)/7;  t1(3,13) = -sqrt(10)/2;  t1(4,13) = -3.*sqrt(70)/70;
+      t1(0,14) = 3.*sqrt(10)/5;  t1(1,14) = -2.*sqrt(30)/5;  t1(2,14) = 6.*sqrt(2)/7;  t1(3,14) = 3.*sqrt(70)/70;  t1(4,14) = sqrt(10)/70;
+
+      t2(0,10) = sqrt(10);
+      t2(1,11) = -sqrt(10);
+      t2(2,12) = sqrt(10);
+      t2(3,13) = sqrt(10);
+      t2(4,14) = sqrt(10);
+
+      t3(0,10) = sqrt(10)/5;  t3(1,10) = -sqrt(30)/5;  t3(2,10) = sqrt(2);  t3(3,10) = sqrt(70)/5;  t3(4,10) = 3.*sqrt(10)/5;
+      t3(0,11) = -sqrt(30)/5;  t3(1,11) = sqrt(10)/2;  t3(2,11) = -sqrt(6)/2;  t3(4,11) = 2.*sqrt(30)/5;
+      t3(0,12) = sqrt(2);  t3(1,12) = -sqrt(6)/2;  t3(2,12) = -3.*sqrt(10)/14;  t3(3,12) = -4.*sqrt(14)/7;  t3(4,12) = 6.*sqrt(2)/7;
+      t3(0,13) = -sqrt(70)/5;  t3(2,13) = 4.*sqrt(14)/7;  t3(3,13) = -sqrt(10)/2;  t3(4,13) = 3.*sqrt(70)/70;
+      t3(0,14) = 3.*sqrt(10)/5;  t3(1,14) = 2.*sqrt(30)/5;  t3(2,14) = 6.*sqrt(2)/7;  t3(3,14) = -3.*sqrt(70)/70;  t3(4,14) = sqrt(10)/70;
+
+    case 3:
+      t1(0,6) = sqrt(2)/2;  t1(1,6) = sqrt(6)/2;  t1(2,6) = sqrt(10)/2;  t1(3,6) = -sqrt(14)/2;
+      t1(0,7) = sqrt(6)/2;  t1(1,7) = 11.*sqrt(2)/10;  t1(2,7) = sqrt(30)/10;  t1(3,7) = 3.*sqrt(42)/10;
+      t1(0,8) = sqrt(10)/2;  t1(1,8) = sqrt(30)/10;  t1(2,8) = -3.*sqrt(2)/2;  t1(3,8) = -sqrt(70)/10;
+      t1(0,9) = sqrt(14)/2;  t1(1,9) = -3.*sqrt(42)/10;  t1(2,9) = sqrt(70)/10;  t1(3,9) = sqrt(2)/10;
+
+      t2(0,6) = -2.*sqrt(2);
+      t2(1,7) = 2.*sqrt(2);
+      t2(2,8) = -2.*sqrt(2);
+      t2(3,9) = -2.*sqrt(2);
+
+      t3(0,6) = sqrt(2)/2;  t3(1,6) = -sqrt(6)/2;  t3(2,6) = sqrt(10)/2;  t3(3,6) = sqrt(14)/2;
+      t3(0,7) = -sqrt(6)/2;  t3(1,7) = 11.*sqrt(2)/10;  t3(2,7) = -sqrt(30)/10;  t3(3,7) = 3.*sqrt(42)/10;
+      t3(0,8) = sqrt(10)/2;  t3(1,8) = -sqrt(30)/10;  t3(2,8) = -3.*sqrt(2)/2;  t3(3,8) = sqrt(70)/10;
+      t3(0,9) = -sqrt(14)/2;  t3(1,9) = -3.*sqrt(42)/10;  t3(2,9) = -sqrt(70)/10;  t3(3,9) = sqrt(2)/10;
+
     case 2:
       t1(0,3) = sqrt(6)/3    ; t1(1,3) = sqrt(2)       ; t1(2,3) = sqrt(30)/3;
-      t1(0,4) = 19*sqrt(3)/3 ; t1(1,4) =-8             ; t1(2,4) = sqrt(15)/3;
+      t1(0,4) = -sqrt(3)/3   ; t1(1,4) = 2             ; t1(2,4) = -sqrt(15)/3;
       t1(0,5) = sqrt(5)      ; t1(1,5) = 0             ; t1(2,5) = -1;
 
       t2(0,3) = sqrt(6);
-      t2(0,4) =-2*sqrt(3)    ; t2(1,4) =-2/3           ; t2(2,4) = -sqrt(15)/2;
-      t2(0,5) =-3*sqrt(5)/5  ; t2(1,5) =-3*sqrt(15)/10 ; t2(2,5) = 3/2;
+      t2(1,4) = -3./2;  t2(2,4) = -sqrt(15)/2;
+      t2(1,5) = -sqrt(15)/2;  t2(2,5) = 3./2;
 
-      t2(0,3) =-2*sqrt(6)/3  ; t3(1,3) =-sqrt(2)       ; t2(2,3) = sqrt(30)/3;
-      t2(0,4) =-4*sqrt(3)/3  ; t2(1,4) =-1/2           ; t2(2,4) = sqrt(15)/6;
-      t2(0,5) = 0            ; t2(1,5) = sqrt(15)/2    ; t2(2,5) = 3/2;
+      t3(0,3) = sqrt(6)/3;  t3(1,3) = -sqrt(2);  t3(2,3) = sqrt(30)/3;
+      t3(0,4) = -4.*sqrt(3)/3;  t3(1,4) = -1./2;  t3(2,4) = sqrt(15)/6;
+      t3(1,5) = sqrt(15)/2;  t3(2,5) = 3./2;
+
     case 1:
       t1(0,0) =  sqrt(2)     ; t1(1,0) = 0.;
       t1(0,1) = -1.          ; t1(1,1) = -sqrt(3);
@@ -178,72 +262,12 @@ inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polyno
       assert(-1);
     }
 
-
-
   return {t1,t2,t3};
 }
 
 /**
- * Transformation Matrix from 2D Polynomial to 2D Monomial base space
- * transposed (TODO nohcmal prüfen)
+ * Transformation Matrix (transposed) from 2D Polynomial to 2D Monomial base space
  */
-inline BlockMatrix get2DPolynomialMapping (unsigned int polynomialDegree)
-{
-  using std::sqrt;
-  BlockMatrix T;
-  switch(polynomialDegree)
-    {
-    case 0:
-      T = BlockMatrix(1);  break;
-    case 1:
-      T = BlockMatrix(3);  break;
-    case 2:
-      T = BlockMatrix(6);  break;
-    case 3:
-      T = BlockMatrix(10); break;
-    case 4:
-      T = BlockMatrix(15); break;
-    default:
-      std::cerr << "maping from monomial into hirachical space for given order not implemented" << std::endl;
-      assert(false);
-    }
-
-  switch(polynomialDegree)
-    {
-    case 4:
-
-    case 3:
-
-    case 2:
-      T(0,3) = sqrt(2)/12.;
-      T(0,4) = sqrt(2)/24.;
-      T(0,5) = sqrt(2)/12.;
-      T(1,3) = -2./15;
-      T(1,4) = -1./60;
-      T(1,5) = 1./15;
-      T(2,4) = -sqrt(3)/60.;
-      T(2,5) = -sqrt(3)/15.;
-      T(3,3) = sqrt(6)/60.;
-      T(3,4) = -sqrt(6)/120.; //hier war ein vorzeichen fehler
-      T(3,5) = sqrt(6)/180.;
-      T(4,4) = sqrt(3)/120.;
-      T(4,5) = -sqrt(3)/45.;
-      T(5,4) = sqrt(5)/120.;
-    case 1:
-      T(0,1) = 1./(3.*sqrt(2));
-      T(0,2) = 1./(3.*sqrt(2));
-      T(1,1) = -1./6.;
-      T(1,2) = 1./12.;
-      T(2,2) = -1./(4.*sqrt(3));
-    case 0:
-      T(0,0) = 1./sqrt(2);
-    }
-
-
-  return T;
-}
-
-//TODO
 inline BlockMatrix get1DPolynomialMapping (unsigned int polynomialDegree)
 {
   using std::sqrt;
@@ -319,7 +343,7 @@ inline BlockMatrix get1DPolynomialMapping (unsigned int polynomialDegree)
 
 inline double integradeOverRefTriangle(Polynomial2D const & pol)
 {
-  assert(pol.getOrder() <= 3); // not implemented!
+  assert(pol.getOrder() <= 11); // not implemented!
 
   double integral = 0.;
 
@@ -331,7 +355,7 @@ inline double integradeOverRefTriangle(Polynomial2D const & pol)
 
 inline double integradeOverRefEdge(Polynomial1D const & pol)
 {
-  assert(pol.getOrder() <= 3); // not implemented!
+  assert(pol.getOrder() <= 12); // not implemented!
   double integral = 0.;
   for (unsigned int s=0; s<=pol.getOrder(); ++s)
     integral += pol.get(s) * pol::monomialIntegralsRefEdge[s];
@@ -405,8 +429,29 @@ double integradeOverRefTriangle_gaus(Function f, int order)
     x1 = {1./6, 2./3, 1./6};
     x2 = {1./6, 1./6, 2./3};
     break;
+  case 3:
+    w  = {0.159020691, 0.159020691, 0.090979309, 0.090979309};
+    x1 = {0.666390246, 0.178558728, 0.280019915, 0.075031109};
+    x2 = {0.178558728, 0.666390246, 0.075031109, 0.280019915};
+    break;
+  case 4:
+    w  = {0.111690794839005, 0.111690794839005, 0.111690794839005,
+          0.054975871827661, 0.054975871827661, 0.054975871827661};
+    x1 = {0.445948490915965, 0.108103018168070, 0.445948490915965,
+          0.091576213509771, 0.816847572980458, 0.091576213509771};
+    x2 = {0.108103018168070, 0.445948490915965, 0.445948490915965,
+          0.816847572980458, 0.091576213509771, 0.091576213509771};
+    break;
+  case 5:
+    double a1 = (6.-std::sqrt(15))/21;     double a2 = (6.+std::sqrt(15))/21;
+    double w1 = (155.-std::sqrt(15))/2400; double w2 = (155.+std::sqrt(15))/2400;
+
+    w  = {9./80,       w1,       w1,     w1,       w2,       w2,     w2};
+    x1 = {1./3 ,       a1, 1.-2.*a1,     a1,       a2, 1.-2.*a2,     a2};
+    x2 = {1./3 , 1.-2.*a1,       a1,     a1, 1.-2.*a2,       a2,     a2};
+    break;
   default:
-    std::cerr << "gaus integration for given order is not implemented!" << std::endl;
+    std::cerr << "2d gaus integration for given order(" << order << ") is not implemented!" << std::endl;
     return -1;
   }
 
@@ -435,13 +480,52 @@ double integradeOverRefEdge_gaus(Function f, int order)
   case 3:
     x = {-sqrt(3./5.), 0., sqrt(3./5.)};
     w = {5./9., 8./9., 5./9.};
+    break;
   case 4:
     x = {-sqrt(3./7.+2./7.*sqrt(6./5.)), -sqrt(3./7.-2./7.*sqrt(6./5.)),
           sqrt(3./7.-2./7.*sqrt(6./5.)),  sqrt(3./7.+2./7.*sqrt(6./5.)) };
     w = {(18.-sqrt(30.))/36., (18.+sqrt(30.))/36.,
          (18.+sqrt(30.))/36., (18.-sqrt(30.))/36. };
+    break;
+  case 5:
+    x = {-1./3*sqrt(5+2*sqrt(10./7)), -1./3*sqrt(5-2*sqrt(10./7)), 0,
+         1./3*sqrt(5-2*sqrt(10./7)),  1./3*sqrt(5+2*sqrt(10./7)) };
+    w = {(322.-13.*sqrt(70))/900, (322.+13.*sqrt(70))/900, 128./225,
+         (322.+13.*sqrt(70))/900, (322.-13.*sqrt(70))/900};
+    break;
+  case 6:
+    x = { 0.6612093864662645, -0.6612093864662645, -0.2386191860831969,
+          0.2386191860831969, -0.9324695142031521,  0.9324695142031521};
+    w = { 0.3607615730481386,  0.3607615730481386,  0.4679139345726910,
+          0.4679139345726910,  0.1713244923791704,  0.171324492379170};
+    break;
+  case 7:
+    x = { 0.0000000000000000,  0.4058451513773972, -0.4058451513773972,
+          -0.7415311855993945,  0.7415311855993945, -0.9491079123427585,
+          0.9491079123427585};
+    w = { 0.4179591836734694,  0.3818300505051189,  0.3818300505051189,
+          0.2797053914892766,  0.2797053914892766,  0.1294849661688697,
+          0.1294849661688697};
+    break;
+  case 8:
+    x = {-0.1834346424956498,  0.1834346424956498, -0.5255324099163290,
+         0.5255324099163290, -0.7966664774136267,  0.7966664774136267,
+         -0.9602898564975363,  0.9602898564975363};
+    w = { 0.3626837833783620,  0.3626837833783620,  0.3137066458778873,
+          0.3137066458778873,  0.2223810344533745,  0.2223810344533745,
+          0.1012285362903763,  0.1012285362903763};
+    break;
+  case 9:
+    x = { 0.0000000000000000, -0.8360311073266358,  0.8360311073266358,
+          -0.9681602395076261,  0.9681602395076261, -0.3242534234038089,
+          0.3242534234038089, -0.6133714327005904,  0.6133714327005904};
+    w = { 0.3302393550012598,  0.1806481606948574,  0.1806481606948574,
+          0.0812743883615744,  0.0812743883615744,  0.3123470770400029,
+          0.3123470770400029,  0.2606106964029354,  0.2606106964029354};
+    break;
   default:
-    std::cerr << "gaus integration for given order is not implemented!" << std::endl;
+    std::cerr << "1d gaus integration for given order(" << order << ") is not implemented!" << std::endl;
+    assert(-1);
     return -1;
     }
   // map gaus quad role to interfal (0,1) (ref edge)
@@ -475,7 +559,8 @@ inline std::vector<double> l2Projection (unsigned int polynomialDegree,
                                                 double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
                                                 return pol::phi[i](x1_hat,x2_hat) * f(x1,x2);
                                               },
-                                              2*polynomialDegree)
+                                              // 2*polynomialDegree)
+                                              polynomialDegree) //TODO Balti fragen
                 );
 
   return F;
