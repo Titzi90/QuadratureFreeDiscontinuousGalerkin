@@ -443,12 +443,14 @@ double integradeOverRefTriangle_gaus(Function f, int order)
           0.816847572980458, 0.091576213509771, 0.091576213509771};
     break;
   case 5:
+    {
     double a1 = (6.-std::sqrt(15))/21;     double a2 = (6.+std::sqrt(15))/21;
     double w1 = (155.-std::sqrt(15))/2400; double w2 = (155.+std::sqrt(15))/2400;
 
     w  = {9./80,       w1,       w1,     w1,       w2,       w2,     w2};
     x1 = {1./3 ,       a1, 1.-2.*a1,     a1,       a2, 1.-2.*a2,     a2};
     x2 = {1./3 , 1.-2.*a1,       a1,     a1, 1.-2.*a2,       a2,     a2};
+    }
     break;
   case 6:
     w  = {0.025422453185103, 0.025422453185103, 0.025422453185103,
@@ -693,6 +695,9 @@ inline std::vector<double> l2Projection_edge (unsigned int polynomialDegree,
                                                 x_hat = x_bar;
                                                 y_hat = 0;
                                                 break;
+                                              default: // no more warnings
+                                                x_hat =0;
+                                                y_hat =0;
                                               }
 
                                             // F_k: refElemnt -> phyikal Elemnt
