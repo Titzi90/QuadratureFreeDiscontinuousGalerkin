@@ -718,7 +718,7 @@ inline std::vector<double> l2Projection_edge (unsigned int polynomialDegree,
                                             // evaluate function
                                             return pol::phi1D[i](x_bar) * f(x1,x2);
                                           },
-                                          2*polynomialDegree)
+                                          2*polynomialDegree+1)
 
                 );
 
