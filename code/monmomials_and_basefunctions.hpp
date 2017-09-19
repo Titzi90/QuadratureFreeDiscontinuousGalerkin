@@ -257,8 +257,14 @@ inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polyno
       t3(0,1) = -1.          ; t3(1,1) = sqrt(3);
       t3(0,2) =  sqrt(3)     ; t3(1,2) = 1.;
 
+    case 0:
+      t1(0,0) =  sqrt(2);
+      t2(0,0) =  sqrt(2);
+      t3(0,0) =  sqrt(2);
+
       break;
     default:
+      std::cerr << "Transfromtion for given order not implmented" << std::endl;
       assert(-1);
     }
 
