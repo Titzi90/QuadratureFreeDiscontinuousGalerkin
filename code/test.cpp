@@ -289,13 +289,11 @@ int assamblyTest()
   auto hatE (assemblyHatE(order, order*2));
   auto hatI (getHatI(2*order));
 
-  /*
   assemblyM(mesh, hatM);
   assemblyG(mesh, hatG);
   assemblyE(mesh, hatE);
   assemblyFr(mesh, order, order*2, riemanSolver_UpWinding, hatI);
   assamblyL(mesh, order, f);          // RHS vector
-  */
   /*
   assemblyMquadFree(mesh, order);
   assemblyGquadFree(mesh, order);
@@ -303,12 +301,13 @@ int assamblyTest()
   assemblyFr(mesh, order, order*2, riemanSolver_UpWinding, hatI);
   assamblyL(mesh, order, f);          // RHS vector
   */
+  /*
   assemblyMGaus(mesh, order);
   assemblyGgaus(mesh, order);
   assemblyE(mesh, hatE);
   assemblyFr(mesh, order, order*2, riemanSolver_UpWinding, hatI);
   assamblyL(mesh, order, f);          // RHS vector
-
+  */
   auto t1 (mesh.getLower(0, 0));
   auto t2 (mesh.getUpper(1, 1));
   auto t3 (mesh.getLower(1, 1));
@@ -454,19 +453,6 @@ int assamblyTest()
   status |= test(t2.U2()[2], 0., "C[2] @ upper(1,1)");
 
   //test F[1,2] (=1)
-  status |= test(t1.F1()[0], 0.7071, "C[0] @ lower(0,0)");
-  status |= test(t1.F1()[1], 0., "C[1] @ lower(0,0)");
-  status |= test(t1.F1()[2], 0., "C[2] @ lower(0,0)");
-  status |= test(t1.F1()[3], 0., "C[3] @ lower(0,0)");
-  status |= test(t1.F1()[4], 0., "C[4] @ lower(0,0)");
-  status |= test(t1.F1()[5], 0., "C[5] @ lower(0,0)");
-
-  status |= test(t2.F2()[0], 0.7071, "C[0] @ upper(1,1)");
-  status |= test(t2.F2()[1], 0., "C[1] @ upper(1,1)");
-  status |= test(t2.F2()[2], 0., "C[2] @ upper(1,1)");
-  status |= test(t2.F2()[3], 0., "C[3] @ upper(1,1)");
-  status |= test(t2.F2()[4], 0., "C[4] @ upper(1,1)");
-  status |= test(t2.F2()[5], 0., "C[5] @ upper(1,1)");
 
   // test L(=rhs= 0)
   status |= test(t1.L()[0], 0., "C[0] @ lower(0,0)");
@@ -478,23 +464,23 @@ int assamblyTest()
   status |= test(t2.L()[2], 0., "C[2] @ upper(1,1)");
 
   // test F at the edges (=Fr)
-  status |= test(t1.F_a()[0], 1.4142, "F_a[0] @ lower(0,0)");
-  status |= test(t1.F_a()[1], 0., "F_a[1] @ lower(0,0)");
+  status |= test(t1.Fr_a()[0], 1.4142, "F_a[0] @ lower(0,0)");
+  status |= test(t1.Fr_a()[1], 0., "F_a[1] @ lower(0,0)");
 
-  status |= test(t1.F_b()[0], -1., "F_b[0] @ lower(0,0)");
-  status |= test(t1.F_b()[1], 0., "F_b[1] @ lower(0,0)");
+  status |= test(t1.Fr_b()[0], -1., "F_b[0] @ lower(0,0)");
+  status |= test(t1.Fr_b()[1], 0., "F_b[1] @ lower(0,0)");
 
-  status |= test(t1.F_c()[0], -1., "F_c[0] @ lower(0,0)");
-  status |= test(t1.F_c()[1], 0., "F_c[1] @ lower(0,0)");
+  status |= test(t1.Fr_c()[0], -1., "F_c[0] @ lower(0,0)");
+  status |= test(t1.Fr_c()[1], 0., "F_c[1] @ lower(0,0)");
 
-  status |= test(t2.F_a()[0], 1., "F_a[0] @ upper(1,1)");
-  status |= test(t2.F_a()[1], 0., "F_a[1] @ upper(1,1)");
+  status |= test(t2.Fr_a()[0], 1., "F_a[0] @ upper(1,1)");
+  status |= test(t2.Fr_a()[1], 0., "F_a[1] @ upper(1,1)");
 
-  status |= test(t2.F_b()[0], -1.4142, "F_b[0] @ upper(1,1)");
-  status |= test(t2.F_b()[1], 0., "F_b[1] @ upper(1,1)");
+  status |= test(t2.Fr_b()[0], -1.4142, "F_b[0] @ upper(1,1)");
+  status |= test(t2.Fr_b()[1], 0., "F_b[1] @ upper(1,1)");
 
-  status |= test(t2.F_c()[0], 1., "F_c[0] @ upper(1,1)");
-  status |= test(t2.F_c()[1], 0., "F_c[1] @ upper(1,1)");
+  status |= test(t2.Fr_c()[0], 1., "F_c[0] @ upper(1,1)");
+  status |= test(t2.Fr_c()[1], 0., "F_c[1] @ upper(1,1)");
 
   //TODO E
 
@@ -508,9 +494,9 @@ int assamblyTest()
 
         //TODO durch M teilen
         auto dc_l = T_l.M()*T_l.L() + T_l.G()*T_l.C()
-          - T_l.E_a()*T_l.F_a() - T_l.E_b()*T_l.F_b() - T_l.E_c()*T_l.F_c();
+          - T_l.E_a()*T_l.Fr_a() - T_l.E_b()*T_l.Fr_b() - T_l.E_c()*T_l.Fr_c();
         auto dc_u = T_u.M()*T_u.L() + T_u.G()*T_u.C()
-          - T_u.E_a()*T_u.F_a() - T_u.E_b()*T_u.F_b() - T_u.E_c()*T_u.F_c();
+          - T_u.E_a()*T_u.Fr_a() - T_u.E_b()*T_u.Fr_b() - T_u.E_c()*T_u.Fr_c();
 
         status |= test(dc_l[0], 0., "lower dc");
         status |= test(dc_l[1], 0., "lower dc");
@@ -558,6 +544,27 @@ int assamblyTest()
 }
 
 
+int higherOrderTest()
+{
+  int status=0;
+
+
+  // maping into 1D space
+  std::vector<Polynomial1D> B_bar;
+  for (int i=1;i<9;++i)
+    B_bar.push_back(pol::phi1D[i]);
+
+  // edge 0
+  auto B_test = getLinearTrasformationToRefEdge(4)[0] * B_bar;
+
+  for (int i=0; i<15; ++i)
+    {
+      std::cout << i << ": " << B_test[i] << std::endl;
+    }
+
+
+  return status;
+}
 
 
 
@@ -607,5 +614,13 @@ int main()
   --status;
   }
 
+  std::cout << "Higher order test ";
+  if (0==higherOrderTest() )
+    std::cout << "successful" << std::endl;
+  else
+    {
+      std::cout << "failed" << std::endl;
+      --status;
+    }
   return status;
 }

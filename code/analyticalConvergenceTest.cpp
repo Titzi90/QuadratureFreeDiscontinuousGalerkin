@@ -11,8 +11,6 @@
 int main(int argc, char** argv)
 {
   int order = 0;
-  int orderF = order;
-  // int orderF = 2*order;
   int refiment = 64;
   double tEnd = 1;
   unsigned int numSteps = tEnd * 1000;
@@ -21,6 +19,10 @@ int main(int argc, char** argv)
     numSteps = std::atoi(argv[1]);
   if (argc > 2)
     refiment = std::atoi(argv[2]);
+  if (argc > 3)
+    order = std::atoi(argv[3]);
+
+  int orderF = 2*order;
 
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -46,7 +48,7 @@ int main(int argc, char** argv)
     };
 
   Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
-                   tEnd, numSteps, writer, true);
+                   tEnd, numSteps, writer, false);
 
   stepper.go();
   // stepper.next();
