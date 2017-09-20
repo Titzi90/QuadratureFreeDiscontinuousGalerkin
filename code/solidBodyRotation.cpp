@@ -13,13 +13,18 @@
 int main(int argc, char** argv)
 {
   int order = 1;
-  int orderF = 2*order;
-  int refiment = 64;
+  int refiment = 48;
   double tEnd = 2*M_PI;
-  unsigned int numSteps = 320;
+  unsigned int numSteps = 6283;
 
   if (argc > 1)
-    refiment = std::atoi(argv[1]);
+    order = std::atoi(argv[3]);
+  if (argc > 2)
+    refiment = std::atoi(argv[2]);
+  if (argc > 3)
+    numSteps = std::atoi(argv[1]);
+
+  int orderF = 2*order;
 
   auto u1 = [](double, double y, double){return 0.5 - y;};
   auto u2 = [](double x, double, double){return x - 0.5;};
@@ -54,7 +59,8 @@ int main(int argc, char** argv)
       setBoundary_Diriclet(mesh, Boundary::right, order, orderF, [](double,double,double){return 0.;}, time);
     };
 
-  Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl, tEnd, numSteps, writer, 1, true, false);
+  Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
+                   tEnd, numSteps, writer, false, numSteps/100, true);
 
   stepper.go();
 
