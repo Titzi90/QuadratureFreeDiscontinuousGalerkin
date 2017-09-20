@@ -159,6 +159,7 @@ public:
       for (unsigned int row=0; row<mesh_.getRows(); ++row)
         for (unsigned int col=0; col<mesh_.getColumns(); ++col)
           {
+      // int row=2; int col=2;
             auto & T_l = mesh_.getLower(row, col);
             auto & T_u = mesh_.getUpper(row, col);
 
@@ -173,11 +174,13 @@ public:
             //           << "\vG:\n" << T_l.G()
             //           << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
             //           << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
-            //           // << "\vF:\na: " << T_l.Fn_a() << "\nb: " << T_l.Fn_b() << "\nc: " << T_l.Fn_c()
+            //           << "\vF:\na: " << T_l.Fn_a() << "\nb: " << T_l.Fn_b() << "\nc: " << T_l.Fn_c()
             //           << "\vFr:\na: " << T_l.Fr_a() << "\nb: " << T_l.Fr_b() << "\nc: " << T_l.Fr_c()
             //           << "\vL:\n" << T_l.L()
             //           << "\vdc:\n" <<  T_l.L() + invertM(T_l.M()) * tmp_l
             //           << "\vM^-1:\n" << invertM(T_l.M())
+            //           << "\vB:\n" << T_l.getJakobian()[0][0] << T_l.getJakobian()[0][1]
+            //           << "\n" <<T_l.getJakobian()[1][0] << " " << T_l.getJakobian()[1][1]
             //           << std::endl;
 
             // std::cout << row  << "," << col << " upper:\n"
@@ -185,11 +188,13 @@ public:
             //           << "\vG:\n" << T_u.G()
             //           << "\vU:\n" << T_u.U1() << "\n" << T_u.U2()
             //           << "\vE:\n" << T_u.E_a() << "\n" << T_u.E_b() << "\n" << T_u.E_c()
-            //           // << "\vF:\na: " << T_u.Fn_a() << "\nb: " << T_u.Fn_b() << "\nc: " << T_u.Fn_c()
+            //           << "\vF:\na: " << T_u.Fn_a() << "\nb: " << T_u.Fn_b() << "\nc: " << T_u.Fn_c()
             //           << "\vFr:\na: " << T_u.Fr_a() << "\nb: " << T_u.Fr_b() << "\nc: " << T_u.Fr_c()
             //           << "\vL:\n" << T_u.L()
             //           << "\vdc:\n" <<  T_u.L() + invertM(T_u.M()) * tmp_u
             //           << "\vM^-1:\n" << invertM(T_u.M())
+            //           << "\vB:\n" << T_u.getJakobian()[0][0] << T_u.getJakobian()[0][1]
+            //           << "\n" <<T_u.getJakobian()[1][0] << " " << T_u.getJakobian()[1][1]
             //           << std::endl;
 
             T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
