@@ -245,21 +245,20 @@ inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polyno
       t3(1,5) = sqrt(15)/2;  t3(2,5) = 3./2;
 
     case 1:
-      t1(0,0) =  sqrt(2)     ; t1(1,0) = 0.;
       t1(0,1) = -1.          ; t1(1,1) = -sqrt(3);
       t1(0,2) = -sqrt(3)     ; t1(1,2) = 1.;
 
-      t2(0,0) =  sqrt(2)     ; t2(1,0) = 0.;
       t2(0,1) =  2.          ; t2(1,1) = 0.;
       t2(0,2) =  0.          ; t2(1,2) = -2.;
 
-      t3(0,0) =  sqrt(2)     ; t3(1,0) = 0.;
       t3(0,1) = -1.          ; t3(1,1) = sqrt(3);
       t3(0,2) =  sqrt(3)     ; t3(1,2) = 1.;
 
     case 0:
       t1(0,0) =  sqrt(2);
+
       t2(0,0) =  sqrt(2);
+
       t3(0,0) =  sqrt(2);
 
       break;
@@ -272,7 +271,9 @@ inline std::vector<BlockMatrix> getLinearTrasformationToRefEdge(int const polyno
 }
 
 /**
- * Transformation Matrix (transposed) from 2D Polynomial to 2D Monomial base space
+ * Transformation Matrix (transposed) from 1D Polynomial to 1D Monomial base space
+ * such that F*B_bar = P*M_1D -> F=T*P
+ * also M = T'*B_bar holds
  */
 inline BlockMatrix get1DPolynomialMapping (unsigned int polynomialDegree)
 {

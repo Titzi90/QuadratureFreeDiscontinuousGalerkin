@@ -358,6 +358,7 @@ inline std::vector<BlockMatrix> assemblyHatE (unsigned int polynomialDegree,
       Polynomial1D tmp2 (polynomialDegree);
       Polynomial1D tmp3 (polynomialDegree);
 
+
       // MatRow-Vec-Mul tmp=T_i*B^
       for (unsigned int ii=0; ii<dof1D; ++ii)
         {
@@ -845,6 +846,9 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
 {
   LIKWID_MARKER_START("BOUNDARY_DIRICLET");
 
+
+  std::vector<double> I = getHatI(polynomialDegreeF);
+
   using namespace std::placeholders;
   switch (b)
     {
@@ -877,7 +881,7 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
           BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
           auto Fn_e = Te * fn_e;
           // trim F to order polynomialDegreeF
-          t_g.Fn_c() =-1 * trim1D(Fn_e, polynomialDegreeF);
+          t_g.Fn_c() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
         }
       break;
     case Boundary::right :
@@ -909,7 +913,7 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
           BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
           auto Fn_e = Te * fn_e;
           // trim F to order polynomialDegreeF
-          t_g.Fn_b() = -1 * trim1D(Fn_e, polynomialDegreeF);
+          t_g.Fn_b() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
         }
       break;
     case Boundary::bottom :
@@ -941,7 +945,9 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
           BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
           auto Fn_e = Te * fn_e;
           // trim F to order polynomialDegreeF
-          t_g.Fn_a() = -1 * trim1D(Fn_e, polynomialDegreeF);
+
+          t_g.Fn_a() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
+          // std::cout << "BC unten:\n" <<  t_g.Fn_a() << std::endl;
         }
       break;
     case Boundary::top :
@@ -973,7 +979,7 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
           BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
           auto Fn_e = Te * fn_e;
           // trim F to order polynomialDegreeF
-          t_g.Fn_c() = -1 * trim1D(Fn_e, polynomialDegreeF);
+          t_g.Fn_c() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
         }
       break;
     }
