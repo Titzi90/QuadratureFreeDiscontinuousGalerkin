@@ -25,8 +25,8 @@ int refiment = 64;
 
   int orderF = 2*order;
 
-  auto u1 = [](double, double, double){return 1;};
-  auto u2 = [](double, double, double){return 0.0;};
+  auto u1 = [](double, double, double){return 0;};
+  auto u2 = [](double, double, double){return 1;};
   // constant
   // auto f  = [](double, double, double){return 0;};
   // auto cExact = [](double, double, double){return 1;};
@@ -36,12 +36,15 @@ int refiment = 64;
   // auto cExact = [](double x, double, double){return x;};
 
   // quadratic
-  auto f  = [](double x, double, double){return 8.*x-4.;};
-  auto cExact = [](double x, double, double){return (2.*x-1.)*(2.*x-1.)*100.;};
+  // auto f  = [](double x, double, double){return 8.*x-4.;};
+  // auto cExact = [](double x, double, double){return (2.*x-1.)*(2.*x-1.)*100.;};
 
   // time dependent
   // auto f  = [](double, double, double t){return -std::exp(-t);};
   // auto cExact = [](double, double, double t){return std::exp(-t);};
+
+  auto f  = [](double x, double y, double t){return std::exp(x+y);};
+  auto cExact = [](double x, double y, double t){return std::exp(x+y);};
 
   // balken
   // auto f  = [](double, double, double){return 0;};
@@ -70,11 +73,15 @@ int refiment = 64;
   Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
                    tEnd, numSteps, writer, false, numSteps/100, true ); //, numSteps/100, true);
 
-  // stepper.go();
+  stepper.go();
   // for (int i=0; i<1; ++i)
-    stepper.next();
+    // stepper.next();
+
 
   std::cout << "L2 Error: " << stepper.l2error() << std::endl;
+
+
+
 
   return 0;
 }

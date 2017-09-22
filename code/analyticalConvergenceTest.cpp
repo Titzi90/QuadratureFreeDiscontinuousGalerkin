@@ -50,8 +50,8 @@ int main(int argc, char** argv)
   Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
                    tEnd, numSteps, writer, false);
 
-  stepper.go();
-  // stepper.next();
+  // stepper.go();
+  stepper.next();
 
   std::cout << "L2 Error: " << stepper.l2error() << std::endl;
   return 0;

@@ -6,27 +6,407 @@
 #include <iostream>
 #include <vector>
 
+std::vector<double> l2Error(UniqueSquareGrid const & mesh,
+                            unsigned int polynomialDegree,
+                            unsigned int integragradeDegree,
+                            std::function<double(double,double)> c_ex,
+                            std::function<double(double,double)> u1_ex,
+                            std::function<double(double,double)> u2_ex
+                            )
+{
+  double err_c = 0.;
+  double err_u1 = 0.;
+  double err_u2 = 0.;
+
+// #pragma omp parallel for reduction(+: err)
+  for (unsigned int row=0; row<mesh.getRows(); ++row)
+    for (unsigned int col=0; col<mesh.getColumns(); ++col)
+      {
+        Triangle t = mesh.getLower(row,col);
+        Jakobian const & B_k (t.getJakobian());
+        Point A_k = t.getA();
+        Polynomial2D c_aprox = reconstructFunction2D(polynomialDegree, t.C());
+        Polynomial2D u1_aprox = reconstructFunction2D(polynomialDegree, t.U1());
+        Polynomial2D u2_aprox = reconstructFunction2D(polynomialDegree, t.U2());
+        double area_k = t.getArea();
+
+        err_c += 2*area_k * integradeOverRefTriangle_gaus([&c_ex, &c_aprox, &B_k, &A_k](double x1_hat, double x2_hat)
+                                                        {
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = c_ex(x1,x2);
+                                                          double c_ = c_aprox(x1_hat, x2_hat);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree);
+
+        err_u1 += 2*area_k * integradeOverRefTriangle_gaus([&u1_ex, &u1_aprox, &B_k, &A_k](double x1_hat, double x2_hat)
+                                                        {
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c_ex = u1_ex(x1,x2);
+                                                          double c_aprox = u1_aprox(x1_hat, x2_hat);
+
+                                                          return (c_ex-c_aprox)*(c_ex-c_aprox);
+                                                        },
+                                                        integragradeDegree);
+
+        err_u2 += 2*area_k * integradeOverRefTriangle_gaus([&u2_ex, &u2_aprox, &B_k, &A_k](double x1_hat, double x2_hat)
+                                                        {
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c_ex = u2_ex(x1,x2);
+                                                          double c_aprox = u2_aprox(x1_hat, x2_hat);
+
+                                                          return (c_ex-c_aprox)*(c_ex-c_aprox);
+                                                        },
+                                                        integragradeDegree);
+
+
+        t = mesh.getLower(row,col);
+        Jakobian const & B_u = t.getJakobian();
+        A_k = t.getA();
+        c_aprox = reconstructFunction2D(polynomialDegree, t.C());
+        u1_aprox = reconstructFunction2D(polynomialDegree, t.U1());
+        u2_aprox = reconstructFunction2D(polynomialDegree, t.U2());
+        area_k = t.getArea();
+
+        err_c += 2*area_k * integradeOverRefTriangle_gaus([&c_ex, &c_aprox, &B_u, &A_k](double x1_hat, double x2_hat)
+                                                          {
+                                                            double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
+                                                            double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                            double c = c_ex(x1,x2);
+                                                            double c_ = c_aprox(x1_hat, x2_hat);
+
+                                                            return (c-c_)*(c-c_);
+                                                          },
+                                                          integragradeDegree);
+        err_u1 += 2*area_k * integradeOverRefTriangle_gaus([&u1_ex, &u1_aprox, &B_u, &A_k](double x1_hat, double x2_hat)
+                                                          {
+                                                            double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
+                                                            double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                            double c_ex = u1_ex(x1,x2);
+                                                            double c_aprox = u1_aprox(x1_hat, x2_hat);
+
+                                                            return (c_ex-c_aprox)*(c_ex-c_aprox);
+                                                          },
+                                                          integragradeDegree);
+        err_u2 += 2*area_k * integradeOverRefTriangle_gaus([&u2_ex, &u2_aprox, &B_u, &A_k](double x1_hat, double x2_hat)
+                                                        {
+                                                          double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                          double c_ex = u2_ex(x1,x2);
+                                                          double c_aprox = u2_aprox(x1_hat, x2_hat);
+
+                                                          return (c_ex-c_aprox)*(c_ex-c_aprox);
+                                                        },
+                                                        integragradeDegree);
+      }
+
+  return {std::sqrt(err_c), std::sqrt(err_u1), std::sqrt(err_u2)};
+}
+
+
+
+std::vector<double> l2ErrorEdge(UniqueSquareGrid const & mesh,
+                                unsigned int polynomialDegree,
+                                unsigned int integragradeDegree,
+                                std::function<double(double,double)> c_ex,
+                                std::function<double(double,double)> u1_ex,
+                                std::function<double(double,double)> u2_ex
+                                )
+{
+  double err1_c = 0.;
+  double err2_c = 0.;
+  double err3_C = 0.;
+  double err1_f = 0.;
+  double err2_f = 0.;
+  double err3_f = 0.;
+
+  std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
+
+// #pragma omp parallel for reduction(+: err)
+  for (unsigned int row=0; row<mesh.getRows(); ++row)
+    for (unsigned int col=0; col<mesh.getColumns(); ++col)
+      {
+        Triangle t = mesh.getLower(row,col);
+        Jakobian const & B_k (t.getJakobian());
+        Point A_k = t.getA();
+        auto norm1 = t.getNormalA();
+        auto norm2 = t.getNormalB();
+        auto norm3 = t.getNormalC();
+
+        auto f_ex1 = [&c_ex, &u1_ex, &u2_ex, &norm1](double x, double y)
+          {
+            return (norm1.x*u1_ex(x,y) + norm1.y*u2_ex(x,y)) * c_ex(x,y);
+          };
+        auto f_ex2 = [&c_ex, &u1_ex, &u2_ex, &norm2](double x, double y)
+          {
+            return (norm2.x*u1_ex(x,y) + norm2.y*u2_ex(x,y)) * c_ex(x,y);
+          };
+        auto f_ex3 = [&c_ex, &u1_ex, &u2_ex, &norm3](double x, double y)
+          {
+            return (norm3.x*u1_ex(x,y) + norm3.y*u2_ex(x,y)) * c_ex(x,y);
+          };
+
+
+
+        Polynomial1D c1_aprox = reconstructFunction1D(polynomialDegree, T[0]*t.C());
+        Polynomial1D c2_aprox = reconstructFunction1D(polynomialDegree, T[1]*t.C());
+        Polynomial1D c3_aprox = reconstructFunction1D(polynomialDegree, T[2]*t.C());
+        /*
+        Polynomial1D f1_aprox = reconstructFunction1D(polynomialDegree,
+                                                      l2Projection_edge(polynomialDegree,f_ex,B_k,A_k,0));
+        Polynomial1D f2_aprox = reconstructFunction1D(polynomialDegree,
+                                                      l2Projection_edge(polynomialDegree,f_ex,B_k,A_k,1));
+        Polynomial1D f3_aprox = reconstructFunction1D(polynomialDegree,
+                                                      l2Projection_edge(polynomialDegree,f_ex,B_k,A_k,2));
+        */
+        Polynomial1D f1_aprox = reconstructFunction1D(polynomialDegree*2, t.Fn_a());
+        Polynomial1D f2_aprox = reconstructFunction1D(polynomialDegree*2, t.Fn_b());
+        Polynomial1D f3_aprox = reconstructFunction1D(polynomialDegree*2, t.Fn_c());
+
+        double l1 = t.getLengthA();
+        double l2 = t.getLengthB();
+        double l3 = t.getLengthC();
+
+        err1_c += l1 * integradeOverRefEdge_gaus([&c_ex, &c1_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 1-x_bar;
+                                                          double x2_hat = x_bar;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = c_ex(x1,x2);
+                                                          double c_ = c1_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree);
+
+        err2_c += l2 * integradeOverRefEdge_gaus([&c_ex, &c2_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 0;
+                                                          double x2_hat = 1-x_bar;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = c_ex(x1,x2);
+                                                          double c_ = c2_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree);
+
+        err3_C += l3 * integradeOverRefEdge_gaus([&c_ex, &c3_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = x_bar;
+                                                          double x2_hat = 0;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = c_ex(x1,x2);
+                                                          double c_ = c3_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree);
+
+        err1_f += l1 * integradeOverRefEdge_gaus([&f_ex1, &f1_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 1-x_bar;
+                                                          double x2_hat = x_bar;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = f_ex1(x1,x2);
+                                                          double c_ = f1_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree*2);
+
+        err2_f += l2 * integradeOverRefEdge_gaus([&f_ex2, &f2_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 0;
+                                                          double x2_hat = 1-x_bar;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = f_ex2(x1,x2);
+                                                          double c_ = f2_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree*2);
+
+        err3_f += l3 * integradeOverRefEdge_gaus([&f_ex3, &f3_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = x_bar;
+                                                          double x2_hat = 0;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = f_ex3(x1,x2);
+                                                          double c_ = f3_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree*2);
+
+
+        t = mesh.getLower(row,col);
+        Jakobian const & B_u = t.getJakobian();
+        A_k = t.getA();
+        c1_aprox = reconstructFunction1D(polynomialDegree, T[0]*t.C());
+        c2_aprox = reconstructFunction1D(polynomialDegree, T[1]*t.C());
+        c3_aprox = reconstructFunction1D(polynomialDegree, T[2]*t.C());
+        f1_aprox = reconstructFunction1D(polynomialDegree*2, t.Fn_a());
+        f2_aprox = reconstructFunction1D(polynomialDegree*2, t.Fn_b());
+        f3_aprox = reconstructFunction1D(polynomialDegree*2, t.Fn_c());
+        l1 = t.getLengthA();
+        l2 = t.getLengthB();
+        l3 = t.getLengthC();
+
+        err1_c += l1 * integradeOverRefEdge_gaus([&c_ex, &c1_aprox, &B_u, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 1-x_bar;
+                                                          double x2_hat = x_bar;
+                                                          double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                          double c = c_ex(x1,x2);
+                                                          double c_ = c1_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree);
+
+        err2_c += l2 * integradeOverRefEdge_gaus([&c_ex, &c2_aprox, &B_u, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 0;
+                                                          double x2_hat = 1-x_bar;
+                                                          double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                          double c = c_ex(x1,x2);
+                                                          double c_ = c2_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree);
+
+        err3_C += l3 * integradeOverRefEdge_gaus([&c_ex, &c3_aprox, &B_u, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = x_bar;
+                                                          double x2_hat = 0;
+                                                          double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                          double c = c_ex(x1,x2);
+                                                          double c_ = c3_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree);
+
+        err1_f += l1 * integradeOverRefEdge_gaus([&f_ex1, &f1_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 1-x_bar;
+                                                          double x2_hat = x_bar;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = f_ex1(x1,x2);
+                                                          double c_ = f1_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree*2);
+
+        err2_f += l2 * integradeOverRefEdge_gaus([&f_ex2, &f2_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = 0;
+                                                          double x2_hat = 1-x_bar;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = f_ex2(x1,x2);
+                                                          double c_ = f2_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree*2);
+
+        err3_f += l3 * integradeOverRefEdge_gaus([&f_ex3, &f3_aprox, &B_k, &A_k](double x_bar)
+                                                        {
+                                                          double x1_hat = x_bar;
+                                                          double x2_hat = 0;
+                                                          double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
+                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double c = f_ex3(x1,x2);
+                                                          double c_ = f3_aprox(x_bar);
+
+                                                          return (c-c_)*(c-c_);
+                                                        },
+                                                        integragradeDegree*2);
+
+      }
+
+
+  std::cout << "c error on edges A: " << std::sqrt(err1_c)
+            <<" B: " << std::sqrt(err2_c)
+            <<" C: " << std::sqrt(err3_C)
+            << std::endl;
+  std::cout << "f error on edges A: " << std::sqrt(err1_f)
+            <<" B: " << std::sqrt(err2_f)
+            <<" C: " << std::sqrt(err3_f)
+            << std::endl;
+
+  return {std::sqrt(err1_c+err2_c+err3_C), std::sqrt(err1_f+err2_f+err3_f)};
+}
 
 /**
  * Advection Problem
  * ∂ₜc + ∇*(uc) = f
  */
-int main()
+int main(int argc, char** argv)
 {
-  UniqueSquareGrid mesh(3);
+  int order = 0;
+  int refiment = 64;
 
-  auto t=mesh.getUpper(2, 2);
-  auto const & B  ( t.getJakobian() );
-  auto const A = t.getA();
+  if (argc > 2)
+    refiment = std::atoi(argv[2]);
+  if (argc > 3)
+    order = std::atoi(argv[3]);
 
-  auto const f  = [](double x, double y)->double{ return (2.*x-1.)*(2.*x-1.)*100.; };
+  // constant
+  // auto f = [](double, double){return 1.;};
 
-  std::cout << l2Projection(3,f,B,A);
+  // linear
+  // auto f = [](double x, double){return x;};
+
+  // quadratic
+  // auto f = [](double x, double){return (2.*x-1.)*(2.*x-1.);};
+
+  // more complex
+  auto f = [](double x, double y) {return std::cos(7.*x)*std::cos(7.*y);};
+  auto u1 = [](double x, double y){return std::exp((x+y)*0.5);};
+  auto u2 = [](double x, double y){return std::exp((x-y)*0.5);};
+
+
+  UniqueSquareGrid mesh(refiment);
+  assamblyC(mesh, order, f);
+  assamblyU(mesh, order, u1, u2);
+  assamblyF(mesh, order, order*2, assamblyLocalLinearF);
+
+  std::vector<double> err_h= l2Error(mesh, order,order+1, f, u1, u2);
+  std::vector<double> err_e = l2ErrorEdge(mesh, order, order+1, f,u1,u2);
 
 
 
 
 
+  std::cout << "Error analysis of mappings:\n"
+            << "c in element: " << err_h[0] << "\n"
+            << "u1 in element: " << err_h[1] << "\n"
+            << "u2 in element: " << err_h[2] << "\n"
+            << "c on edge   :  " << err_e[0] << "\n"
+            << "f:             " << err_e[1]
+            << std::endl;
+
+
+  /*
 
   std::vector<double> w,x1,x2;
     x1 = {
@@ -70,7 +450,7 @@ int main()
     // }
 
 
-
+    */
 
 
 
