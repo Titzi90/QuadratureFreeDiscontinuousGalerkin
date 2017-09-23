@@ -11,6 +11,7 @@
 #include <iostream>
 #include <limits>
 #include <omp.h>
+#include <algorithm>
 
 // include likwid
 extern "C"
@@ -282,6 +283,7 @@ double l2Error(UniqueSquareGrid const & mesh,
                unsigned int integragradeDegree,
                std::function<double(double,double)> f_ex)
 {
+  integragradeDegree = std::max(8u, integragradeDegree);
   double err = 0.;
 
 // #pragma omp parallel for reduction(+: err)
