@@ -11,6 +11,7 @@
 int main(int argc, char** argv)
 {
   int order = 0;
+  int fMultiplier = 2;
   int refiment = 64;
   double tEnd = 1;
   unsigned int numSteps = tEnd * 1000;
@@ -21,8 +22,10 @@ int main(int argc, char** argv)
     refiment = std::atoi(argv[2]);
   if (argc > 3)
     order = std::atoi(argv[3]);
+  if (argc > 4)
+    fMultiplier = std::atoi(argv[4]);
 
-  int orderF = 2*order;
+  int orderF = fMultiplier*order;
 
   using std::placeholders::_1;
   using std::placeholders::_2;
