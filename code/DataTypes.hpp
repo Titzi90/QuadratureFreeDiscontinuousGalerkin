@@ -84,16 +84,17 @@ private:
 
 
 // c = A*b
-inline std::vector<double> matVecMul(BlockMatrix const & A, std::vector<double> const & b)
+template <typename T>
+inline std::vector<T> matVecMul(BlockMatrix const & A, std::vector<T> const & b)
 {
   assert(b.size() == A.getM());
 
-  std::vector<double> c;
+  std::vector<T> c;
   c.reserve(A.getN());
 
   for (unsigned int i=0; i<A.getN(); ++i)
     {
-      double tmp = 0.;
+      T tmp (0);
       for (unsigned int j=0; j<A.getM(); ++j)
         tmp += A(i,j) * b[j];
       c.push_back(tmp);
@@ -101,15 +102,21 @@ inline std::vector<double> matVecMul(BlockMatrix const & A, std::vector<double> 
 
   return c;
 }
-inline std::vector<double> operator* (BlockMatrix const & A, std::vector<double> const & b)
+template <typename T>
+inline std::vector<T> operator* (BlockMatrix const & A, std::vector<T> const & b)
 {
   return matVecMul(A,b);
 }
 
+inline std::vector<double> operator*(BlockMatrix const & M, Polynomial1D const & pol)
+{
+  return matVecMul(M,serialize(pol));
+}
 inline std::vector<double> operator*(BlockMatrix const & M, Polynomial2D const & pol)
 {
   return matVecMul(M,serialize(pol));
 }
+
 
 inline std::vector<double> operator* (double c, std::vector<double> const & v)
 {
@@ -121,6 +128,16 @@ inline std::vector<double> operator* (double c, std::vector<double> const & v)
   return res;
 }
 
+inline std::vector<double> operator+ (std::vector<double> const & lhs, double rhs)
+{
+  std::vector<double> res;
+  res.reserve(lhs.size());
+
+  std::transform(lhs.begin(), lhs.end(), std::back_inserter(res), [rhs](double l)
+                 {return l+rhs;});
+
+  return res;
+}
 inline std::vector<double> operator+ (std::vector<double> const & lhs, std::vector<double> const & rhs)
 {
   assert(lhs.size() == rhs.size());

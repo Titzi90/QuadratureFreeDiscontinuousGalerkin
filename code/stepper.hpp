@@ -10,6 +10,7 @@
 #include <vector>
 #include <iostream>
 #include <limits>
+#include <omp.h>
 
 // include likwid
 extern "C"
@@ -52,8 +53,9 @@ public:
           std::function<double(double,double)> c0, std::function<double(double,double, double)> cExact,
           std::function<void(UniqueSquareGrid &, double)> boundaryHandler,
           double tEnd, unsigned int numSteps,
-          VTKwriter & writer, unsigned int writeInterval=std::numeric_limits<unsigned int>::max(),
-          bool writeInitialData=false, bool writeError=true)
+          VTKwriter & writer, bool writeError=false,
+          unsigned int writeInterval=std::numeric_limits<unsigned int>::max(),
+          bool writeInitialData=false)
     :mesh_(mesh), order_(order), orderF_(orderF), u1_(u1), u2_(u2), f_(f), c0_(c0), cExact_(cExact),
      hatM_(assemblyHatM(order_)), hatG_(assemblyHatG(order_)), hatE_(assemblyHatE(order_, orderF_)),
      hatI_(getHatI(orderF_)), boundaryHandler_(boundaryHandler),
@@ -65,45 +67,67 @@ public:
     // initialize likwid
     LIKWID_MARKER_INIT;
 
-// #pragma omp parallel  TODO vorbereitung für omp
-    // {
+#pragma omp parallel
+    {
       LIKWID_MARKER_THREADINIT;
-    // }
+    } // Implicit barrier after thread init
 
+#pragma omp parallel
+    {
+      // set initial data
+      assamblyC(mesh_, order_, c0_);
 
-    // set initial data
-    assamblyC(mesh_, order_, c0_);
+      // assembly constant data: mass matrix and rhs
+      assemblyM(mesh_, hatM_);            // mass matrix:W
 
-    // assembly constant data: mass matrix and rhs
-    assemblyM(mesh_, hatM_);            // mass matrix:W
+      // set initial U and F
+      assamblyU(mesh_, order_, std::bind(u1_, _1, _2, t_), std::bind(u2_, _1, _2, t_));
+      assamblyF(mesh_, order_, orderF_, assamblyLocalLinearF);
 
-    // set initial U and F
-    assamblyU(mesh_, order_, std::bind(u1_, _1, _2, t_), std::bind(u2_, _1, _2, t_));
-    assamblyF(mesh_, order_, orderF_, assamblyLocalLinearF);
+      // write initial data
+#pragma omp master
+      {
+        if (writeInitialData)
+          writer_.write();
 
-    // write initial data
-    if (writeInitialData)
-      writer_.write();
+        // get some OMP information
+        int chunkSize;
+        omp_sched_t schedType;
+        std::string schedName;
+        omp_get_schedule(&schedType, &chunkSize);
+        switch (schedType)
+          {
+          case omp_sched_static  : schedName = "static"; break;
+          case omp_sched_dynamic : schedName = "dynamic"; break;
+          case omp_sched_guided  : schedName = "guided"; break;
+          case omp_sched_auto    : schedName = "auto"; break;
+          }
 
-    std::cout << "Computing with basic polynomial order " << order_
-              << " (" << numberOf2DBasefunctions(order_) <<" local DOFs) on "
-              << mesh_.getRows()*mesh_.getColumns()*2 << " triangles ("
-              // << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order) << " DOFs total)\n"
-              << "refiment level: " << mesh_.getColumns() <<")\n"
-              << "Data written to " << writer_.getName() << ".vtk\n"
-              << "Starting time integration from 0 to " << tEnd
-              << " using time step size " << deltaT_
-              << " (" << numSteps_ << ")\n"
-              << "This is git version " << _GITVERSION
-              << std::endl;
+        std::cout << "Computing with basic polynomial order " << order_
+                  << " (" << numberOf2DBasefunctions(order_) <<" local DOFs) "
+                  << "and numerical flux aproximation of order "  << orderF_ << " on "
+                  << mesh_.getRows()*mesh_.getColumns()*2 << " triangles ("
+               // << mesh.getColumns()*mesh.getRows()*2*numberOf2DBasefunctions(order) << " DOFs total)\n"
+                  << "refiment level: " << mesh_.getColumns() <<")\n"
+                  << "Data written to " << writer_.getName() << ".vtk\n"
+                  << "Starting time integration from 0 to " << tEnd
+                  << " using time step size " << deltaT_
+                  << " (" << numSteps_ << ")\n"
+                  << omp_get_num_threads() << " OpenMP treads are used (chunk size " << chunkSize << ") "
+                  << "with " << schedName << " scheduler.\n"
+                  << "This is git version " << _GITVERSION
+                  << std::endl;
 
-    //error
-    std::cout << "initial L2 error: " << this->l2error() << std::endl;
+        //error
+        std::cout << "initial L2 error: " << this->l2error() << std::endl;
+      }
+    }
   }
 
   // close likwid
   ~Stepper()
   {
+    std::cerr << "END" << std::endl;
     LIKWID_MARKER_CLOSE;
   }
 
@@ -112,75 +136,94 @@ public:
    */
   void next()
   {
-    // if (writeError_)
-      // std::cout << "STEP " << step_ << ": time=" << t_ << std::endl;
-
-    // update boundary
-    boundaryHandler_(mesh_, t_);
-
-    // Assembly matrices and vectors for computation
-    assamblyL(mesh_, order_, std::bind(f_, _1, _2, t_));          // RHS vector
-    // assemblyGquadFree(mesh_, order_);
-    assemblyG(mesh_, hatG_);
-    // assemblyEquadFree(mesh_, order_, orderF_);
-    assemblyE(mesh_, hatE_);
-    assemblyFr(mesh_, order_, orderF_, riemanSolver_UpWinding, hatI_);
-
     //increase time
     ++step_;
     t_ += deltaT_;
 
-    // update c
-    for (unsigned int row=0; row<mesh_.getRows(); ++row)
-      for (unsigned int col=0; col<mesh_.getColumns(); ++col)
-        {
-          auto & T_l = mesh_.getLower(row, col);
-          auto & T_u = mesh_.getUpper(row, col);
+#pragma omp parallel
+    {
+      // update boundary
+      boundaryHandler_(mesh_, t_);
 
-          std::vector<double> tmp_l = T_l.G()*T_l.C()
-            - T_l.E_a()*T_l.F_a() - T_l.E_b()*T_l.F_b() - T_l.E_c()*T_l.F_c();
-          std::vector<double> tmp_u = T_u.G()*T_u.C()
-            - T_u.E_a()*T_u.F_a() - T_u.E_b()*T_u.F_b() - T_u.E_c()*T_u.F_c();
+      // Assembly matrices and vectors for computation
+      assamblyL(mesh_, order_, std::bind(f_, _1, _2, t_));          // RHS vector
+      assemblyG(mesh_, hatG_);
+      // assemblyGquadFree(mesh_, order_);
+      // assemblyGgaus(mesh_, order_);
+      assemblyE(mesh_, hatE_);
+      // assemblyEquadFree(mesh_, order_, orderF_);
+      assemblyFr(mesh_, order_, orderF_, riemanSolver_UpWinding, hatI_);
 
+      // update c
+#pragma omp for
+      for (unsigned int row=0; row<mesh_.getRows(); ++row)
+        for (unsigned int col=0; col<mesh_.getColumns(); ++col)
+          {
+      // int row=2; int col=2;
+            auto & T_l = mesh_.getLower(row, col);
+            auto & T_u = mesh_.getUpper(row, col);
 
-          // if (step_%100==0)
-          //   {
-          // std::cout << row  << "," << col << " lower:\n"
-          //           << "C_old:\n" << T_l.C()
-          //           << "\vG:\n" << T_l.G()
-          //           << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
-          //           << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
-          //           << "\vFr:\n" << T_l.F_a() << "\n" << T_l.F_b() << "\n" << T_l.F_c()
-          //           << "\vF:\n" << T_l.F1() << "\n" << T_l.F2()
-          //           << "\vL:\n" << T_l.L()
-          //           << "\vdc:\n" << tmp_l
-          //           << "\vM^-1:\n" << invertM(T_l.M())
-          //           << std::endl;
-
-          // std::cout << row  << "," << col << " upper:\n"
-          //           << "C_old:\n" << T_u.C()
-          //           << "\vG:\n" << T_u.G()
-          //           << "\vU:\n" << T_u.U1() << "\n" << T_u.U2()
-          //           << "\vE:\n" << T_u.E_a() << "\n" << T_u.E_b() << "\n" << T_u.E_c()
-          //           << "\vFr:\n" << T_u.F_a() << "\n" << T_u.F_b() << "\n" << T_u.F_c()
-          //           << "\vF:\n" << T_u.F1() << "\n" << T_u.F2()
-          //           << "\vL:\n" << T_u.L()
-          //           << "\vdc:\n" << tmp_u
-          //           << "\vM^-1:\n" << invertM(T_u.M())
-          //           << std::endl;
-            // }
+            std::vector<double> tmp_l = T_l.G()*T_l.C()
+              - T_l.E_a()*T_l.Fr_a() - T_l.E_b()*T_l.Fr_b() - T_l.E_c()*T_l.Fr_c();
+            std::vector<double> tmp_u = T_u.G()*T_u.C()
+              - T_u.E_a()*T_u.Fr_a() - T_u.E_b()*T_u.Fr_b() - T_u.E_c()*T_u.Fr_c();
 
 
+            // if (row == 1 && col == 1)
+              {
+            // std::cout << row  << "," << col << " lower:\n"
+                      // << "C_old:\n" << T_l.C()
+                      // << "\vG:\n" << T_l.G()
 
-          T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
-          T_u.C() += deltaT_ * ( T_u.L() + invertM(T_u.M()) * tmp_u);
+                      // << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
+                      // << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
+                      // << "\vF:\na: " << T_l.Fn_a() << "\nb: " << T_l.Fn_b() << "\nc: " << T_l.Fn_c()
+                      // << "\vFr:\na: " << T_l.Fr_a() << "\nb: " << T_l.Fr_b() << "\nc: " << T_l.Fr_c()
+                      // << "\vEF:\n" <<  T_l.E_a()*T_l.Fr_a() + T_l.E_b()*T_l.Fr_b() + T_l.E_c()*T_l.Fr_c()
+                      // << "\vL:\n" << T_l.L()
+                      // << "\vdc:\n" <<  T_l.L() + invertM(T_l.M()) * tmp_l
 
-          // std::cout << "C_neu:\n" << T_l.C() << "\n" << T_u.C() << std::endl;
-        }
+                      // << "\vM^-1:\n" << invertM(T_l.M())
+                      // << "\vB:\n" << T_l.getJakobian()[0][0] << T_l.getJakobian()[0][1]
+                      // << "\n" <<T_l.getJakobian()[1][0] << " " << T_l.getJakobian()[1][1] << "\n"
+                      // << "\vEhat:\n" << hatE_[0] << "\n" << hatE_[1] << "\n" << hatE_[2]
+                      // << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
+                      // << "\vT:\n" << getLinearTrasformationToRefEdge(order_)[0] <<"\n"
+                      // << getLinearTrasformationToRefEdge(order_)[1] << "\n"
+                      // << getLinearTrasformationToRefEdge(order_)[2] <<"\n"
+                      // << "\vTe:\n" << get1DPolynomialMapping(order_*2)
+                      // << "\v\v"
+                      // << std::endl;
 
-    // update U and F
-    assamblyU(mesh_, order_, std::bind(u1_, _1, _2, t_), std::bind(u2_, _1, _2, t_));
-    assamblyF(mesh_, order_, orderF_, assamblyLocalLinearF);
+            // std::cout << row  << "," << col << " upper:\n"
+                      // << "C_old:\n" << T_u.C()
+                      // << "\vG:\n" << T_u.G()
+
+                      // << "\vU:\n" << T_u.U1() << "\n" << T_u.U2()
+                      // << "\vE:\n" << T_u.E_a() << "\n" << T_u.E_b() << "\n" << T_u.E_c()
+                      // << "\vF:\na: " << T_u.Fn_a() << "\nb: " << T_u.Fn_b() << "\nc: " << T_u.Fn_c()
+                      // << "\vFr:\na: " << T_u.Fr_a() << "\nb: " << T_u.Fr_b() << "\nc: " << T_u.Fr_c()
+                      // << "\vEF:\n" <<  T_u.E_a()*T_u.Fr_a() + T_u.E_b()*T_u.Fr_b() + T_u.E_c()*T_u.Fr_c()
+                      // << "\vL:\n" << T_u.L()
+                      // << "\vdc:\n" <<  T_u.L() + invertM(T_u.M()) * tmp_u
+
+                      // << "\vM^-1:\n" << invertM(T_u.M())
+                      // << "\vB:\n" << T_u.getJakobian()[0][0] << T_u.getJakobian()[0][1]
+                      // << "\n" <<T_u.getJakobian()[1][0] << " " << T_u.getJakobian()[1][1]
+                      // << "\v\v"
+                      // << std::endl;
+              }
+
+            T_l.C() += deltaT_ * ( T_l.L() + invertM(T_l.M()) * tmp_l);
+            T_u.C() += deltaT_ * ( T_u.L() + invertM(T_u.M()) * tmp_u);
+
+            // std::cout << "C_neu:\n" << T_l.C() << "\n" << T_u.C() << std::endl;
+          }
+
+      // update U and F
+      assamblyU(mesh_, order_, std::bind(u1_, _1, _2, t_), std::bind(u2_, _1, _2, t_));
+      assamblyF(mesh_, order_, orderF_, assamblyLocalLinearF);
+    }
 
     // write data
     if (step_ % writeInterval_ == 0)
@@ -188,7 +231,6 @@ public:
 
     // error
     if (writeError_)
-      // std::cout << "L2 error: " << this->l2error() << std::endl;;
       std::cout << t_ << " " << this->l2error() << std::endl;;
 
   }
@@ -240,8 +282,9 @@ double l2Error(UniqueSquareGrid const & mesh,
                unsigned int integragradeDegree,
                std::function<double(double,double)> f_ex)
 {
-  double err = 0;
+  double err = 0.;
 
+// #pragma omp parallel for reduction(+: err)
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -262,6 +305,7 @@ double l2Error(UniqueSquareGrid const & mesh,
                                                         },
                                                         integragradeDegree);
 
+
         t = mesh.getLower(row,col);
         Jakobian const & B_u = t.getJakobian();
         A_k = t.getA();
@@ -278,11 +322,13 @@ double l2Error(UniqueSquareGrid const & mesh,
                                                           return (c_ex-c_aprox)*(c_ex-c_aprox);
                                                         },
                                                         integragradeDegree);
-
       }
 
   return std::sqrt(err);
 }
+
+
+
 
 
 

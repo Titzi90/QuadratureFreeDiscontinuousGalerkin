@@ -66,6 +66,7 @@ inline void assemblyM (UniqueSquareGrid & mesh, BlockMatrix const & hatM)
 {
   LIKWID_MARKER_START("ASSEMBLY_M_PRECOMPUTED");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -99,6 +100,7 @@ inline void assemblyMquadFree (UniqueSquareGrid & mesh, unsigned int polynomialD
 {
   LIKWID_MARKER_START("ASSEMBLY_M_QUADFREE");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -112,34 +114,35 @@ inline void assemblyMquadFree (UniqueSquareGrid & mesh, unsigned int polynomialD
 }
 
 
-inline BlockMatrix assemblyLocalM_kGaus(unsigned int polynomialDegree, double area_k)
-{
-  unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
-  BlockMatrix M_k (dof);
+// inline BlockMatrix assemblyLocalM_kGaus(unsigned int polynomialDegree, double area_k)
+// {
+//   unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
+//   BlockMatrix M_k (dof);
 
-  for (unsigned int i=0; i<dof; ++i)
-    for (unsigned int j=0; j<dof; ++j)
-      M_k(i,j) = 2. * area_k * integradeOverRefTriangle_gaus(pol::phi[i]*pol::phi[j], 2*polynomialDegree);
+//   for (unsigned int i=0; i<dof; ++i)
+//     for (unsigned int j=0; j<dof; ++j)
+//       M_k(i,j) = 2. * area_k * integradeOverRefTriangle_gaus(pol::phi[i]*pol::phi[j], 2*polynomialDegree);
 
-  return M_k;
-}
+//   return M_k;
+// }
 
 
-inline void assemblyMGaus (UniqueSquareGrid & mesh, unsigned int polynomialDegree)
-{
-  LIKWID_MARKER_START("ASSEMBLY_M_GAUS");
+// inline void assemblyMGaus (UniqueSquareGrid & mesh, unsigned int polynomialDegree)
+// {
+//   LIKWID_MARKER_START("ASSEMBLY_M_GAUS");
 
-  for (unsigned int row=0; row<mesh.getRows(); ++row)
-    for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      {
-        Triangle & l = mesh.getLower(row, col);
-        l.M() = assemblyLocalM_kGaus(polynomialDegree, l.getArea());
-        Triangle & u = mesh.getUpper(row, col);
-        u.M() = assemblyLocalM_kGaus(polynomialDegree, u.getArea());
-      }
+// #pragma omp for
+//   for (unsigned int row=0; row<mesh.getRows(); ++row)
+//     for (unsigned int col=0; col<mesh.getColumns(); ++col)
+//       {
+//         Triangle & l = mesh.getLower(row, col);
+//         l.M() = assemblyLocalM_kGaus(polynomialDegree, l.getArea());
+//         Triangle & u = mesh.getUpper(row, col);
+//         u.M() = assemblyLocalM_kGaus(polynomialDegree, u.getArea());
+//       }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_M_GAUS");
-}
+//   LIKWID_MARKER_STOP("ASSEMBLY_M_GAUS");
+// }
 
 
 
@@ -216,6 +219,7 @@ inline void assemblyG (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_G_PRECOMPUTED");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -266,6 +270,7 @@ inline void assemblyGquadFree (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -279,53 +284,54 @@ inline void assemblyGquadFree (UniqueSquareGrid & mesh,
 }
 
 
-inline BlockMatrix assemblyLocalG_kgaus (unsigned int polynomialDegree,
-                                             std::vector<double> const & u1_k,
-                                             std::vector<double> const & u2_k,
-                                             Jakobian const & B_k)
-{
-  unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
+// inline BlockMatrix assemblyLocalG_kgaus (unsigned int polynomialDegree,
+//                                              std::vector<double> const & u1_k,
+//                                              std::vector<double> const & u2_k,
+//                                              Jakobian const & B_k)
+// {
+//   unsigned int dof = numberOf2DBasefunctions(polynomialDegree);
 
-  BlockMatrix G_k (dof);
+//   BlockMatrix G_k (dof);
 
-  for (unsigned int i=0; i<dof; ++i)
-    for (unsigned int j=0; j<dof; ++j)
-      {
-        // G = G1*u1 + G2*u2
-        // with G1 = sum_l {  B_{2,2}*hatG1_l - B_{2,1}*hatG2_l }
-        // and  G2 = sum_l { -B_{1,2}*hatG1_l + B_{1,1}*hatG2_l }
-        double g1 = 0.;
-        double g2 = 0.;
-        for (unsigned int l=0; l<dof; ++l)
-          {
-            //TODO order ist sehr ungenau
-            double hatG1 = integradeOverRefTriangle_gaus(pol::dXphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
-            double hatG2 = integradeOverRefTriangle_gaus(pol::dYphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
-            g1 += u1_k[l] * ( B_k[1][1]*hatG1 - B_k[1][0]*hatG2);
-            g2 += u2_k[l] * (-B_k[0][1]*hatG1 + B_k[0][0]*hatG2);
-          }
-        G_k(i,j) = g1 + g2;
-      }
+//   for (unsigned int i=0; i<dof; ++i)
+//     for (unsigned int j=0; j<dof; ++j)
+//       {
+//         // G = G1*u1 + G2*u2
+//         // with G1 = sum_l {  B_{2,2}*hatG1_l - B_{2,1}*hatG2_l }
+//         // and  G2 = sum_l { -B_{1,2}*hatG1_l + B_{1,1}*hatG2_l }
+//         double g1 = 0.;
+//         double g2 = 0.;
+//         for (unsigned int l=0; l<dof; ++l)
+//           {
+//             //TODO order ist sehr ungenau
+//             double hatG1 = integradeOverRefTriangle_gaus(pol::dXphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
+//             double hatG2 = integradeOverRefTriangle_gaus(pol::dYphi[i] * pol::phi[j] * pol::phi[l],2*polynomialDegree);
+//             g1 += u1_k[l] * ( B_k[1][1]*hatG1 - B_k[1][0]*hatG2);
+//             g2 += u2_k[l] * (-B_k[0][1]*hatG1 + B_k[0][0]*hatG2);
+//           }
+//         G_k(i,j) = g1 + g2;
+//       }
 
-  return G_k;
-}
+//   return G_k;
+// }
 
-inline void assemblyGgaus (UniqueSquareGrid & mesh,
-                               unsigned int polynomialDegree)
-{
-  LIKWID_MARKER_START("ASSEMBLY_G_GAUS");
+// inline void assemblyGgaus (UniqueSquareGrid & mesh,
+//                                unsigned int polynomialDegree)
+// {
+//   LIKWID_MARKER_START("ASSEMBLY_G_GAUS");
 
-  for (unsigned int row=0; row<mesh.getRows(); ++row)
-    for (unsigned int col=0; col<mesh.getColumns(); ++col)
-      {
-        Triangle & l = mesh.getLower(row, col);
-        Triangle & u = mesh.getUpper(row, col);
-        l.G() = assemblyLocalG_kgaus(polynomialDegree, l.U1(), l.U2(), l.getJakobian());
-        u.G() = assemblyLocalG_kgaus(polynomialDegree, u.U1(), u.U2(), u.getJakobian());
-      }
+// #pragma omp for
+//   for (unsigned int row=0; row<mesh.getRows(); ++row)
+//     for (unsigned int col=0; col<mesh.getColumns(); ++col)
+//       {
+//         Triangle & l = mesh.getLower(row, col);
+//         Triangle & u = mesh.getUpper(row, col);
+//         l.G() = assemblyLocalG_kgaus(polynomialDegree, l.U1(), l.U2(), l.getJakobian());
+//         u.G() = assemblyLocalG_kgaus(polynomialDegree, u.U1(), u.U2(), u.getJakobian());
+//       }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_G_GAUS");
-}
+//   LIKWID_MARKER_STOP("ASSEMBLY_G_GAUS");
+// }
 
 
 /******** Edge integral Matrix part E *****************************************/
@@ -345,12 +351,13 @@ inline std::vector<BlockMatrix> assemblyHatE (unsigned int polynomialDegree,
   BlockMatrix E2(dof2D, dofF);
   BlockMatrix E3(dof2D, dofF);
 
-  // E = (T*B)*b^t
+  // E = (T*B)*b'
   for (unsigned int i=0; i<dof2D; ++i)
     {
       Polynomial1D tmp1 (polynomialDegree);
       Polynomial1D tmp2 (polynomialDegree);
       Polynomial1D tmp3 (polynomialDegree);
+
 
       // MatRow-Vec-Mul tmp=T_i*B^
       for (unsigned int ii=0; ii<dof1D; ++ii)
@@ -392,8 +399,9 @@ inline std::vector<BlockMatrix> assemblyLocalE_k (std::vector<BlockMatrix> hatE,
 inline void assemblyE (UniqueSquareGrid & mesh,
                        std::vector<BlockMatrix> const & hatE)
 {
-  LIKWID_MARKER_START("ASSEMBLY_G_PRECOMPUTED");
+  LIKWID_MARKER_START("ASSEMBLY_E_PRECOMPUTED");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -411,7 +419,7 @@ inline void assemblyE (UniqueSquareGrid & mesh,
       u.E_c() = E_u[2];
     }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_G_PRECOMPUTED");
+  LIKWID_MARKER_STOP("ASSEMBLY_E_PRECOMPUTED");
 }
 
 
@@ -451,8 +459,9 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
                                unsigned int polynomialDegree,
                                unsigned int polynomialDegreeF)
 {
-  LIKWID_MARKER_START("ASSEMBLY_G_QUADFREE");
+  LIKWID_MARKER_START("ASSEMBLY_E_QUADFREE");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
     {
@@ -472,11 +481,8 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
       u.E_c() = E_u[2];
     }
 
-  LIKWID_MARKER_STOP("ASSEMBLY_G_QUADFREE");
+  LIKWID_MARKER_STOP("ASSEMBLY_E_QUADFREE");
 }
-
-
-
 
 
 
@@ -484,8 +490,6 @@ inline void assemblyEquadFree (UniqueSquareGrid & mesh,
 /******** Vector representing the Flux F **************************************/
 
 typedef std::function<std::vector<double>(unsigned int, unsigned int,
-                                          std::vector<double>const &,
-                                          std::vector<double>const &,
                                           std::vector<double>const &,
                                           std::vector<double>const &,
                                           std::vector<double>const &,
@@ -508,28 +512,28 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_Fr");
 
+#pragma omp for
   for ( unsigned int row=0; row<mesh.getRows(); ++row)
     for ( unsigned int col=0; col<mesh.getColumns(); ++col)
     {
       { // Lower Triangle
-        //TODO periodic boundary
         Triangle & k   = mesh.getLower(row, col);
         Triangle & n_a = mesh.getUpper(row, col);
         Triangle & n_b = mesh.getUpper(row, col-1);
         Triangle & n_c = mesh.getUpper(row-1, col);
 
-        k.F_a() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
-                               n_a.F1(), n_a.F2(),
-                               k.U1(), k.U2(), n_a.U1(), n_a.U2(), k.getNormalA(),
-                               0, 1, hatI);
-        k.F_b() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
-                               n_b.F1(), n_b.F2(),
-                               k.U1(), k.U2(), n_b.U1(), n_b.U2(), k.getNormalB(),
-                               1,  2, hatI);
-        k.F_c() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
-                               n_c.F1(), n_c.F2(),
-                               k.U1(), k.U2(), n_c.U1(), n_c.U2(), k.getNormalC(),
-                               2,  0, hatI);
+        k.Fr_a() = riemanSolver(polynomialDegree, polynomialDegreeF,
+                                k.Fn_a(), n_a.Fn_b(),
+                                k.U1(), k.U2(), n_a.U1(), n_a.U2(),
+                                k.getNormalA(), 0, 1, hatI);
+        k.Fr_b() = riemanSolver(polynomialDegree, polynomialDegreeF,
+                                k.Fn_b(), n_b.Fn_c(),
+                                k.U1(), k.U2(), n_b.U1(), n_b.U2(),
+                                k.getNormalB(), 1,  2, hatI);
+        k.Fr_c() = riemanSolver(polynomialDegree, polynomialDegreeF,
+                                k.Fn_c(), n_c.Fn_a(),
+                                k.U1(), k.U2(), n_c.U1(), n_c.U2(),
+                                k.getNormalC(), 2,  0, hatI);
       }
 
       { // Upper Triangle
@@ -538,18 +542,18 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
         Triangle & n_b = mesh.getLower(row, col);
         Triangle & n_c = mesh.getLower(row, col+1);
 
-        k.F_a() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
-                               n_a.F1(), n_a.F2(),
-                               k.U1(), k.U2(), n_a.U1(), n_a.U2(), k.getNormalA(),
-                               0,  2, hatI);
-        k.F_b() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
-                               n_b.F1(), n_b.F2(),
-                               k.U1(), k.U2(), n_b.U1(), n_b.U2(), k.getNormalB(),
-                               1, 0, hatI);
-        k.F_c() = riemanSolver(polynomialDegree, polynomialDegreeF, k.F1(), k.F2(),
-                               n_c.F1(), n_c.F2(),
-                               k.U1(), k.U2(), n_c.U1(), n_c.U2(), k.getNormalC(),
-                               2, 1, hatI);
+        k.Fr_a() = riemanSolver(polynomialDegree, polynomialDegreeF,
+                                k.Fn_a(), n_a.Fn_c(),
+                                k.U1(), k.U2(), n_a.U1(), n_a.U2(),
+                                k.getNormalA(), 0,  2, hatI);
+        k.Fr_b() = riemanSolver(polynomialDegree, polynomialDegreeF,
+                                k.Fn_b(), n_b.Fn_a(),
+                                k.U1(), k.U2(), n_b.U1(), n_b.U2(),
+                                k.getNormalB(), 1, 0, hatI);
+        k.Fr_c() = riemanSolver(polynomialDegree, polynomialDegreeF,
+                                k.Fn_c(), n_c.Fn_b(),
+                                k.U1(), k.U2(), n_c.U1(), n_c.U2(),
+                                k.getNormalC(), 2, 1, hatI);
       }
     }
 
@@ -566,10 +570,8 @@ inline void assemblyFr(UniqueSquareGrid & mesh,
  */
 inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree,
                                                    unsigned int polynomialDegreeF,
-                                                   std::vector<double> const & F1_k,
-                                                   std::vector<double> const & F2_k,
-                                                   std::vector<double> const & F1_n,
-                                                   std::vector<double> const & F2_n,
+                                                   std::vector<double> const & Fn_k,
+                                                   std::vector<double> const & Fn_n,
                                                    std::vector<double> const & U1_k,
                                                    std::vector<double> const & U2_k,
                                                    std::vector<double> const & U1_n,
@@ -582,15 +584,14 @@ inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree
 
   std::vector<double> Frn_e;
 
-  std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
-  std::vector<BlockMatrix> T_f = getLinearTrasformationToRefEdge(polynomialDegreeF);
-
   // u on the edge from both sides
+  std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
   std::vector<double> ubar1_k = T[edgeID_k] * U1_k;
   std::vector<double> ubar2_k = T[edgeID_k] * U2_k;
   std::vector<double> ubar1_n = T[edgeID_n] * U1_n;
   std::vector<double> ubar2_n = T[edgeID_n] * U2_n;
 
+  // u normal to edge as polynomial
   Polynomial1D uNormal_k = reconstructFunction1D(polynomialDegree, n_ke.x*ubar1_k + n_ke.y*ubar2_k);
   Polynomial1D uNormal_n = reconstructFunction1D(polynomialDegree, n_ke.x*ubar1_n + n_ke.y*ubar2_n);
 
@@ -600,17 +601,11 @@ inline std::vector<double> riemanSolver_UpWinding (unsigned int polynomialDegree
   // up_wind direction
   if ( 0 <= u_k+u_n)
     { // from elemnt k to n
-      auto Fr1_e = T_f[edgeID_k] * F1_k;
-      auto Fr2_e = T_f[edgeID_k] * F2_k;
-
-      Frn_e = Fr1_e*n_ke.x + Fr2_e*n_ke.y;
+      Frn_e = Fn_k;
     }
   else
     { // from elemnt n to k
-      auto Fr1_e = T_f[edgeID_n] * F1_n;
-      auto Fr2_e = T_f[edgeID_n] * F2_n;
-
-      Frn_e = elementWiseMul(hatI, Fr1_e*n_ke.x + Fr2_e*n_ke.y);
+      Frn_e = -1 * elementWiseMul(hatI, Fn_n);
     }
 
   return Frn_e;
@@ -657,6 +652,7 @@ inline void assamblyL (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_L");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -685,6 +681,7 @@ inline void assamblyU (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_U");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -712,6 +709,7 @@ inline void assamblyC (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_C");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
@@ -737,18 +735,21 @@ inline void assamblyF (UniqueSquareGrid & mesh,
 {
   LIKWID_MARKER_START("ASSEMBLY_F");
 
+#pragma omp for
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
         Triangle & l = mesh.getLower(row, col);
         auto F_l = f(l, targetPolynomialDegree, polynomialDegree);
-        l.F1() = F_l[0];
-        l.F2() = F_l[1];
+        l.Fn_a() = F_l[0];
+        l.Fn_b() = F_l[1];
+        l.Fn_c() = F_l[2];
 
         Triangle & u = mesh.getUpper(row, col);
         auto F_u = f(u, targetPolynomialDegree, polynomialDegree);
-        u.F1() = F_u[0];
-        u.F2() = F_u[1];
+        u.Fn_a() = F_u[0];
+        u.Fn_b() = F_u[1];
+        u.Fn_c() = F_u[2];
       }
 
   LIKWID_MARKER_STOP("ASSEMBLY_F");
@@ -758,23 +759,34 @@ inline std::vector< std::vector<double> > assamblyLocalLinearF (Triangle const &
                                                                 unsigned int targetPolynomialDegree,
                                                                 unsigned int polynomialDegree)
 {
-  //TODO hier mit targetDegree etwas rumspeilen
+  Vector const n[3] = {t_k.getNormalA(),
+                       t_k.getNormalB(),
+                       t_k.getNormalC()};
+  std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
+  BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
+  std::vector< std::vector<double> > Fn;
+  for (int e=0; e<3; ++e)
+    {
+      // normal*u and c on edge
+      auto Un = n[e].x * t_k.U1() + n[e].y * t_k.U2();
+      auto Un_e = T[e] * Un;
+      auto C_e  = T[e] * t_k.C();
 
-  auto c_pol ( reconstructFunction2D(polynomialDegree, t_k.C()) );
-  auto u1_pol ( reconstructFunction2D(polynomialDegree, t_k.U1()) );
-  auto u2_pol ( reconstructFunction2D(polynomialDegree, t_k.U2()) );
+      // reconstruct polynomials in monomial space to multiply them
+      Polynomial1D fn_e = reconstructFunction1D(polynomialDegree, Un_e) *
+                          reconstructFunction1D(polynomialDegree, C_e);
 
-  auto F1_pol = c_pol * u1_pol;
-  auto F2_pol = c_pol * u2_pol;
+      // tranform f into basis expantion
+      auto Fn_e = Te * fn_e;
+      // trim F to order polynomialDegreeF
+      Fn.push_back ( trim1D(Fn_e, targetPolynomialDegree) );
+    }
 
-
-  BlockMatrix T = getPolynomialMapping(targetPolynomialDegree);
-
-  auto F1 (T * F1_pol);
-  auto F2 (T * F2_pol);
-
-  return {F1, F2};
+  return Fn;
 }
+
+
+
 
 enum class Boundary {left, right, top, bottom};
 /**
@@ -786,39 +798,39 @@ inline void setBoundary_Periodic (UniqueSquareGrid & mesh, Boundary b)
   switch (b)
     {
     case Boundary::left :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
           mesh.getUpper(i, -1).U1() = mesh.getUpper(i,mesh.getColumns()-1).U1();
           mesh.getUpper(i, -1).U2() = mesh.getUpper(i,mesh.getColumns()-1).U2();
-          mesh.getUpper(i, -1).F1() = mesh.getUpper(i,mesh.getColumns()-1).F1();
-          mesh.getUpper(i, -1).F2() = mesh.getUpper(i,mesh.getColumns()-1).F2();
+          mesh.getUpper(i, -1).Fn_c() = mesh.getUpper(i,mesh.getColumns()-1).Fn_c();
         }
       break;
     case Boundary::right :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
           mesh.getLower(i, mesh.getColumns()).U1() = mesh.getLower(i, 0).U1();
           mesh.getLower(i, mesh.getColumns()).U2() = mesh.getLower(i, 0).U2();
-          mesh.getLower(i, mesh.getColumns()).F1() = mesh.getLower(i, 0).F1();
-          mesh.getLower(i, mesh.getColumns()).F2() = mesh.getLower(i, 0).F2();
+          mesh.getLower(i, mesh.getColumns()).Fn_b() = mesh.getLower(i, 0).Fn_b();
         }
       break;
     case Boundary::bottom :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           mesh.getUpper(-1, i).U1() = mesh.getUpper(mesh.getRows()-1, i).U1();
           mesh.getUpper(-1, i).U2() = mesh.getUpper(mesh.getRows()-1, i).U2();
-          mesh.getUpper(-1, i).F1() = mesh.getUpper(mesh.getRows()-1, i).F1();
-          mesh.getUpper(-1, i).F2() = mesh.getUpper(mesh.getRows()-1, i).F2();
+          mesh.getUpper(-1, i).Fn_a() = mesh.getUpper(mesh.getRows()-1, i).Fn_a();
         }
       break;
     case Boundary::top :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
           mesh.getLower(mesh.getRows(), i).U1() = mesh.getLower(0, i).U1();
           mesh.getLower(mesh.getRows(), i).U2() = mesh.getLower(0, i).U2();
-          mesh.getLower(mesh.getRows(), i).F1() = mesh.getLower(0, i).F1();
-          mesh.getLower(mesh.getRows(), i).F2() = mesh.getLower(0, i).F2();
+          mesh.getLower(mesh.getRows(), i).Fn_c() = mesh.getLower(0, i).Fn_c();
         }
       break;
     }
@@ -834,63 +846,140 @@ inline void setBoundary_Diriclet (UniqueSquareGrid & mesh, Boundary b,
 {
   LIKWID_MARKER_START("BOUNDARY_DIRICLET");
 
+
+  std::vector<double> I = getHatI(polynomialDegreeF);
+
   using namespace std::placeholders;
   switch (b)
     {
     case Boundary::left :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
-          Triangle & t = mesh.getUpper(i, -1);
-          t.U1() = mesh.getLower(i,0).U1();
-          t.U2() = mesh.getLower(i,0).U2();
-          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
-                                t.getJakobian(), t.getA());
+          unsigned int dof  = numberOf2DBasefunctions(polynomialDegree);
+          Triangle & t_g = mesh.getUpper(i, -1);  // element in the ghost layer
+          Triangle & t_i = mesh.getLower(i,  0);  // element on the insite of the BC
+
+          // set u in ghost layer 0 -> no influnce on upwind direction
+          t_g.U1() = std::vector<double> (dof, 0.);
+          t_g.U2() = std::vector<double> (dof, 0.);
+
+          // set F=CU*n on the edge
           //TODO nihct nur linar F
-          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
-          t.F1() = F[0];
-          t.F2() = F[1];
+          // -> use U from the inner site; multiply it with normal vector and  map it onto the edge
+          Vector const & n = t_i.getNormalB();
+          std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
+          auto Un = n.x*t_i.U1() + n.y*t_i.U2();
+          auto Un_e = T[1] * Un;
+          // -> project c onto the edge
+          auto C_e = l2Projection_edge(polynomialDegree, std::bind(c,_1,_2,time),
+                                       t_i.getJakobian(), t_i.getA(), 1);
+          // reconstruct polynomials and multiply them to f
+          auto fn_e = reconstructFunction1D(polynomialDegree, Un_e) *
+                      reconstructFunction1D(polynomialDegree, C_e);
+          // tranform f into basis expantion
+          BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
+          auto Fn_e = Te * fn_e;
+          // trim F to order polynomialDegreeF
+          t_g.Fn_c() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
         }
       break;
     case Boundary::right :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getRows(); ++i)
         {
-          Triangle & t = mesh.getLower(i, mesh.getColumns());
-          t.U1() = mesh.getUpper(i, mesh.getColumns()-1).U1();
-          t.U2() = mesh.getUpper(i, mesh.getColumns()-1).U2();
-          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
-                                t.getJakobian(), t.getA());
+          unsigned int dof  = numberOf2DBasefunctions(polynomialDegree);
+          Triangle & t_g = mesh.getLower(i, mesh.getColumns());  // element in the ghost layer
+          Triangle & t_i = mesh.getUpper(i, mesh.getColumns()-1);  // element on the insite of the BC
+
+          // set u in ghost layer 0 -> no influnce on upwind direction
+          t_g.U1() = std::vector<double> (dof, 0.);
+          t_g.U2() = std::vector<double> (dof, 0.);
+
+          // set F=CU*n on the edge
           //TODO nihct nur linar F
-          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
-          t.F1() = F[0];
-          t.F2() = F[1];
+          // -> use U from the inner site; multiply it with normal vector and  map it onto the edge
+          Vector const & n = t_i.getNormalC();
+          std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
+          auto Un = n.x*t_i.U1() + n.y*t_i.U2();
+          auto Un_e = T[2] * Un;
+          // -> project c onto the edge
+          auto C_e = l2Projection_edge(polynomialDegree, std::bind(c,_1,_2,time),
+                                       t_i.getJakobian(), t_i.getA(), 2);
+          // reconstruct polynomials and multiply them to f
+          auto fn_e = reconstructFunction1D(polynomialDegree, Un_e) *
+                      reconstructFunction1D(polynomialDegree, C_e);
+          // tranform f into basis expantion
+          BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
+          auto Fn_e = Te * fn_e;
+          // trim F to order polynomialDegreeF
+          t_g.Fn_b() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
         }
       break;
     case Boundary::bottom :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
-          Triangle & t = mesh.getUpper(-1, i);
-          t.U1() = mesh.getLower(0, i).U1();
-          t.U2() = mesh.getLower(0, i).U2();
-          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
-                                t.getJakobian(), t.getA());
+          unsigned int dof  = numberOf2DBasefunctions(polynomialDegree);
+          Triangle & t_g = mesh.getUpper(-1, i);  // element in the ghost layer
+          Triangle & t_i = mesh.getLower(0,  i);  // element on the insite of the BC
+
+          // set u in ghost layer 0 -> no influnce on upwind direction
+          t_g.U1() = std::vector<double> (dof, 0.);
+          t_g.U2() = std::vector<double> (dof, 0.);
+
+          // set F=CU*n on the edge
           //TODO nihct nur linar F
-          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
-          t.F1() = F[0];
-          t.F2() = F[1];
+          // -> use U from the inner site; multiply it with normal vector and  map it onto the edge
+          Vector const & n = t_i.getNormalC();
+          std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
+          auto Un = n.x*t_i.U1() + n.y*t_i.U2();
+          auto Un_e = T[2] * Un;
+          // -> project c onto the edge
+          auto C_e = l2Projection_edge(polynomialDegree, std::bind(c,_1,_2,time),
+                                       t_i.getJakobian(), t_i.getA(), 2);
+          // reconstruct polynomials and multiply them to f
+          auto fn_e = reconstructFunction1D(polynomialDegree, Un_e) *
+                      reconstructFunction1D(polynomialDegree, C_e);
+          // tranform f into basis expantion
+          BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
+          auto Fn_e = Te * fn_e;
+          // trim F to order polynomialDegreeF
+
+          t_g.Fn_a() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
+          // std::cout << "BC unten:\n" <<  t_g.Fn_a() << std::endl;
         }
       break;
     case Boundary::top :
+#pragma omp for
       for (unsigned int i=0; i<mesh.getColumns(); ++i)
         {
-          Triangle & t = mesh.getLower(mesh.getRows(), i);
-          t.U1() = mesh.getUpper(mesh.getRows()-1, i).U1();
-          t.U2() = mesh.getUpper(mesh.getRows()-1, i).U2();
-          t.C()  = l2Projection(polynomialDegree, std::bind(c,_1,_2,time),
-                                t.getJakobian(), t.getA());
+          unsigned int dof  = numberOf2DBasefunctions(polynomialDegree);
+          Triangle & t_g = mesh.getLower(mesh.getRows(), i);  // element in the ghost layer
+          Triangle & t_i = mesh.getUpper(mesh.getRows()-1, i);  // element on the insite of the BC
+
+          // set u in ghost layer 0 -> no influnce on upwind direction
+          t_g.U1() = std::vector<double> (dof, 0.);
+          t_g.U2() = std::vector<double> (dof, 0.);
+
+          // set F=CU*n on the edge
           //TODO nihct nur linar F
-          auto F = assamblyLocalLinearF(t, polynomialDegreeF, polynomialDegree);
-          t.F1() = F[0];
-          t.F2() = F[1];
+          // -> use U from the inner site; multiply it with normal vector and  map it onto the edge
+          Vector const & n = t_i.getNormalA();
+          std::vector<BlockMatrix> T   = getLinearTrasformationToRefEdge(polynomialDegree);
+          auto Un = n.x*t_i.U1() + n.y*t_i.U2();
+          auto Un_e = T[0] * Un;
+          // -> project c onto the edge
+          auto C_e = l2Projection_edge(polynomialDegree, std::bind(c,_1,_2,time),
+                                       t_i.getJakobian(), t_i.getA(), 0);
+          // reconstruct polynomials and multiply them to f
+          auto fn_e = reconstructFunction1D(polynomialDegree, Un_e) *
+                      reconstructFunction1D(polynomialDegree, C_e);
+          // tranform f into basis expantion
+          BlockMatrix Te = get1DPolynomialMapping(polynomialDegree*2);
+          auto Fn_e = Te * fn_e;
+          // trim F to order polynomialDegreeF
+          t_g.Fn_c() = -1 * elementWiseMul(I, trim1D(Fn_e, polynomialDegreeF));
         }
       break;
     }

@@ -179,6 +179,7 @@ void VTKwriter::write()
             }
         }
 
+    /*
     // F
     file << "\nVECTORS F double\n";
     for (unsigned int i=0; i<mesh_.getRows(); ++i)
@@ -223,6 +224,7 @@ void VTKwriter::write()
               break;
             }
         }
+    */
 
 
     // close file
