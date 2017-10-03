@@ -64,7 +64,7 @@ void VTKwriter::write()
                 Point const & B = mesh_.getVertex(i+1, j);
                 Point const & C = mesh_.getVertex(i, j+1);
                 file << A << " 0 " << B << " 0 " << C << " 0 "
-                     << 0.5*(A+B) << " 0 " << 0.5*(B+C) << " 0 " << 0.5*(B+C) << " 0\n";
+                     << 0.5*(A+B) << " 0 " << 0.5*(B+C) << " 0 " << 0.5*(C+A) << " 0\n";
               }
               //upper
               {
@@ -72,7 +72,7 @@ void VTKwriter::write()
                 Point const & B = mesh_.getVertex(i+1, j+1);
                 Point const & C = mesh_.getVertex(i, j+1);
                 file << A << " 0 " << B << " 0 " << C << " 0 "
-                     << 0.5*(A+B) << " 0 " << 0.5*(B+C) << " 0 " << 0.5*(B+C) << " 0\n";
+                     << 0.5*(A+B) << " 0 " << 0.5*(B+C) << " 0 " << 0.5*(C+A) << " 0\n";
               }
               break;
             }

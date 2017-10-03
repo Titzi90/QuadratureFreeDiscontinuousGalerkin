@@ -180,11 +180,12 @@ inline Vector operator-(Vector const & lhs, Vector const & rhs)
   return Point(lhs.x-rhs.x, lhs.y-rhs.y);
 }
 
-inline Point operator+(Point lhs, Point const & rhs)
+inline Point operator+(Point const & lhs, Point const & rhs)
 {
-  lhs.x+=rhs.x;
-  lhs.y+=lhs.y;
-  return lhs;
+  return Point(lhs.x+rhs.x, lhs.y+rhs.y);
+  // lhs.x+=rhs.x;
+  // lhs.y+=lhs.y;
+  // return lhs;
 }
 
 /**
