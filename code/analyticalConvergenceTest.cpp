@@ -15,6 +15,7 @@ int main(int argc, char** argv)
   int refiment = 64;
   double tEnd = 1;
   unsigned int numSteps = tEnd * 1000;
+  std::string outputName ("analyticalConvergenceTest");
 
   if (argc > 1)
     numSteps = std::atoi(argv[1]);
@@ -24,6 +25,8 @@ int main(int argc, char** argv)
     order = std::atoi(argv[3]);
   if (argc > 4)
     fMultiplier = std::atoi(argv[4]);
+  if (argc > 5)
+    outputName = argv[5];
 
   int orderF = fMultiplier*order;
 
@@ -41,7 +44,7 @@ int main(int argc, char** argv)
     };
 
   UniqueSquareGrid mesh (refiment);
-  VTKwriter writer ("analyticalConvergenceTest", mesh, order);
+  VTKwriter writer (outputName, mesh, order);
   auto bcHanderl = [&cExact, order, orderF](UniqueSquareGrid & mesh, double t)
     {
       setBoundary_Diriclet(mesh, Boundary::bottom, order, orderF, cExact, t);
@@ -51,7 +54,7 @@ int main(int argc, char** argv)
     };
 
   Stepper stepper (mesh, order, orderF, u1, u2, f, c0, cExact, bcHanderl,
-                   tEnd, numSteps, writer, false);
+                   tEnd, numSteps, writer, false, numSteps/100, true);
 
   stepper.go();
   // stepper.next();
