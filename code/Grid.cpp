@@ -21,9 +21,14 @@ UniqueSquareGrid::UniqueSquareGrid(unsigned int n, double maxVariance)
     for (unsigned int col=0; col<columns_+1; ++col)
       {
         // randome shift
-        double var = 2.*std::rand()/RAND_MAX  - 1;
-        double dh = var*maxVariance * h;
-        vertices_.push_back(Point(col*h +dh, row*h +dh));
+        double varX = 2.*std::rand()/RAND_MAX  - 1;
+        double varY = 2.*std::rand()/RAND_MAX  - 1;
+        double dhx = 0., dhy = 0.;
+        if (0 != col && columns_ != col)
+          dhx = varX*maxVariance * h;
+        if (0 != row && rows_ != row)
+          dhy = varY*maxVariance * h;
+        vertices_.push_back(Point(col*h +dhx, row*h +dhy));
       }
 
   //TRIANGLES

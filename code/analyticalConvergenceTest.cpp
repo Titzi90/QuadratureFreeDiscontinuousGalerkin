@@ -16,6 +16,7 @@ int main(int argc, char** argv)
   double tEnd = 1;
   unsigned int numSteps = tEnd * 1000;
   std::string outputName ("analyticalConvergenceTest");
+  double disorder= 0.;
 
   if (argc > 1)
     numSteps = std::atoi(argv[1]);
@@ -27,6 +28,8 @@ int main(int argc, char** argv)
     fMultiplier = std::atoi(argv[4]);
   if (argc > 5)
     outputName = argv[5];
+  if (argc > 6)
+    disorder = std::atof(argv[6]);
 
   int orderF = fMultiplier*order;
 
@@ -43,7 +46,7 @@ int main(int argc, char** argv)
             -0.5*cExact(x,y,t)*u2(x,y,t) -7.*std::cos(7.*x)*std::sin(7.*y)*u2(x,y,t);
     };
 
-  UniqueSquareGrid mesh (refiment);
+  UniqueSquareGrid mesh (refiment, disorder);
   VTKwriter writer (outputName, mesh, order);
   auto bcHanderl = [&cExact, order, orderF](UniqueSquareGrid & mesh, double t)
     {

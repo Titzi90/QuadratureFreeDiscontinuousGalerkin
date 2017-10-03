@@ -177,6 +177,7 @@ public:
                       // << "\vG:\n" << T_l.G()
 
                       // << "\vU:\n" << T_l.U1() << "\n" << T_l.U2()
+                      // << "\vEhat:\n" << hatE_[0] << "\n" << hatE_[1] << "\n" << hatE_[2]
                       // << "\vE:\n" << T_l.E_a() << "\n" << T_l.E_b() << "\n" << T_l.E_c()
                       // << "\vF:\na: " << T_l.Fn_a() << "\nb: " << T_l.Fn_b() << "\nc: " << T_l.Fn_c()
                       // << "\vFr:\na: " << T_l.Fr_a() << "\nb: " << T_l.Fr_b() << "\nc: " << T_l.Fr_c()
