@@ -50,27 +50,27 @@ void VTKwriter::write()
             case 1: // 0 and 1 -> 3 points
               //lower
               file << mesh_.getVertex(i,j) << " 0 "
-                   << mesh_.getVertex(i+1,j) << " 0 "
-                   << mesh_.getVertex(i, j+1) << " 0\n";
+                   << mesh_.getVertex(i,j+1) << " 0 "
+                   << mesh_.getVertex(i+1, j) << " 0\n";
               //upper
-              file << mesh_.getVertex(i+1,j) << " 0 "
+              file << mesh_.getVertex(i,j+1) << " 0 "
                    << mesh_.getVertex(i+1,j+1) << " 0 "
-                   << mesh_.getVertex(i, j+1) << " 0\n";
+                   << mesh_.getVertex(i+1, j) << " 0\n";
               break;
             case 2: // quadratic triangle -> 6 points
               //lower
               {
                 Point const & A = mesh_.getVertex(i, j);
-                Point const & B = mesh_.getVertex(i+1, j);
-                Point const & C = mesh_.getVertex(i, j+1);
+                Point const & B = mesh_.getVertex(i, j+1);
+                Point const & C = mesh_.getVertex(i+1, j);
                 file << A << " 0 " << B << " 0 " << C << " 0 "
                      << 0.5*(A+B) << " 0 " << 0.5*(B+C) << " 0 " << 0.5*(C+A) << " 0\n";
               }
               //upper
               {
-                Point const & A = mesh_.getVertex(i+1, j);
+                Point const & A = mesh_.getVertex(i, j+1);
                 Point const & B = mesh_.getVertex(i+1, j+1);
-                Point const & C = mesh_.getVertex(i, j+1);
+                Point const & C = mesh_.getVertex(i+1, j);
                 file << A << " 0 " << B << " 0 " << C << " 0 "
                      << 0.5*(A+B) << " 0 " << 0.5*(B+C) << " 0 " << 0.5*(C+A) << " 0\n";
               }
@@ -102,6 +102,7 @@ void VTKwriter::write()
         {
           std::vector<double> data_l (lagrangeProjection(mesh_.getLower(i, j).C(), order_) );
           std::vector<double> data_u (lagrangeProjection(mesh_.getUpper(i, j).C(), order_) );
+
 
           switch (order_)
             {

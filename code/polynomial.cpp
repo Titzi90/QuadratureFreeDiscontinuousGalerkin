@@ -165,7 +165,7 @@ std::string to_string(Polynomial2D const & pol)
           if(0 != pol.get(x,y))
             {
               //TODO plus nur wenn ned minus
-              ss << pol.get(x,y) << "x^" << x << "y^" << y << " + ";
+              ss << pol.get(x,y) << "x^" << x << "*y^" << y << " + ";
             }
         }
     }
