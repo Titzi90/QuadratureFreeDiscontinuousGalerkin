@@ -242,7 +242,7 @@ public:
    */
   double l2error()
   {
-    return l2Error(mesh_, order_, order_*2, std::bind(cExact_, _1, _2, t_));
+    return l2Error(mesh_, order_, order_*2+2, std::bind(cExact_, _1, _2, t_));
   }
 
   void go()
@@ -287,20 +287,20 @@ double l2Error(UniqueSquareGrid const & mesh,
   integragradeDegree = std::max(8u, integragradeDegree);
   double err = 0.;
 
-// #pragma omp parallel for reduction(+: err)
+#pragma omp parallel for reduction(+: err)
   for (unsigned int row=0; row<mesh.getRows(); ++row)
     for (unsigned int col=0; col<mesh.getColumns(); ++col)
       {
         Triangle t = mesh.getLower(row,col);
         Jakobian const & B_k (t.getJakobian());
         Point A_k = t.getA();
-        Polynomial2D f_aprox = reconstructFunction2D(polynomialDegree, t.C());
         double area_k = t.getArea();
+        Polynomial2D f_aprox = reconstructFunction2D(polynomialDegree, t.C());
 
         err += 2*area_k * integradeOverRefTriangle_gaus([&f_ex, &f_aprox, &B_k, &A_k](double x1_hat, double x2_hat)
                                                         {
                                                           double x1 = B_k[0][0]*x1_hat + B_k[0][1]*x2_hat + A_k.x;
-                                                          double x2 = B_k[1][0]*x2_hat + B_k[1][1]*x2_hat + A_k.y;
+                                                          double x2 = B_k[1][0]*x1_hat + B_k[1][1]*x2_hat + A_k.y;
                                                           double c_ex = f_ex(x1,x2);
                                                           double c_aprox = f_aprox(x1_hat, x2_hat);
 
@@ -308,17 +308,16 @@ double l2Error(UniqueSquareGrid const & mesh,
                                                         },
                                                         integragradeDegree);
 
-
         t = mesh.getLower(row,col);
         Jakobian const & B_u = t.getJakobian();
         A_k = t.getA();
-        f_aprox = reconstructFunction2D(polynomialDegree, t.C());
         area_k = t.getArea();
+        f_aprox = reconstructFunction2D(polynomialDegree, t.C());
 
         err += 2*area_k * integradeOverRefTriangle_gaus([&f_ex, &f_aprox, &B_u, &A_k](double x1_hat, double x2_hat)
                                                         {
                                                           double x1 = B_u[0][0]*x1_hat + B_u[0][1]*x2_hat + A_k.x;
-                                                          double x2 = B_u[1][0]*x2_hat + B_u[1][1]*x2_hat + A_k.y;
+                                                          double x2 = B_u[1][0]*x1_hat + B_u[1][1]*x2_hat + A_k.y;
                                                           double c_ex = f_ex(x1,x2);
                                                           double c_aprox = f_aprox(x1_hat, x2_hat);
 
