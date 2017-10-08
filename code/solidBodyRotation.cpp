@@ -12,19 +12,28 @@
 
 int main(int argc, char** argv)
 {
-  int order = 1;
-  int refiment = 48;
+  int order = 0;
+  int fMultiplier = 2;
+  int refiment = 64;
   double tEnd = 2*M_PI;
-  unsigned int numSteps = 6283;
+  unsigned int numSteps = tEnd * 1000;
+  std::string outputName ("analyticalConvergenceTest");
+  double disorder= 0.;
 
   if (argc > 1)
-    order = std::atoi(argv[3]);
+    numSteps = std::atoi(argv[1]) * tEnd;
   if (argc > 2)
     refiment = std::atoi(argv[2]);
   if (argc > 3)
-    numSteps = std::atoi(argv[1]);
+    order = std::atoi(argv[3]);
+  if (argc > 4)
+    fMultiplier = std::atoi(argv[4]);
+  if (argc > 5)
+    outputName = argv[5];
+  if (argc > 6)
+    disorder = std::atof(argv[6]);
 
-  int orderF = 2*order;
+  int orderF = fMultiplier*order;
 
   auto u1 = [](double, double y, double){return 0.5 - y;};
   auto u2 = [](double x, double, double){return x - 0.5;};
@@ -49,8 +58,8 @@ int main(int argc, char** argv)
     };
   auto cExact = [&c0](double x, double y, double){return c0(x,y);};
 
-  UniqueSquareGrid mesh (refiment /*,0.25*/);
-  VTKwriter writer ("solidBodyRotation", mesh, order);
+  UniqueSquareGrid mesh (refiment , disorder);
+  VTKwriter writer (outputName, mesh, order);
   auto bcHanderl = [order, orderF](UniqueSquareGrid & mesh, double time)
     {
       setBoundary_Diriclet(mesh, Boundary::bottom, order, orderF, [](double,double,double){return 0.;}, time);
