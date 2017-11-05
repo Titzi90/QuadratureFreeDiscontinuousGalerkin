@@ -1,0 +1,10 @@
+This master thesis presents a quadrature free implementation of the discontinuous Galerkin
+(DG) method for two–dimensional hyperbolic equations. It can be used as a template for code
+generators or embedding it in distributed frameworks as a DG–solver on local grids. To minimize
+the computational costs, a quadrature free integration is used for assembling the linear system of
+equations. Particular attention was paid to keep the code as simple as possible to ensure that it
+is straight forward to apply different performance optimization and parallelization techniques.
+On the other hand, the code is still flexible to stay suitable for many use cases and applications.
+The implementation supports higher order spatial approximation as well as disturbed meshes.
+The data structures and kernels are designed such that they are easily embedded in a distributed
+framework and single node OpenMP parallelization can be simply added.
